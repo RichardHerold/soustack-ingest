@@ -31,7 +31,7 @@ const fallbackSchema = {
   additionalProperties: true,
 };
 
-const require = createRequire(import.meta.url);
+const require = createRequire(typeof __filename !== "undefined" ? __filename : process.cwd());
 
 function toJsonPathSegment(segment: string): string {
   if (/^\d+$/.test(segment)) {
