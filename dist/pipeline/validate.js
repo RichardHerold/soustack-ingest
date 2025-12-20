@@ -175,12 +175,10 @@ const coreValidatorPromise = (async () => {
                     // #endregion
                     // Convert soustack ValidateResult to local ValidationResult format
                     const errors = [];
-                    if (result.schemaErrors) {
-                        errors.push(...result.schemaErrors.map((e) => `${e.path} ${e.message}`));
-                    }
-                    if (result.conformanceIssues) {
-                        errors.push(...result.conformanceIssues.map((e) => `${e.path} ${e.message}`));
-                    }
+                    const schemaErrors = Array.isArray(result.schemaErrors) ? result.schemaErrors : [];
+                    const conformanceIssues = Array.isArray(result.conformanceIssues) ? result.conformanceIssues : [];
+                    errors.push(...schemaErrors.map((e) => `${e.path} ${e.message}`));
+                    errors.push(...conformanceIssues.map((e) => `${e.path} ${e.message}`));
                     return {
                         ok: result.ok,
                         errors,
