@@ -197,6 +197,12 @@ function findCandidateStarts(lines: Line[], features: LineFeatures[]): Candidate
     if (!features[index].isTitleLike) {
       continue;
     }
+    if (features[index].isImperativeLine && !features[index].isAllCapsTitle) {
+      const prev = features[index - 1];
+      if (prev && !prev.isBlank) {
+        continue;
+      }
+    }
     const density = ingredientDensity(features, index + 1, 8);
     const imperative = imperativeDensity(features, index + 1, 8);
     const score = clamp(0.6 + Math.max(density, imperative) * 0.8);

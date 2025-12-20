@@ -113,6 +113,26 @@ describe("pipeline", () => {
         assert.ok(chunk.confidence > 0.6);
       });
     });
+
+    it("keeps all-caps titles above imperative-only instructions", async () => {
+      const fixturePath = path.join(process.cwd(), "test", "fixtures", "cinnamon-toast.txt");
+      const fixture = await fs.readFile(fixturePath, "utf-8");
+      const lines = normalize(fixture).lines;
+      const { chunks } = segment(lines);
+
+      assert.equal(chunks.length, 1);
+      assert.equal(chunks[0]?.titleGuess, "CINNAMON TOAST AND BUTTER");
+      assert.equal(chunks[0]?.startLine, 1);
+      const chunkLines = lines
+        .filter(
+          (line) => line.n >= (chunks[0]?.startLine ?? 0) && line.n <= (chunks[0]?.endLine ?? 0),
+        )
+        .map((line) => line.text.trim());
+      assert.ok(chunkLines.includes("Toast the white bread"));
+      assert.ok(chunkLines.includes("Add soft butter onto toast"));
+      assert.ok(chunkLines.includes("Sprinkle the cinnamon/sugar mix"));
+      assert.ok(!chunks.some((chunk) => chunk.titleGuess === "Toast the white bread"));
+    });
   });
 
   describe("extract", () => {
