@@ -24,6 +24,65 @@ type CoreValidationModule = {
   };
 };
 
+const VNEXT_SCHEMA_URL = "https://soustack.spec/soustack.schema.json";
+
+const vNextSchema = {
+  type: "object",
+  required: ["$schema", "profile", "name", "stacks", "ingredients", "instructions"],
+  properties: {
+    $schema: {
+      const: VNEXT_SCHEMA_URL,
+    },
+    profile: {
+      type: "string",
+      const: "lite",
+    },
+    name: {
+      type: "string",
+      minLength: 1,
+    },
+    stacks: {
+      anyOf: [{ type: "object" }, { type: "array" }],
+    },
+    ingredients: {
+      type: "array",
+      items: { type: "string" },
+    },
+    instructions: {
+      type: "array",
+      items: { type: "string" },
+    },
+    metadata: {
+      type: "object",
+      properties: {
+        ingest: {
+          type: "object",
+          properties: {
+            pipelineVersion: { type: "string" },
+            sourcePath: { type: "string" },
+            sourceLines: {
+              type: "object",
+              properties: {
+                start: { type: "number" },
+                end: { type: "number" },
+              },
+              required: ["start", "end"],
+              additionalProperties: false,
+            },
+            warnings: {
+              type: "array",
+              items: { type: "string" },
+            },
+          },
+          additionalProperties: true,
+        },
+      },
+      additionalProperties: true,
+    },
+  },
+  additionalProperties: false,
+};
+
 const fallbackSchema = {
   type: "object",
   required: ["name"],
@@ -142,6 +201,7 @@ async function loadSchemaFromPackage(): Promise<unknown | null> {
 }
 
 let activeValidator: Validator = buildAjvValidator(fallbackSchema);
+const vNextValidator = buildAjvValidator(vNextSchema);
 
 const coreValidatorPromise = (async () => {
   try {
@@ -211,9 +271,14 @@ export async function initValidator(): Promise<void> {
   // #region agent log
   fetch('http://127.0.0.1:7246/ingest/e57cfe72-9edb-4211-85b1-172504310ac9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'validate.ts:192',message:'Validator resolved',data:{hasValidator:!!validator},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'C'})}).catch(()=>{});
   // #endregion
-  if (validator) {
-    activeValidator = validator;
-  }
+  activeValidator = {
+    validate: (recipe: SoustackRecipe) => {
+      if (recipe.$schema === VNEXT_SCHEMA_URL) {
+        return vNextValidator.validate(recipe);
+      }
+      return (validator ?? vNextValidator).validate(recipe);
+    },
+  };
 }
 
 export function validate(recipe: SoustackRecipe): ValidationResult {

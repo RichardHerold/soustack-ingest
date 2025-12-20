@@ -29,24 +29,21 @@ export type IntermediateRecipe = {
 };
 
 export type SoustackRecipe = {
-  "@type"?: "Recipe";
   $schema: string;
-  level: string;
+  profile: "lite";
   name: string;
   stacks?: Record<string, number> | string[];
   ingredients: string[];
   instructions: string[];
   metadata?: {
     ingest?: {
+      pipelineVersion?: string;
+      sourcePath?: string;
+      sourceLines?: {
+        start: number;
+        end: number;
+      };
       warnings?: string[];
-    };
-  };
-  "x-ingest": {
-    pipelineVersion: string;
-    sourcePath?: string;
-    sourceLines?: {
-      start: number;
-      end: number;
     };
   };
 };
