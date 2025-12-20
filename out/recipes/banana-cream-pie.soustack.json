@@ -1,0 +1,23 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "BANANA CREAM PIE",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "Slice 1 Or 2 Bananas And Add To Cooked Filling Before Pouring Into Pie Shell."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2371,
+        "end": 2374
+      },
+      "warnings": [
+        "BANANA CREAM PIE: Missing ingredients"
+      ]
+    }
+  }
+}

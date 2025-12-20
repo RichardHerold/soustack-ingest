@@ -1,0 +1,23 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "JAN’S VIDALIA ONION",
+  "stacks": {},
+  "ingredients": [
+    "3 Med. Vidalia onions",
+    "1 pack sharp cheddar, shredded"
+  ],
+  "instructions": [
+    "½ tube Ritz crackers, crushed"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2280,
+        "end": 2284
+      }
+    }
+  }
+}

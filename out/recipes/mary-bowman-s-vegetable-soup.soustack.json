@@ -1,0 +1,24 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "MARY BOWMAN’S VEGETABLE SOUP",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "By:",
+    "Mary Bowman"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 276,
+        "end": 281
+      },
+      "warnings": [
+        "MARY BOWMAN’S VEGETABLE SOUP: Missing ingredients"
+      ]
+    }
+  }
+}

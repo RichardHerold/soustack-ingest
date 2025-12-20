@@ -1,0 +1,24 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "MARY BOWMAN’S TURKEY A LA KING",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "By:",
+    "Mary Bowman"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 1527,
+        "end": 1533
+      },
+      "warnings": [
+        "MARY BOWMAN’S TURKEY A LA KING: Missing ingredients"
+      ]
+    }
+  }
+}

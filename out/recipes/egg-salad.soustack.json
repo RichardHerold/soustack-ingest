@@ -1,0 +1,23 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "EGG SALAD",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "Boil eggs for 13 minutes"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3889,
+        "end": 3892
+      },
+      "warnings": [
+        "EGG SALAD: Missing ingredients"
+      ]
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "1 ½ tbsp. butter (melted)",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "Sift sugar, cornstarch, salt, cinnamon, ginger and nutmeg together.",
+    "Mix this with contents of one can one-pie pumpkin.",
+    "Add eggs, beaten, melted butter, molasses and milk.  Add a dash of lemon juice (if desired).",
+    "Line a 9-inch pie plate, pour in contents.",
+    "Preheat oven and bake at 450 for 15 minutes.",
+    "Then reduce temperature to 350 and continue to bake for 50 minutes."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2399,
+        "end": 2407
+      },
+      "warnings": [
+        "1 ½ tbsp. butter (melted): Missing ingredients"
+      ]
+    }
+  }
+}

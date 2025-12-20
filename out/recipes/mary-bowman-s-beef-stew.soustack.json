@@ -1,0 +1,24 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "MARY BOWMAN’S BEEF STEW",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "By:",
+    "Mary Bowman"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 300,
+        "end": 307
+      },
+      "warnings": [
+        "MARY BOWMAN’S BEEF STEW: Missing ingredients"
+      ]
+    }
+  }
+}

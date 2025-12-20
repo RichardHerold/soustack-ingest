@@ -1,0 +1,40 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "Test",
+  "stacks": {},
+  "ingredients": [
+    "2 iceberg lettuce",
+    "3 cucumbers",
+    "4 garlic cloves",
+    "Fresh ground peppercorn",
+    "White distilled vinegar",
+    "Lite virgin olive oil",
+    "2 containers gorgonzola cheese",
+    "1 small sweet vadalia onion"
+  ],
+  "instructions": [
+    "MICHELLE BOWMAN’S CHOPPED SALAD",
+    "By:",
+    "Unknown",
+    "Chop lettuce real small.",
+    "Peel cucumbers lengthwise, cut in half, and de-seed with edge of spoon.",
+    "Cut into very small pieces.",
+    "Put garlic cloves into garlic press and mince, Ground peppercorns.",
+    "Chop onion, add amount to taste you like.",
+    "Combine lettuce, cucumbers, onion and garlic.  Add pepper, toss together.",
+    "Combine vinegar and olive oil, toss together.",
+    "Add gorgonzola cheese.",
+    "Combine together and refrigerate."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 1966,
+        "end": 1999
+      }
+    }
+  }
+}

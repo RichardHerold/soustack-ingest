@@ -1,0 +1,33 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "TERRY BOWMAN - ARTICHOKE SPINACH DIP",
+  "stacks": {},
+  "ingredients": [
+    "1 package frozen chopped spinach (let thaw)",
+    "8oz cream cheese at room temperature",
+    "1 Cup Mayo",
+    "1 Cup Sour Cream",
+    "1 Cup Grated Parmesan Cheese",
+    "1 Can (14 OZ.) Artichoke Hearts, chopped",
+    "1 Clove garlic",
+    "Dash of salt"
+  ],
+  "instructions": [
+    "By:",
+    "Terry Bowman",
+    "Mix until blended",
+    "Grease 9 x 13 baking dish",
+    "Bake 45 minutes until golden brown"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 12,
+        "end": 33
+      }
+    }
+  }
+}

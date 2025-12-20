@@ -1,0 +1,24 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "Egg white",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "Granulated sugar",
+    "Candied cherries-red and green"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3168,
+        "end": 3172
+      },
+      "warnings": [
+        "Egg white: Missing ingredients"
+      ]
+    }
+  }
+}

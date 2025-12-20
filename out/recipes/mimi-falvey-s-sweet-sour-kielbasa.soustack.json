@@ -1,0 +1,24 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "MIMI FALVEY’S SWEET & SOUR KIELBASA",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "By:",
+    "Mimi Falvey"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 1079,
+        "end": 1084
+      },
+      "warnings": [
+        "MIMI FALVEY’S SWEET & SOUR KIELBASA: Missing ingredients"
+      ]
+    }
+  }
+}

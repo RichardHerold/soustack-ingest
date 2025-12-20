@@ -1,0 +1,41 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "½ tsp. ground cinnamon",
+  "stacks": {},
+  "ingredients": [
+    "Glaze:",
+    "1 cup powdered sugar",
+    "1 to 2 tbsp. Milk",
+    "½ tsp. vanilla"
+  ],
+  "instructions": [
+    "Heat oven to 350.",
+    "For crust, add enough milk to egg yolk to measure 2/3 cup; set aside.",
+    "In medium bowl, combine flour and salt.",
+    "Cut in butter until crumbly.",
+    "With fork, stir in milk mixture until dough forms a ball; divide into halves.",
+    "Roll out ½ of the dough, on lightly floured surface, into a 15x10 ½” rectangle.  Place on bottom of ungreased 15x10x1” jellyroll pan.",
+    "before filling, sprinkle cereal over top",
+    "Layer apples over cereal.",
+    "In small bowl, combine 1 cup granulated sugar, 1 ½ tsp. Cinnamon and nutmeg.",
+    "Sprinkle over apples.",
+    "Roll remaining ½ of dough into a 15 ½” x 10 ½” rectangle, place over apples.",
+    "In small bowl, with fork beat egg white until foamy; brush over top crust.",
+    "In another small bowl, stir together 2 tbsp. Granulated sugar and ½ tsp. Cinnamon; sprinkle over crust.",
+    "Bake 45 to 60 minutes, or until lightly brown.",
+    "For glaze, in small bowl, stir together all glaze ingredients.",
+    "Drizzle over warm bars.",
+    "Makes about 3 dozen bars."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3431,
+        "end": 3455
+      }
+    }
+  }
+}

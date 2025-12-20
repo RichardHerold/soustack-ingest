@@ -1,0 +1,35 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "ANNE LAGARCE’S MERINGUE COOKIES",
+  "stacks": {},
+  "ingredients": [
+    "½ lb. butter"
+  ],
+  "instructions": [
+    "1 ½ cups sugar",
+    "½ lb. finely chopped walnuts",
+    "2 cups sifted flour",
+    "½ tsp. salt",
+    "2 egg whites – stiffly beaten",
+    "Cream butter with sugar and nuts.",
+    "Sift flour with salt and add slowly mixing well.",
+    "Wrap in wax paper and refrigerate overnight.",
+    "Take dough and roll between 2 sheets of waxed paper.",
+    "Cut out cookies.",
+    "Place on greased and lightly floured cookie sheet.",
+    "With a spoon put meringue on cookie and spread out.",
+    "Bake at 350 for 12-15 minutes.  (Put sprinkles on before baking).",
+    "Meringue – fold ½ cup sugar into stiffly beaten egg whites."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2973,
+        "end": 2991
+      }
+    }
+  }
+}

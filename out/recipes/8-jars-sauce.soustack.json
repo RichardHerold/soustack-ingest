@@ -1,0 +1,39 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "8 jars sauce",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "5 lb. hamburger",
+    "5 lb. sweet sausage",
+    "2 lb. ricotta",
+    "1 lb. cottage cheese",
+    "Parmesan",
+    "3 lb. lasagna",
+    "5 lb. mozzarella",
+    "Fry hamburger – add to sauce",
+    "Bake sausage at 325 for 15 minutes",
+    "Turn and bake another 15 minutes",
+    "Put in food processor – add to sauce",
+    "Mix all cheeses into a bowl",
+    "Boil water – add lasagna noodles",
+    "Add sauce to bottom of pan and layer noodles, sauce, and cheese until finished",
+    "Add parmesan cheese to the top when finished.",
+    "Bake at 350 for 1 hour until bubbly",
+    "Let rest for 15 minutes before cutting."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 1214,
+        "end": 1243
+      },
+      "warnings": [
+        "8 jars sauce: Missing ingredients"
+      ]
+    }
+  }
+}

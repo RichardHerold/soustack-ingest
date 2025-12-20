@@ -1,0 +1,41 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "MARION DEVYLDER’S APPLESAUCE CAKE",
+  "stacks": {},
+  "ingredients": [
+    "½ Cup. shortening",
+    "1 Cup. sugar"
+  ],
+  "instructions": [
+    "1 heaping coffee mug of applesauce (homemade unsweetened)",
+    "1 tsp. nutmeg",
+    "1 tsp. baking soda",
+    "1 Cup. raisins",
+    "¾ Cup. walnuts",
+    "1 tsp. cinnamon",
+    "½ tsp. allspice",
+    "½ tsp. cloves",
+    "2 Cup. flour (regular)",
+    "½ tsp. vanilla extract",
+    "½ tsp. lemon extract",
+    "Cream shortening & sugar.",
+    "Add applesauce and before stirring add spices on top of applesauce.",
+    "Stir.",
+    "Sift flour & baking soda together.",
+    "Add nuts & raisins to flour mixture.  This is done by hand.",
+    "Bake at 325/350 for 1 hour in a loaf pan lined with wax paper/Crisco.",
+    "Test for doneness.",
+    "Top with butter frosting."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2661,
+        "end": 2686
+      }
+    }
+  }
+}

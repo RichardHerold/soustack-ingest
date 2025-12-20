@@ -1,0 +1,34 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "Lemon sherbet – ice ring",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "JELLO – CREAM CHEESE SALAD MOLD",
+    "2 pkg. lemon or pineapple jello",
+    "Juice from 1 can (8 oz.) Crushed pineapple",
+    "Prepare jello with 2 cups boiling water and pineapple juice.  Cool until it begins to thicken.",
+    "1 8-oz. cream cheese (1/3 less fat ok)",
+    "1 tsp. cream (or 1% milk)",
+    "½ tsp. prepared mustard",
+    "1 grated carrot (sm. To med.)",
+    "½ cup heavy cream whipped (1 cup cool whip)",
+    "Combine soft cream cheese, cream, mustard, pineapple and carrot.",
+    "Fold in whipped cream (cool whip).",
+    "When Jell-O begins to thicken, add to cheese mixture and pour into greased (pam) mold – refrigerate until jelled."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3815,
+        "end": 3830
+      },
+      "warnings": [
+        "Lemon sherbet – ice ring: Missing ingredients"
+      ]
+    }
+  }
+}

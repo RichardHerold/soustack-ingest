@@ -1,0 +1,23 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "NOTE: EDDIE DOESN’T LIKE RAISINS IN HIS PUDDING",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "CHAMPAGNE PUNCH"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3806,
+        "end": 3809
+      },
+      "warnings": [
+        "NOTE: EDDIE DOESN’T LIKE RAISINS IN HIS PUDDING: Missing ingredients"
+      ]
+    }
+  }
+}

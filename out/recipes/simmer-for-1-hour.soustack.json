@@ -1,0 +1,42 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "Simmer for 1 hour",
+  "stacks": {},
+  "ingredients": [
+    "2 Eggs",
+    "¾ Cup Milk",
+    "½ Cup Fine dry bread crumbs",
+    "¼ Cup finely chopped onion",
+    "2 TBSP. Snipped Parsley",
+    "1 TSP. Salt & Pepper",
+    "1 ½ LBS. Ground Beef (Or a mixture of Veal, Pork & Beef)",
+    "¼ Cup ketchup",
+    "2 TBSP. Brown Sugar",
+    "1 TSP.  Mustard",
+    "½ TSP. Ground sage"
+  ],
+  "instructions": [
+    "KATIE GAETANI MIRABELLO - MEAT LOAF",
+    "By:",
+    "Katie Gaetani",
+    "Combine eggs and milk, stir in bread crumbs, onion, parsley, salt, sage and pepper.",
+    "Add Meat and mix well.",
+    "Put into a ring mold and then unmold in a shallow baking pan or loaf pan.",
+    "Bake at 350 for 50 Minutes for ring",
+    "Or into a loaf pan and bake for 1 hour 25 minutes",
+    "Spoon off fat",
+    "Combine ketchup, sugar, mustard spread over meat.",
+    "Return to oven for 10 more minutes."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 401,
+        "end": 436
+      }
+    }
+  }
+}

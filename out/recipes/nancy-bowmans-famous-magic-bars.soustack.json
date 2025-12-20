@@ -1,0 +1,25 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "NANCY BOWMANS FAMOUS MAGIC BARS",
+  "stacks": {},
+  "ingredients": [
+    "1 stick butter"
+  ],
+  "instructions": [
+    "1 ½ cups graham cracker crumbs",
+    "1 cup chocolate chips",
+    "1 cup butter scotch chips",
+    "1 can eagle brand condensed milk"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3380,
+        "end": 3386
+      }
+    }
+  }
+}

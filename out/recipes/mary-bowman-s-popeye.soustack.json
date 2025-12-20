@@ -1,0 +1,30 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "MARY BOWMAN’S POPEYE",
+  "stacks": {},
+  "ingredients": [
+    "2 potatoes per person",
+    "Milk",
+    "Butter",
+    "1 pound of extra lean ground beef"
+  ],
+  "instructions": [
+    "By:",
+    "Mary Bowman",
+    "Make mash potatoes (milk and butter)",
+    "Loosely fry ground beef",
+    "Layer potato and beef in buttered casserole (take butter and put it all around bowl)",
+    "On top add chunks of butter – Bake 325 for 30 minutes."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 342,
+        "end": 363
+      }
+    }
+  }
+}

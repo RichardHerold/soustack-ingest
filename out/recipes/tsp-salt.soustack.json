@@ -1,0 +1,41 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "½ tsp. Salt",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "Mix all ingredients",
+    "Refrigerate overnight",
+    "Form balls",
+    "Bake at 350, about 15 minutes (will not get brown)",
+    "While still warm, roll in confectioners’ sugar\f\t•\tANNE LAGARCE’S HOLIDAY COOKIES",
+    "Preheat oven to 375."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3037,
+        "end": 3047
+      },
+      "warnings": [
+        "½ tsp. Salt: Missing ingredients"
+      ]
+    }
+  }
+} pan bake 1 ¼ hours.",
+    "For round pan, use double recipe."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2640,
+        "end": 2660
+      }
+    }
+  }
+}

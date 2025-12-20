@@ -1,0 +1,25 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "2 tsp. Anise flavoring",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "Refrigerate overnight.",
+    "Shape dough into balls and place in ungreased cookie sheet.",
+    "Bake at 350 for 8-10 minutes."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3018,
+        "end": 3023
+      },
+      "warnings": [
+        "2 tsp. Anise flavoring: Missing ingredients"
+      ]
+    }
+  }
+}

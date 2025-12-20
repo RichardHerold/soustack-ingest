@@ -1,0 +1,23 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "MICHELLE’S BUCKEYE BALLS",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "Mix together and roll into balls:"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3207,
+        "end": 3210
+      },
+      "warnings": [
+        "MICHELLE’S BUCKEYE BALLS: Missing ingredients"
+      ]
+    }
+  }
+}

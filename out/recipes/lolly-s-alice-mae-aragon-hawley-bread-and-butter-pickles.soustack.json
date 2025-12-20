@@ -1,0 +1,31 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "LOLLY’S (ALICE MAE ARAGON HAWLEY) BREAD AND BUTTER PICKLES",
+  "stacks": {},
+  "ingredients": [
+    "Makes 7 pints - about 15 cucumbers",
+    "4 quarts cucumbers",
+    "2 tsp. Celery seed",
+    "6 medium onions, sliced",
+    "2 tbsp. Mustard seed",
+    "½ cup salt",
+    "Cracked ice (qt.)",
+    "3 cups vinegar (cider)",
+    "4 cups sugar"
+  ],
+  "instructions": [
+    "By:",
+    "Alice Mae Aragon Hawley"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2056,
+        "end": 2071
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "SCOTTISH SHORTBREAD",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "½ pound butter (no substitute)",
+    "½ cup sugar"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3640,
+        "end": 3643
+      },
+      "warnings": [
+        "SCOTTISH SHORTBREAD: Missing ingredients"
+      ]
+    }
+  }
+}

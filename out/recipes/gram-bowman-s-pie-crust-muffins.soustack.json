@@ -1,0 +1,30 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "GRAM BOWMAN’S PIE CRUST MUFFINS",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "Make triple pie recipe (see page 51)",
+    "Use glass to cut into round shaped pastry",
+    "Place in the bottom of muffin pan",
+    "Fill with strawberry preserves or apricot any kind of preserves that you like.",
+    "Use box or homemade* white cake mix added on top of preserves",
+    "Bake at 375",
+    "20 to 30 minutes.",
+    "*Eddie prefers homemade. Usually made from scraps when making pies."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3511,
+        "end": 3526
+      },
+      "warnings": [
+        "GRAM BOWMAN’S PIE CRUST MUFFINS: Missing ingredients"
+      ]
+    }
+  }
+}

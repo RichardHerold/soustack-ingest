@@ -1,0 +1,24 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "SALLY BOWMAN’S POACHED SALMON",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "By:",
+    "Sally Bowman"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 880,
+        "end": 884
+      },
+      "warnings": [
+        "SALLY BOWMAN’S POACHED SALMON: Missing ingredients"
+      ]
+    }
+  }
+}

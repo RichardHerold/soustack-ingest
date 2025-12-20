@@ -1,0 +1,43 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "Betty Crocker was almost as good as Mary Bowman",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "GRAHAM CRACKER CREAM PIE",
+    "Crust:",
+    "16 graham crackers, rolled fine",
+    "1 tsp. flour",
+    "½ cup granulated sugar",
+    "½ cup butter, part butter, melted",
+    "1 tsp. cinnamon",
+    "Mix as for piecrust, take ½ mixture and pack into pie pan.",
+    "Custard filling:",
+    "3 egg yolks",
+    "2 cups milk",
+    "¼ cup sugar",
+    "2 tbsp. cornstarch",
+    "1 tsp. vanilla flavor",
+    "Cook together until this mixture coats the spoon.",
+    "Pour into pie pan.",
+    "Meringue:",
+    "3 egg whites and 3 tbsp. granulated sugar.",
+    "Beat until foamy.",
+    "Spread on top of custard.  Sprinkle remaining cracker crumb mixture over top of meringue.",
+    "Bake in 325 oven until meringue is brown."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2408,
+        "end": 2433
+      },
+      "warnings": [
+        "Betty Crocker was almost as good as Mary Bowman: Missing ingredients"
+      ]
+    }
+  }
+}

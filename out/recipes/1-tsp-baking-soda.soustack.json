@@ -1,0 +1,25 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "1 ½ tsp baking soda",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "Add 16 oz. sour cream",
+    "Add about 2/3 cup raisins.",
+    "Bake in greased & floured loaf pan 45-60 minutes at 325."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3602,
+        "end": 3607
+      },
+      "warnings": [
+        "1 ½ tsp baking soda: Missing ingredients"
+      ]
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "CHUCK LAGARCE’S PASTA/SHRIMP",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "By:",
+    "Chuck Lagarce"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 901,
+        "end": 906
+      },
+      "warnings": [
+        "CHUCK LAGARCE’S PASTA/SHRIMP: Missing ingredients"
+      ]
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "EASY APPLE COFFEE CAKE – NANA WOLFF",
+  "stacks": {},
+  "ingredients": [
+    "1 pkg. yellow cake mix",
+    "1 pkg. instant vanilla pudding (3 ¾ oz.)",
+    "4 eggs",
+    "1 cup sour cream"
+  ],
+  "instructions": [
+    "½ cup salad oil (or ½ cup apple sauce)",
+    "½ cup chopped walnuts",
+    "½ cup sugar",
+    "2 tsp. cinnamon"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2511,
+        "end": 2520
+      }
+    }
+  }
+}

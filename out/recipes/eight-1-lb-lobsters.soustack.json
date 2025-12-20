@@ -1,0 +1,37 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "Eight 1 ¼ lb. lobsters",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "5 tbsp. unsalted (sweet) butter",
+    "½ cup finely chopped shallots",
+    "5 tbsp. flour",
+    "Salt & pepper",
+    "Cayenne pepper",
+    "Buttered breadcrumbs",
+    "Steam 4 at a time for 9 minutes",
+    "Cut up meat & reserve",
+    "In sauce pan, melt butter",
+    "Add shallots",
+    "Cook until soft",
+    "Add flour & cook 2-3 minutes",
+    "Season with salt & pepper and some cayenne pepper (little bit)",
+    "Add lobster meat",
+    "Pour in casserole, top with breadcrumbs"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 705,
+        "end": 732
+      },
+      "warnings": [
+        "Eight 1 ¼ lb. lobsters: Missing ingredients"
+      ]
+    }
+  }
+}

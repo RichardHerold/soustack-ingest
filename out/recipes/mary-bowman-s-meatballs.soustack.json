@@ -1,0 +1,26 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "MARY BOWMAN’S MEATBALLS",
+  "stacks": {},
+  "ingredients": [
+    "3 or 4 slices white bread w. crust",
+    "Chopped yellow onion",
+    "Salt & pepper",
+    "1 egg"
+  ],
+  "instructions": [
+    "By:",
+    "Mary Bowman"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 1144,
+        "end": 1153
+      }
+    }
+  }
+}

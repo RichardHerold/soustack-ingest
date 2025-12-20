@@ -1,0 +1,31 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "Grease 2-quart casserole dish",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "In saucepan, melt margarine over low heat",
+    "Add sherry",
+    "Simmer 1 minute",
+    "Add flour & stir",
+    "Add cream",
+    "Bring to a boil and stir until slightly thickened",
+    "Add Langostino",
+    "Alternate cracker crumbs, langostino mixture and grated cheese",
+    "Bake for 25 minutes (don’t overheat!)"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 756,
+        "end": 774
+      },
+      "warnings": [
+        "Grease 2-quart casserole dish: Missing ingredients"
+      ]
+    }
+  }
+}

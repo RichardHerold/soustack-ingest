@@ -1,0 +1,27 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "1 6-oz. graham cracker crust",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "Drain can of mandarin oranges and chill oranges.",
+    "Reserve syrup – add water to syrup to make 1 cup.  Boil syrup mixture.  Stir in package of jello.  With an electric mixer, blend a half a cup of the hot mixture in 8 oz. package of cream cheese.",
+    "Pour into piecrust and chill to set.",
+    "Put the other half of the jello over the pie and decorate with oranges.",
+    "Refrigerate."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2728,
+        "end": 2735
+      },
+      "warnings": [
+        "1 6-oz. graham cracker crust: Missing ingredients"
+      ]
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "ENGLISH TOFFEE BARS",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "½ cup quick-cooking oats",
+    "½ cup packed brown sugar",
+    "½ basic dough (see above)",
+    "1/2 cup semi-sweet chocolate pieces"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3495,
+        "end": 3500
+      },
+      "warnings": [
+        "ENGLISH TOFFEE BARS: Missing ingredients"
+      ]
+    }
+  }
+}

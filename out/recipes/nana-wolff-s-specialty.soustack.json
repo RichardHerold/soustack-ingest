@@ -1,0 +1,27 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "NANA WOLFF’S SPECIALTY",
+  "stacks": {},
+  "ingredients": [
+    "1 package saltine crackers",
+    "1 jar of jelly"
+  ],
+  "instructions": [
+    "Go to the pantry and open the drawer (you know which one)",
+    "Take out the crackers and bring them to nana.",
+    "Open the refrigerator and take out the jelly – bring it to nana.",
+    "Have nana spread the jelly on the saltines for you – they taste better that way (cuz she spreads then with love as well as jelly).  If you’re good, she might make you a cup of coffee with lots of milk to go with them.  Then sit at the counter and chat with the best grandmother that ever lived!",
+    "IT DOESN’T GET ANY BETTER THAN THAT!"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3150,
+        "end": 3162
+      }
+    }
+  }
+}

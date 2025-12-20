@@ -1,0 +1,24 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "1 ½ cup creamy peanut butter",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "½ cup softened butter",
+    "1 lb. Confectioners’ sugar"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3211,
+        "end": 3214
+      },
+      "warnings": [
+        "1 ½ cup creamy peanut butter: Missing ingredients"
+      ]
+    }
+  }
+}

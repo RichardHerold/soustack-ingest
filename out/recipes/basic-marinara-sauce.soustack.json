@@ -1,0 +1,24 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "BASIC MARINARA SAUCE",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "By:",
+    "Unknown"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 1390,
+        "end": 1395
+      },
+      "warnings": [
+        "BASIC MARINARA SAUCE: Missing ingredients"
+      ]
+    }
+  }
+}

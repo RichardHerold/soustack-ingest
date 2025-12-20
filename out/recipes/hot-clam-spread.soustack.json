@@ -1,0 +1,37 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "HOT CLAM SPREAD",
+  "stacks": {},
+  "ingredients": [
+    "2 cans minced clams and their juice",
+    "1 tsp. Lemon juice",
+    "1 chopped medium onion",
+    "½ chopped green pepper",
+    "1 stick margarine",
+    "1 tsp dry parsley",
+    "1 crushed garlic clove",
+    "1 dash Tabasco & Worcestershire"
+  ],
+  "instructions": [
+    "By:",
+    "Unknown",
+    "Simmer the clams and lemon juice for 15 minutes",
+    "In a separate pan, simmer the rest of the ingredients",
+    "Combine both mixtures and add ½ cup flavored bread crumbs",
+    "Put in baking dish, top with American cheese",
+    "Sprinkle with parmesan cheese and paprika",
+    "Bake 15 minutes at 400 degrees",
+    "Freezes well. Freeze without cheese topping until ready to use"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 64,
+        "end": 94
+      }
+    }
+  }
+}

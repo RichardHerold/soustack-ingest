@@ -1,0 +1,36 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "Confectioner’s sugar",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "Sift together 2 ½ cups flour and ½ cup cocoa; set aside.",
+    "In large mixer bowl, combine 1 cup softened butter, 2 cups sugar and 1 cup brown sugar;",
+    "Beat until light and fluffy.",
+    "Add 6 egg yolks, one at a time, beating well after each addition.",
+    "Stir in 1 tsp. vanilla.  Combine 1 cup sour cream and ¼ tsp. baking soda.",
+    "Add to creamed mixture alternately with dry ingredients.",
+    "In separate bowl, Beat 6 egg whites until stiff; fold into batter.",
+    "Pour into well-greased and floured 10-inch tube pan.",
+    "Bake at 325 for 1 ½ hours, until toothpick inserted in center comes out clean.",
+    "Cool slightly; remove from pan; dust with confectioners’ sugar.",
+    "Tip:  to make design on cake, top with paper doily; dust on confectioners’ sugar.  Carefully remove doily\f\t•\tPINEAPPLE ANGEL CAKE",
+    "1 angel food cake (your favorite recipe or store bought)",
+    "2 packages dream whip",
+    "2(20-ounce) cans crushed pineapple, drained, with juice set aside"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2582,
+        "end": 2598
+      },
+      "warnings": [
+        "Confectioner’s sugar: Missing ingredients"
+      ]
+    }
+  }
+}

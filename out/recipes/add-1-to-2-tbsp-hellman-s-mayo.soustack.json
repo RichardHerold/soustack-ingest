@@ -1,0 +1,24 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "Add 1 to 2 tbsp. Hellman’s mayo",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "SOFT COOKED EGGS",
+    "COLD WATER METHOD:  Place eggs in saucepan; add enough cold water to come at least 1 inch above eggs.  Heat rapidly to boiling; remove from heat.  Cover and let stand until desired doneness, 1 to 3 minutes.  Immediately cool eggs in cold water for several seconds to prevent further cooking.  Cut eggs in halves; scoop eggs from shells."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3897,
+        "end": 3903
+      },
+      "warnings": [
+        "Add 1 to 2 tbsp. Hellman’s mayo: Missing ingredients"
+      ]
+    }
+  }
+}

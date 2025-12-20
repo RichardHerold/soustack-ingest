@@ -1,0 +1,38 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "MARY BOWMAN - ONE-TWO-THREE-FOUR CAKE – BIRTHDAY CAKE",
+  "stacks": {},
+  "ingredients": [
+    "1 cup butter",
+    "2 cups sugar",
+    "3 cups sifted “cake flour”",
+    "4 large eggs"
+  ],
+  "instructions": [
+    "2 ½ tsp. baking powder",
+    "2 tsp. vanilla",
+    "1 cup milk",
+    "Heat oven to 350.  Grease and flour (2) 9-inch or (3) 8-inch round cake pans.",
+    "In large bowl of electric mixer, beat butter and sugar together until light and fluffy.",
+    "Beat in eggs one at a time.",
+    "Stir together sifted “cake flour” and baking powder.",
+    "Add alternately with vanilla and milk",
+    "Beating a low speed, until well combined.  Do not over beat.",
+    "Turn into prepared pans and bake until golden and centers sprig back when gently pressed",
+    "About 30 to 35 minutes for 9-inch pans or 20 to 25 minutes for 8-inch pans.",
+    "Cool 5 minutes in pans.  Remove from pans and cool.",
+    "Some versions of this basic yellow cake could probably be found in every grandmother’s recipe file In Pennsylvania Dutch families it was called Johnny’s birthday cake.",
+    "The ingredients – 1 cup butter, 2 cups sugar, 3 cups flour and 4 eggs – were easy to remember."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2608,
+        "end": 2629
+      }
+    }
+  }
+}

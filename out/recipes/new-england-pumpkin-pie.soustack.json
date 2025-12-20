@@ -1,0 +1,29 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "NEW ENGLAND PUMPKIN PIE",
+  "stacks": {},
+  "ingredients": [
+    "1 can one-pie pumpkin"
+  ],
+  "instructions": [
+    "1 ½ cups milk of 1-12 oz. can evaporated",
+    "1 tbsp. cornstarch",
+    "½ tsp. ginger",
+    "1 cup sugar",
+    "½ tsp. nutmeg",
+    "½ tsp. salt",
+    "1/8 cup molasses",
+    "2 eggs (beaten)"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2388,
+        "end": 2398
+      }
+    }
+  }
+}

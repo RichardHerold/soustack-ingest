@@ -1,0 +1,24 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "SOUTHERN BAKED BEANS",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "By:",
+    "Unknown"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2136,
+        "end": 2142
+      },
+      "warnings": [
+        "SOUTHERN BAKED BEANS: Missing ingredients"
+      ]
+    }
+  }
+}

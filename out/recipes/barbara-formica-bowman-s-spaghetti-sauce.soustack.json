@@ -1,0 +1,49 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "BARBARA FORMICA BOWMAN’S SPAGHETTI SAUCE",
+  "stacks": {},
+  "ingredients": [
+    "2 cans crushed tomatoes – 28 oz. cans",
+    "Salt",
+    "Pepper",
+    "Red pepper",
+    "Oregano and thyme (or Italian seasoning)",
+    "Chopped onion",
+    "1-2 cloves garlic",
+    "1 lb hamburger",
+    "1 egg",
+    "2 or 4 slices of bread, moistened and squeezed out (Italian bread is best)",
+    "Salt",
+    "Pepper",
+    "Oregano",
+    "Grated cheese",
+    "Onion"
+  ],
+  "instructions": [
+    "By:",
+    "BARBARA FORMICA BOWMAN",
+    "Put tomatoes in large saucepan with about ¼ of tomato can filled with water",
+    "Add salt, pepper, red pepper, oregano, thyme, or Italian seasoning.",
+    "Bring to a boil then lower to a simmer for 3-4 hours",
+    "Add water if it gets too thick",
+    "Burns easily so stir frequently while cooking",
+    "Make & brown meatballs and sausage",
+    "Add to sauce",
+    "Brown lightly chopped onion and garlic",
+    "Add to sauce.",
+    "BARBARA FORMICA BOWMAN’SMeatballs:",
+    "By:",
+    "BARBARA FORMICA BOWMAN"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 1307,
+        "end": 1352
+      }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "MARION DE VYLDER’S ITALIAN SPONGE CAKE",
+  "stacks": {},
+  "ingredients": [
+    "SINGLE"
+  ],
+  "instructions": [
+    "1 ½ cup sugar",
+    "1 ½ cup flour",
+    "4 eggs separated",
+    "2 tsp. baking powder",
+    "½ cup hot water",
+    "1 tsp. vanilla",
+    "1 tsp. lemon extract"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2630,
+        "end": 2639
+      }
+    }
+  }
+}

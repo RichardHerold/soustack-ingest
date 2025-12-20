@@ -1,0 +1,24 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "RITA BOWMAN LOBSTER CASSEROLE (FROM ANN NAVAGE)",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "By:",
+    "Rita  Bowman"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 699,
+        "end": 704
+      },
+      "warnings": [
+        "RITA BOWMAN LOBSTER CASSEROLE (FROM ANN NAVAGE): Missing ingredients"
+      ]
+    }
+  }
+}

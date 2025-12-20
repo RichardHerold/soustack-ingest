@@ -1,0 +1,24 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "AUNT RAINY FALVEY’S SCALLOPED POTATOES AND HAM",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "By:",
+    "Aunt Rainy Falvey"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 939,
+        "end": 945
+      },
+      "warnings": [
+        "AUNT RAINY FALVEY’S SCALLOPED POTATOES AND HAM: Missing ingredients"
+      ]
+    }
+  }
+}

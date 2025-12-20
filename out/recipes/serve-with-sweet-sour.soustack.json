@@ -1,0 +1,25 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "Serve with sweet & sour",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "MICHELLE BOWMAN’S PORK MARINADE",
+    "By:",
+    "Michelle Bowman"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 1058,
+        "end": 1065
+      },
+      "warnings": [
+        "Serve with sweet & sour: Missing ingredients"
+      ]
+    }
+  }
+}

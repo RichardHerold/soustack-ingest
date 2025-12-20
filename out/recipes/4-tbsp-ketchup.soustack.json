@@ -1,0 +1,23 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "4 tbsp. ketchup",
+  "stacks": {},
+  "ingredients": [
+    "1 tsp. soy sauce",
+    "4 tbsp. vinegar"
+  ],
+  "instructions": [
+    "¾ cup water"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 1008,
+        "end": 1011
+      }
+    }
+  }
+}

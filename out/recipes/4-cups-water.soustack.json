@@ -1,0 +1,28 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "4 cups water",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "4-6 carrots",
+    "2 onions",
+    "2 stalks celery",
+    "2 cans tomatoes",
+    "Soup meat – usually comes with bone",
+    "Brown meat in bottom of pot with Crisco"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 282,
+        "end": 293
+      },
+      "warnings": [
+        "4 cups water: Missing ingredients"
+      ]
+    }
+  }
+}
