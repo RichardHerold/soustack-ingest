@@ -21,7 +21,7 @@ function splitSections(lines: Line[]): {
     /^(instructions?|directions|method|preparation|steps?|step\s*\d+)$/i.test(
       normalizeHeader(text),
     );
-  const bulletRegex = /^[-*•·‣◦–—]\s+/;
+  const bulletRegex = /^[-*•·‣◦–—]\s*/;
   const cleanIngredient = (text: string) => text.replace(bulletRegex, "").trim();
   const cleanInstruction = (text: string) =>
     text
