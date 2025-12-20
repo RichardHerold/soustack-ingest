@@ -36,6 +36,11 @@ export type SoustackRecipe = {
   stacks?: Record<string, number> | string[];
   ingredients: string[];
   instructions: string[];
+  metadata?: {
+    ingest?: {
+      warnings?: string[];
+    };
+  };
   "x-ingest": {
     pipelineVersion: string;
     sourcePath?: string;

@@ -11,7 +11,7 @@ import {
 } from "./pipeline";
 import { loadInput } from "./adapters";
 
-async function ingest(inputPath: string, outDir: string): Promise<void> {
+export async function ingest(inputPath: string, outDir: string): Promise<void> {
   await initValidator();
   const adapterOutput = await loadInput(inputPath);
   const normalized = normalize(adapterOutput.text);
@@ -32,22 +32,64 @@ async function ingest(inputPath: string, outDir: string): Promise<void> {
   for (const chunk of segmented.chunks) {
     const intermediate = extract(chunk, normalized.lines);
     intermediatesProduced += 1;
-    // Skip recipes with empty ingredients or instructions
-    if (intermediate.ingredients.length === 0 || intermediate.instructions.length === 0) {
-      errors.push(`${intermediate.title}: Missing ingredients or instructions`);
+    const missingIngredients = intermediate.ingredients.length === 0;
+    const missingInstructions = intermediate.instructions.length === 0;
+    const warningMessages: string[] = [];
+
+    if (missingIngredients && missingInstructions) {
+      errors.push(`${intermediate.title}: Missing ingredients and instructions`);
       skippedEmpty += 1;
       recordSkip("empty ingredients/instructions");
       continue;
     }
+
+    if (missingIngredients) {
+      warningMessages.push(`${intermediate.title}: Missing ingredients`);
+    }
+    if (missingInstructions) {
+      warningMessages.push(`${intermediate.title}: Missing instructions`);
+    }
+    if (warningMessages.length > 0) {
+      for (const warning of warningMessages) {
+        console.error(`Warning: ${warning}`);
+      }
+    }
     const recipe = toSoustack(intermediate, { sourcePath: adapterOutput.meta.sourcePath });
+    if (warningMessages.length > 0) {
+      recipe.metadata = {
+        ...(recipe.metadata ?? {}),
+        ingest: {
+          ...(recipe.metadata?.ingest ?? {}),
+          warnings: [...(recipe.metadata?.ingest?.warnings ?? []), ...warningMessages],
+        },
+      };
+    }
     const result = validate(recipe);
     if (result.ok) {
       recipes.push(recipe);
+      continue;
+    }
+
+    if (warningMessages.length > 0) {
+      const filteredErrors = result.errors.filter((error) => {
+        if (missingIngredients && error.includes("/ingredients")) {
+          return false;
+        }
+        if (missingInstructions && error.includes("/instructions")) {
+          return false;
+        }
+        return true;
+      });
+      if (filteredErrors.length === 0) {
+        recipes.push(recipe);
+        continue;
+      }
+      errors.push(...filteredErrors.map((error) => `${recipe.name}: ${error}`));
     } else {
       errors.push(...result.errors.map((error) => `${recipe.name}: ${error}`));
-      skippedValidation += 1;
-      recordSkip("validation");
     }
+    skippedValidation += 1;
+    recordSkip("validation");
   }
 
   await emit(recipes, outDir);
@@ -85,17 +127,19 @@ async function ingest(inputPath: string, outDir: string): Promise<void> {
 
 const program = new Command();
 
-program
-  .name("soustack-ingest")
-  .description("Ingest recipe sources into Soustack JSON")
-  .command("ingest")
-  .argument("<inputPath>", "Path to the source file")
-  .requiredOption("--out <outDir>", "Output directory")
-  .action(async (inputPath: string, options: { out: string }) => {
-    await ingest(inputPath, options.out);
-  });
+if (require.main === module) {
+  program
+    .name("soustack-ingest")
+    .description("Ingest recipe sources into Soustack JSON")
+    .command("ingest")
+    .argument("<inputPath>", "Path to the source file")
+    .requiredOption("--out <outDir>", "Output directory")
+    .action(async (inputPath: string, options: { out: string }) => {
+      await ingest(inputPath, options.out);
+    });
 
-program.parseAsync(process.argv).catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+  program.parseAsync(process.argv).catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}
