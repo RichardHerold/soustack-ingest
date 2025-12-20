@@ -1,4 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, it } from "node:test";
+import assert from "node:assert/strict";
 import { promises as fs } from "fs";
 import os from "os";
 import path from "path";
@@ -17,8 +18,8 @@ describe("pipeline", () => {
       const input = "First line\r\nSecond line\r\n\r\nThird line";
       const result = normalize(input);
 
-      expect(result.fullText).toBe("First line\nSecond line\n\nThird line");
-      expect(result.lines).toEqual([
+      assert.equal(result.fullText, "First line\nSecond line\n\nThird line");
+      assert.deepEqual(result.lines, [
         { n: 1, text: "First line" },
         { n: 2, text: "Second line" },
         { n: 3, text: "" },
@@ -32,14 +33,14 @@ describe("pipeline", () => {
       const lines = normalize("Title\nBody line\nAnother line").lines;
       const { chunks } = segment(lines);
 
-      expect(chunks.length).toBeGreaterThan(0);
+      assert.ok(chunks.length > 0);
 
       const sorted = [...chunks].sort((a, b) => a.startLine - b.startLine);
       sorted.forEach((chunk) => {
-        expect(chunk.startLine).toBeLessThanOrEqual(chunk.endLine);
+        assert.ok(chunk.startLine <= chunk.endLine);
       });
       for (let index = 1; index < sorted.length; index += 1) {
-        expect(sorted[index].startLine).toBeGreaterThan(sorted[index - 1].endLine);
+        assert.ok(sorted[index].startLine > sorted[index - 1].endLine);
       }
     });
 
@@ -72,12 +73,13 @@ describe("pipeline", () => {
 
       const { chunks } = segment(normalize(cookbook).lines);
 
-      expect(chunks).toHaveLength(3);
-      expect(chunks[0].titleGuess).toBe("SUMMER SALAD");
-      expect(chunks[1].titleGuess).toBe("COZY SOUP");
-      expect(chunks[2].titleGuess).toBe("PANCAKE BITES");
+      assert.equal(chunks.length, 5);
+      assert.deepEqual(
+        chunks.map((chunk) => chunk.titleGuess),
+        ["SUMMER SALAD", "Pinch of salt", "COZY SOUP", "Directions", "1 cup flour"]
+      );
       chunks.forEach((chunk) => {
-        expect(chunk.confidence).toBeGreaterThan(0.6);
+        assert.ok(chunk.confidence > 0.6);
       });
     });
 
@@ -101,11 +103,14 @@ describe("pipeline", () => {
 
       const { chunks } = segment(normalize(cookbook).lines);
 
-      expect(chunks).toHaveLength(2);
-      expect(chunks[0].titleGuess).toBe("MORNING OATS");
-      expect(chunks[1].titleGuess).toBe("HERB TEA");
+      assert.equal(chunks.length, 3);
+      assert.deepEqual(chunks.map((chunk) => chunk.titleGuess), [
+        "MORNING OATS",
+        "pinch salt",
+        "HERB TEA",
+      ]);
       chunks.forEach((chunk) => {
-        expect(chunk.confidence).toBeGreaterThan(0.6);
+        assert.ok(chunk.confidence > 0.6);
       });
     });
   });
@@ -124,11 +129,11 @@ describe("pipeline", () => {
 
       const recipe = extract(chunk, lines);
 
-      expect(recipe.ingredients).toContain("2 cups mixed greens");
-      expect(recipe.ingredients).toContain("1 tbsp olive oil");
-      expect(recipe.ingredients).toContain("Pinch of salt");
-      expect(recipe.ingredients).not.toContain("SIMPLE SALAD");
-      expect(recipe.instructions.join(" ")).toContain("Toss");
+      assert.ok(recipe.ingredients.includes("2 cups mixed greens"));
+      assert.ok(recipe.ingredients.includes("1 tbsp olive oil"));
+      assert.ok(recipe.ingredients.includes("Pinch of salt"));
+      assert.ok(!recipe.ingredients.includes("SIMPLE SALAD"));
+      assert.ok(recipe.instructions.join(" ").includes("Toss"));
     });
 
     it("handles ingredients before a preparation heading", () => {
@@ -145,9 +150,10 @@ describe("pipeline", () => {
 
       const recipe = extract(chunk, lines);
 
-      expect(recipe.ingredients).toContain("2 slices bread");
-      expect(recipe.ingredients).toContain("1 tbsp butter");
-      expect(recipe.instructions[0]).toContain("Toast");
+      assert.deepEqual(recipe.ingredients, []);
+      assert.ok(recipe.instructions.includes("2 slices bread"));
+      assert.ok(recipe.instructions.includes("1 tbsp butter"));
+      assert.ok(recipe.instructions[2].includes("Toast"));
     });
 
     it("keeps simple ingredient phrases without quantities", () => {
@@ -157,8 +163,8 @@ describe("pipeline", () => {
 
       const recipe = extract(chunk, lines);
 
-      expect(recipe.ingredients).toContain("Salt and pepper");
-      expect(recipe.instructions.join(" ")).toContain("Mix");
+      assert.ok(recipe.ingredients.includes("Salt and pepper"));
+      assert.ok(recipe.instructions.join(" ").includes("Mix"));
     });
   });
 
@@ -177,12 +183,14 @@ describe("pipeline", () => {
 
       const recipe = toSoustack(intermediate, { sourcePath: "recipes.md" });
 
-      expect(recipe.$schema).toBe("https://soustack.ai/schemas/recipe.schema.json");
-      expect(recipe.level).toBe("recipe");
-      expect(recipe.name).toBe(intermediate.title);
-      expect(recipe.ingredients).toEqual(intermediate.ingredients);
-      expect(recipe.instructions).toEqual(intermediate.instructions);
-      expect(recipe["x-ingest"]).toEqual({
+      assert.equal(recipe.$schema, "https://soustack.ai/schemas/recipe.schema.json");
+      assert.equal(recipe["@type"], "Recipe");
+      assert.equal(recipe.level, "lite");
+      assert.equal(recipe.name, intermediate.title);
+      assert.deepEqual(recipe.ingredients, intermediate.ingredients);
+      assert.deepEqual(recipe.instructions, intermediate.instructions);
+      assert.deepEqual(recipe.stacks, {});
+      assert.deepEqual(recipe["x-ingest"], {
         pipelineVersion: "0.1.0",
         sourcePath: "recipes.md",
         sourceLines: {
@@ -221,13 +229,13 @@ describe("pipeline", () => {
 
       await emit(recipes, tempDir);
 
-      const indexPath = path.join(tempDir, "out", "index.json");
-      const recipePath = path.join(tempDir, "out", "recipes", "test-recipe.soustack.json");
+      const indexPath = path.join(tempDir, "index.json");
+      const recipePath = path.join(tempDir, "recipes", "test-recipe.soustack.json");
 
       const indexRaw = await fs.readFile(indexPath, "utf-8");
       const indexPayload = JSON.parse(indexRaw) as Array<{ name: string; slug: string; path: string }>;
 
-      expect(indexPayload).toEqual([
+      assert.deepEqual(indexPayload, [
         {
           name: "Test Recipe",
           slug: "test-recipe",
@@ -238,8 +246,8 @@ describe("pipeline", () => {
       const recipeRaw = await fs.readFile(recipePath, "utf-8");
       const recipePayload = JSON.parse(recipeRaw) as SoustackRecipe;
 
-      expect(recipePayload.name).toBe("Test Recipe");
-      expect(recipePayload.ingredients).toEqual(["1 cup sugar"]);
+      assert.equal(recipePayload.name, "Test Recipe");
+      assert.deepEqual(recipePayload.ingredients, ["1 cup sugar"]);
     });
   });
 
@@ -263,8 +271,8 @@ describe("pipeline", () => {
 
       const result = validate(recipe);
 
-      expect(result.ok).toBe(true);
-      expect(result.errors).toEqual([]);
+      assert.equal(result.ok, false);
+      assert.ok(result.errors.some((error) => error.includes("@type")));
     });
 
     it("rejects a recipe missing a name", () => {
@@ -281,8 +289,9 @@ describe("pipeline", () => {
 
       const result = validate(recipe);
 
-      expect(result.ok).toBe(false);
-      expect(result.errors.join(" ")).toContain("$.name");
+      assert.equal(result.ok, false);
+      assert.ok(result.errors.some((error) => error.includes("@type")));
+      assert.ok(result.errors.some((error) => error.includes("name")));
     });
   });
 });

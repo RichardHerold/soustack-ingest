@@ -19,12 +19,24 @@ async function ingest(inputPath: string, outDir: string): Promise<void> {
 
   const recipes: SoustackRecipe[] = [];
   const errors: string[] = [];
+  const skipReasons = new Map<string, number>();
+
+  const recordSkip = (reason: string) => {
+    skipReasons.set(reason, (skipReasons.get(reason) ?? 0) + 1);
+  };
+
+  let intermediatesProduced = 0;
+  let skippedEmpty = 0;
+  let skippedValidation = 0;
 
   for (const chunk of segmented.chunks) {
     const intermediate = extract(chunk, normalized.lines);
+    intermediatesProduced += 1;
     // Skip recipes with empty ingredients or instructions
     if (intermediate.ingredients.length === 0 || intermediate.instructions.length === 0) {
       errors.push(`${intermediate.title}: Missing ingredients or instructions`);
+      skippedEmpty += 1;
+      recordSkip("empty ingredients/instructions");
       continue;
     }
     const recipe = toSoustack(intermediate, { sourcePath: adapterOutput.meta.sourcePath });
@@ -33,17 +45,41 @@ async function ingest(inputPath: string, outDir: string): Promise<void> {
       recipes.push(recipe);
     } else {
       errors.push(...result.errors.map((error) => `${recipe.name}: ${error}`));
+      skippedValidation += 1;
+      recordSkip("validation");
     }
   }
 
   await emit(recipes, outDir);
 
+  console.log(
+    [
+      `Chunks found: ${segmented.chunks.length}`,
+      `Intermediates produced: ${intermediatesProduced}`,
+      `Skipped empty ingredients/instructions: ${skippedEmpty}`,
+      `Skipped due to validation: ${skippedValidation}`,
+      `Emitted: ${recipes.length}`,
+    ].join("\n"),
+  );
   console.log(`Ingested ${recipes.length} recipe(s) from ${inputPath}.`);
   if (errors.length > 0) {
     console.log("Validation errors:");
     for (const error of errors) {
       console.log(`- ${error}`);
     }
+  }
+
+  if (recipes.length === 0) {
+    const sortedReasons = [...skipReasons.entries()].sort((a, b) => b[1] - a[1]);
+    console.log("Skip summary:");
+    if (sortedReasons.length === 0) {
+      console.log("- No skip reasons recorded.");
+    } else {
+      for (const [reason, count] of sortedReasons) {
+        console.log(`- ${reason}: ${count}`);
+      }
+    }
+    process.exitCode = 1;
   }
 }
 
