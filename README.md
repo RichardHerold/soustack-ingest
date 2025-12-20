@@ -6,7 +6,7 @@
 soustack-ingest ingest <inputPath> --out <outDir>
 ```
 
-The CLI reads the input file, runs it through the ingest pipeline, and writes JSON outputs under `<outDir>/out` (see `src/cli.ts` and `src/pipeline/emit.ts`).
+The CLI reads the input file, runs it through the ingest pipeline, and writes JSON outputs under `<outDir>` (see `src/cli.ts` and `src/pipeline/emit.ts`).
 
 ### Prerequisites
 
@@ -54,8 +54,8 @@ The ingest pipeline runs stages in order (`src/cli.ts`, `src/pipeline`).
 6. **emit** (`src/pipeline/emit.ts`)
    - **Input:** list of validated `SoustackRecipe` values and an output directory.
    - **Output:**
-     - `<outDir>/out/index.json` with name/slug/path entries.
-     - `<outDir>/out/recipes/<slug>.soustack.json` files for each recipe.
+     - `<outDir>/index.json` with name/slug/path entries.
+     - `<outDir>/recipes/<slug>.soustack.json` files for each recipe.
    - **Contract:** recipe filenames are slugified from `recipe.name` and truncated to 80 characters.
 
 ## Validator behavior & wiring `soustack`

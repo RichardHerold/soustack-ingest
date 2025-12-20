@@ -88,4 +88,25 @@ describe("cli ingest warnings", () => {
     assert.ok(warnings.some((warning) => warning.includes("Missing instructions")));
     assert.ok(stderrMessages.some((message) => message.includes("Missing instructions")));
   });
+
+  it("creates index.json and recipes directory after ingest", async () => {
+    const inputPath = path.join(tempDir, "simple.txt");
+    const outDir = path.join(tempDir, "out");
+    const content = [
+      "SIMPLE RECIPE",
+      "Ingredients",
+      "- 1 cup water",
+      "Instructions",
+      "Boil the water.",
+    ].join("\n");
+    await fs.writeFile(inputPath, content, "utf-8");
+
+    await ingest(inputPath, outDir);
+
+    const indexStats = await fs.stat(path.join(outDir, "index.json"));
+    const recipesStats = await fs.stat(path.join(outDir, "recipes"));
+
+    assert.ok(indexStats.isFile());
+    assert.ok(recipesStats.isDirectory());
+  });
 });
