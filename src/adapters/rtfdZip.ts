@@ -181,7 +181,24 @@ async function convertRtfToText(rtfPath: string): Promise<string> {
 export async function readRtfdZip(filePath: string): Promise<AdapterOutput> {
   const extractedPath = await fs.mkdtemp(path.join(os.tmpdir(), "soustack-rtfd-"));
   const zip = new AdmZip(filePath);
-  zip.extractAllTo(extractedPath, true);
+  const entries = zip.getEntries();
+
+  for (const entry of entries) {
+    const entryName = entry.entryName;
+    const resolvedPath = path.resolve(extractedPath, entryName);
+    if (resolvedPath !== extractedPath && !resolvedPath.startsWith(`${extractedPath}${path.sep}`)) {
+      throw new Error(`Blocked zip entry with invalid path: ${entryName}`);
+    }
+
+    if (entry.isDirectory) {
+      await fs.mkdir(resolvedPath, { recursive: true });
+      continue;
+    }
+
+    await fs.mkdir(path.dirname(resolvedPath), { recursive: true });
+    const data = entry.getData();
+    await fs.writeFile(resolvedPath, data);
+  }
 
   const primaryRtf = await findPrimaryRtf(extractedPath);
   if (!primaryRtf) {
