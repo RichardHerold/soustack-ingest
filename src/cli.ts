@@ -1,5 +1,4 @@
 import { Command } from "commander";
-import path from "path";
 import {
   emit,
   extract,
@@ -9,10 +8,10 @@ import {
   validate,
   SoustackRecipe,
 } from "./pipeline";
-import { readRtfdZip, readTxt } from "./adapters";
+import { loadInput } from "./adapters";
 
 async function ingest(inputPath: string, outDir: string): Promise<void> {
-  const adapterOutput = await selectAdapter(inputPath);
+  const adapterOutput = await loadInput(inputPath);
   const normalized = normalize(adapterOutput.text);
   const segmented = segment(normalized.lines);
 
@@ -21,7 +20,7 @@ async function ingest(inputPath: string, outDir: string): Promise<void> {
 
   for (const chunk of segmented.chunks) {
     const intermediate = extract(chunk, normalized.lines);
-    const recipe = toSoustack(intermediate, { sourcePath: adapterOutput.sourcePath });
+    const recipe = toSoustack(intermediate, { sourcePath: adapterOutput.meta.sourcePath });
     const result = validate(recipe);
     if (result.ok) {
       recipes.push(recipe);
@@ -39,20 +38,6 @@ async function ingest(inputPath: string, outDir: string): Promise<void> {
       console.log(`- ${error}`);
     }
   }
-}
-
-async function selectAdapter(inputPath: string) {
-  const normalizedPath = inputPath.toLowerCase();
-  if (normalizedPath.endsWith(".rtfd.zip")) {
-    return readRtfdZip(inputPath);
-  }
-
-  const extension = path.extname(normalizedPath);
-  if (extension === ".txt") {
-    return readTxt(inputPath);
-  }
-
-  throw new Error(`Unsupported input extension: ${extension}`);
 }
 
 const program = new Command();

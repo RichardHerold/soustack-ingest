@@ -8,11 +8,16 @@ soustack-ingest ingest <inputPath> --out <outDir>
 
 The CLI reads the input file, runs it through the ingest pipeline, and writes JSON outputs under `<outDir>/out` (see `src/cli.ts` and `src/pipeline/emit.ts`).
 
+### Prerequisites
+
+- Node.js 18+ (or compatible)
+- Optional: `pandoc` for improved RTF/RTFD conversion (the adapter will fall back to a built-in parser when it is unavailable).
+
 ## Adapter behavior
 
 Adapters are selected by file extension (`src/cli.ts`, `src/adapters`).
 
-- `.rtfd.zip`: handled by `readRtfdZip` (`src/adapters/rtfdZip.ts`). This is currently a placeholder that returns a fixed string when the archive is non-empty; no real RTFD parsing is implemented yet.
+- `.rtfd.zip`: handled by `readRtfdZip` (`src/adapters/rtfdZip.ts`). The adapter extracts the archive, locates the primary `.rtf` payload (preferring `TXT.rtf` or the largest `.rtf` file), and converts it to text. It tries a Node-based parser first, then falls back to `pandoc` and `textutil` when available.
 - `.txt`: handled by `readTxt` (`src/adapters/txt.ts`). Reads the file as UTF-8 text and passes it to the pipeline.
 
 Unsupported extensions throw an error.
@@ -73,4 +78,10 @@ To wire `soustack-core` validation:
 npm run build
 npm test
 npm run ingest -- <inputPath> --out <outDir>
+```
+
+### Example usage
+
+```bash
+npm run ingest -- "/mnt/data/bowman cookbook.rtfd.zip" --out ./output
 ```
