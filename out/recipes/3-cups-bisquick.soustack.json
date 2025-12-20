@@ -1,0 +1,36 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "3 cups Bisquick",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "½ cup sugar",
+    "3 eggs",
+    "1 tbsp. grated orange peel",
+    "½ cup orange juice",
+    "1 pkg. (8 oz.) Pitted dates, cut up",
+    "2 large bananas, mashed",
+    "Heat oven to 350.",
+    "Blend all ingredients in large mixer bowl ½ minute, scraping bowl frequently.",
+    "Beat 2 minutes medium speed.",
+    "Pour batter into greased & floured loaf pan (9x5x3).",
+    "Bake about 1 hour and 10 minutes or until toothpick inserted in center comes out clean.",
+    "Cool 10 minutes, remove from pan.",
+    "Cool thoroughly before slicing.",
+    "From the kitchen of Anne Wolff Regan."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3675,
+        "end": 3692
+      },
+      "warnings": [
+        "3 cups Bisquick: Missing ingredients"
+      ]
+    }
+  }
+}

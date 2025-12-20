@@ -1,0 +1,28 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "2 apples – pared and sliced",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "Combine cake mix, pudding mix, eggs, sour cream and oil – beat 5 minutes",
+    "Pour ½ of batter into a greased 10” tube pan",
+    "Arrange ½ of apple slices on top and sprinkle with ½ mix of nuts, sugar and cinnamon",
+    "Cover with remaining batter",
+    "Add remaining apples and top with rest of sugar mixture",
+    "Bake at 350 for 1 hour"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2521,
+        "end": 2528
+      },
+      "warnings": [
+        "2 apples – pared and sliced: Missing ingredients"
+      ]
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "Freshly picked Corn from Eddies’ Garden",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "Have Children Shuck the corn",
+    "Bring water to boil",
+    "Add corn",
+    "Cover",
+    "When water returns to boil"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2171,
+        "end": 2184
+      },
+      "warnings": [
+        "Freshly picked Corn from Eddies’ Garden: Missing ingredients"
+      ]
+    }
+  }
+}

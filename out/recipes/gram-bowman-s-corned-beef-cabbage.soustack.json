@@ -1,0 +1,31 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "GRAM BOWMAN’S CORNED BEEF & CABBAGE",
+  "stacks": {},
+  "ingredients": [
+    "Corned beef",
+    "Onion",
+    "Carrots",
+    "Potatoes",
+    "Cabbage"
+  ],
+  "instructions": [
+    "By:",
+    "Gram Bowman",
+    "Add spice pack that comes with the corned beef, Bring to boil, then reduce to simmer, follow the instructions as to how long to simmer, at least a couple of hours till you have cooked the crap out of it!",
+    "After 1 hour of cooking,  drink a Guinness and continue drinking until morning",
+    "Add some onion, carrots, potatoes, cabbage and boil some more!",
+    "Serve with Soda Bread, Rye Bread and  Brown Mustard"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 678,
+        "end": 698
+      }
+    }
+  }
+}

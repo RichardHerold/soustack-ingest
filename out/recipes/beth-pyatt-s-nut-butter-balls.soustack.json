@@ -1,0 +1,33 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "BETH PYATT’S NUT BUTTER BALLS",
+  "stacks": {},
+  "ingredients": [
+    "2 cups sifted flour"
+  ],
+  "instructions": [
+    "¼ cup sugar",
+    "½ teaspoon salt",
+    "1 cup (2 sticks) butter",
+    "2 teaspoons vanilla",
+    "2 ½ cups finely chopped nuts",
+    "Sift flour, sugar and salt together; work in butter and vanilla.",
+    "Add 2 cups of nuts, mix well.  Shape into 1 inch balls.",
+    "Roll half of the balls in remaining nuts.",
+    "Place onto a greased cookie sheet.",
+    "Bake at 350 degrees for about 25 minutes.",
+    "Roll the plain cookies in fine granulated sugar while warm.",
+    "Makes 5 dozen."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3190,
+        "end": 3206
+      }
+    }
+  }
+}

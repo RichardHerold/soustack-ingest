@@ -1,0 +1,24 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "MARY BOWMAN’S GRAVY",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "By:",
+    "Mary Bowman"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 1853,
+        "end": 1858
+      },
+      "warnings": [
+        "MARY BOWMAN’S GRAVY: Missing ingredients"
+      ]
+    }
+  }
+}

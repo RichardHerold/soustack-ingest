@@ -1,0 +1,23 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "MARINATED ASPARAGUS BUNDLES",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "Thin asparagus spears work best in this elegant side dish."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2220,
+        "end": 2223
+      },
+      "warnings": [
+        "MARINATED ASPARAGUS BUNDLES: Missing ingredients"
+      ]
+    }
+  }
+}

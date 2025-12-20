@@ -1,0 +1,25 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "GRAMMY BOWMAN’S TAPIOCA",
+  "stacks": {},
+  "ingredients": [
+    "1 egg white",
+    "6 tbsp. Sugar, divided"
+  ],
+  "instructions": [
+    "3 tbsp. Minute tapioca",
+    "2 cups milk",
+    "1 egg yolk"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3732,
+        "end": 3738
+      }
+    }
+  }
+}

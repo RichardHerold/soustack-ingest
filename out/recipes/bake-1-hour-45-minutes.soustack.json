@@ -1,0 +1,23 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "Bake 1 hour 45 minutes",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "SUNSHINE LOAF"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3671,
+        "end": 3674
+      },
+      "warnings": [
+        "Bake 1 hour 45 minutes: Missing ingredients"
+      ]
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "1 8-ounce box jiffy corn mix",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "Mix together adding muffin mix last.",
+    "Bake in large 9x13 casserole dish 50-60 minutes at 350."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2275,
+        "end": 2279
+      },
+      "warnings": [
+        "1 8-ounce box jiffy corn mix: Missing ingredients"
+      ]
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "Bake at 350 until bubbly",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "MIMI FALVEY’S LANGOSTINO NEWBURG",
+    "By:",
+    "Mimi Falvey"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 733,
+        "end": 741
+      },
+      "warnings": [
+        "Bake at 350 until bubbly: Missing ingredients"
+      ]
+    }
+  }
+}

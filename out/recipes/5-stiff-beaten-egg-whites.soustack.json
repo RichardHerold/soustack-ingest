@@ -1,0 +1,28 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "5 stiff beaten egg whites",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "Beat yolks, sugar and 3 tbsp. cold water till light.",
+    "Mix flour, cornstarch, baking powder and ¼ tsp. salt.",
+    "Beat into yolks; stir in lemon.",
+    "Fold in whites.",
+    "Bake in ungreased 10-inch tube pan",
+    "325 degrees for 55 minutes – cool"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2695,
+        "end": 2703
+      },
+      "warnings": [
+        "5 stiff beaten egg whites: Missing ingredients"
+      ]
+    }
+  }
+}

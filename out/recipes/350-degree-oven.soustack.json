@@ -1,0 +1,37 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "350 degree oven",
+  "stacks": {},
+  "ingredients": [
+    "8 oz. Block of cream cheese",
+    "Sour cream to taste",
+    "Pinch of garlic salt (to taste)",
+    "Dash of Worchester sauce (to taste)",
+    "Can of minced clams (drained, but reserve a little clam juice)",
+    "Clam juice from above (to taste)",
+    "Cream or milk to desired consistency",
+    "Lemon juice (to taste)"
+  ],
+  "instructions": [
+    "ANNE REGAN CLAM DIP",
+    "By:",
+    "Anne Regan",
+    "With mixer, cream the cheese until smooth",
+    "Add sour cream, garlic salt, Worchester sauce, clam juice, and lemon juice, mix to desired consistency (add milk or cream if needed)",
+    "Stir in clams.",
+    "Refrigerate…..enjoy!",
+    "Note:",
+    "As you can see this is one of those recipes that really isn’t a recipe. Experiment …..You can’t make this bad! From the kitchen of first mate Kimberly Marrinan with an “assist” from her mother, Grace Alice Regan (who she stole the recipe from) and a further “assist” from her mother, Anne Wolff Regan (who she stole the recipe from)."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 34,
+        "end": 63
+      }
+    }
+  }
+}

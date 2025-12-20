@@ -1,0 +1,25 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "Leftover ham",
+  "stacks": {},
+  "ingredients": [
+    "1 jar sweet gerkins pickles",
+    "5-6 tablespoons Hellman’s mayo",
+    "2 tbsp. French’s yellow mustard"
+  ],
+  "instructions": [
+    "Grind ham adding pickles everyone once and a while",
+    "Continue Grinding  pickles with ham alternating"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3869,
+        "end": 3875
+      }
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "MARY BOWMAN’S MEATLOAF",
+  "stacks": {},
+  "ingredients": [
+    "3 or 4 slices white bread with crust",
+    "Chopped yellow onion",
+    "Salt & pepper",
+    "1 egg",
+    "2 pounds ground sirloin"
+  ],
+  "instructions": [
+    "By:",
+    "Mary Bowman"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 364,
+        "end": 374
+      }
+    }
+  }
+}

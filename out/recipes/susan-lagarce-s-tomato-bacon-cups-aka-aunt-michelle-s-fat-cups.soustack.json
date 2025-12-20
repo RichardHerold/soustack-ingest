@@ -1,0 +1,37 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "SUSAN LAGARCE’S TOMATO BACON CUPS aka Aunt Michelle’s Fat Cups",
+  "stacks": {},
+  "ingredients": [
+    "8 Slices of Bacon, Crisply Cooked",
+    "1 Medium very ripe tomato, seeded",
+    "½ Small onion diced",
+    "4 oz. Swiss Cheese, Finley Shredded",
+    "1 Tsp. Basil (OPTIONAL)",
+    "½ Cup Mayo",
+    "1 Can (10 OZ.) Hungry Jack Flaking Biscuits"
+  ],
+  "instructions": [
+    "By:",
+    "Susan Lagarce and Aunt Michelle",
+    "Preheat Oven to 375",
+    "Coarsely chop bacon, tomato and onion",
+    "Mix all other ingredients together expect biscuits and set aside",
+    "Spray Mini Muffin tin with cooking spray",
+    "Separate each biscuit into 3 thinner biscuits",
+    "Place in muffin tin, pressing biscuit along inside of tin",
+    "Fill cups with mixture",
+    "Bake 10-12 Minutes, unit golden brown."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 95,
+        "end": 126
+      }
+    }
+  }
+}

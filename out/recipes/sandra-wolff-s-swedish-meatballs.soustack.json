@@ -1,0 +1,24 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "SANDRA WOLFF’S SWEDISH MEATBALLS",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "By:",
+    "Sandra Wolff"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 599,
+        "end": 606
+      },
+      "warnings": [
+        "SANDRA WOLFF’S SWEDISH MEATBALLS: Missing ingredients"
+      ]
+    }
+  }
+}

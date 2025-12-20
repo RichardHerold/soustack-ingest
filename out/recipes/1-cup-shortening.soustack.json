@@ -1,0 +1,39 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "1 cup shortening",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "½ cup brown sugar",
+    "1 egg",
+    "2 tbsp. Orange juice",
+    "½ cup sugar",
+    "1 tsp. Orange rind – grated",
+    "2 ¼ cups sifted flour",
+    "¼ tsp. Salt",
+    "¼ tsp. Baking soda",
+    "½ cup broken pecan meats",
+    "Cream shortening and add sugar gradually, while beating constantly.",
+    "Add egg, well beaten, orange juice and orange rind.",
+    "Sift flour, salt and baking soda and add with nuts to sugar mixture.",
+    "Place in waxed paper over night.",
+    "Slice and roll them and cut out cookies.",
+    "Place on greased cookie sheet",
+    "Bake 375 for 12-15 minutes.",
+    "Frost and decorate."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3048,
+        "end": 3067
+      },
+      "warnings": [
+        "1 cup shortening: Missing ingredients"
+      ]
+    }
+  }
+}

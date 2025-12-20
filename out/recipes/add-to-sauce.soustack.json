@@ -1,0 +1,34 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "Add to sauce",
+  "stacks": {},
+  "ingredients": [
+    "Tomatoes (no skin)",
+    "Peppers, cut into pieces",
+    "Onions, cut into pieces",
+    "Sugar, pinch to taste"
+  ],
+  "instructions": [
+    "MARY BOWMAN GOULASH",
+    "By:",
+    "Mary Bowman",
+    "To remove tomato skin, bring pot of water to boil",
+    "Fill sink with cold water",
+    "Add some tomatoes to boiling water for 1 minute",
+    "Then put tomato in cold water to shock off skin",
+    "Combine all ingredients",
+    "Simmer covered for 3 hours",
+    "Serve over egg noodles"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 1363,
+        "end": 1389
+      }
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "SHEILA NODINE-SZPAK - ORIENTAL DISH",
+  "stacks": {},
+  "ingredients": [
+    "1 - 1 ½ lb. Flank",
+    "1 box frozen French cut string beans",
+    "1 green pepper sliced",
+    "1 small can sliced mushrooms (save the juice in a glass)",
+    "1 onion chopped",
+    "3 celery stalks",
+    "Salt and pepper to taste",
+    "1 Tsp. Soy sauce"
+  ],
+  "instructions": [
+    "By:",
+    "Sheila Nodine-Szpak",
+    "In large frying pan with lid, brown flank steak that has been cut in",
+    "When ready, add chopped onion, chopped celery and sliced green pepper",
+    "Cook with lid on for about 5 minutes",
+    "Stir and then add mushrooms and partially defrosted green beans",
+    "Replace lid and cook for an additional 10 minutes",
+    "Stir all together",
+    "In the glass with the juice from the mushrooms, add Soy sauce, 1 or 2 tbsp. Flour and some water",
+    "Stir until the flour is dissolved",
+    "Pour this mixture over the meat and veggies",
+    "Mix all together",
+    "Cook an additional 5 minutes",
+    "Serve with rice.",
+    "Note:",
+    "Sheila took a cooking class some years ago because she wanted to learn how to make something different from the meat and potatoes her Irish family loved!"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 467,
+        "end": 511
+      }
+    }
+  }
+}

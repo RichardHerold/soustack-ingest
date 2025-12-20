@@ -1,0 +1,25 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "BUTTER BALLS",
+  "stacks": {},
+  "ingredients": [
+    "1 cup butter, creamed"
+  ],
+  "instructions": [
+    "½ cup confectionery sugar",
+    "1 tbsp. water",
+    "2 tsp. vanilla",
+    "2 cups flour"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2958,
+        "end": 2964
+      }
+    }
+  }
+}

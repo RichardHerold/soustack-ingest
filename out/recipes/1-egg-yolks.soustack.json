@@ -1,0 +1,35 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "1 egg yolks",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "2nd bowl:",
+    "7 egg whites",
+    "1 tsp. cream of tartar",
+    "Beat until you can cut with a knife",
+    "Gradually combine mixtures until blended.  Pour into a 2 piece ungreased tube pan.",
+    "Bake at 325 for 30 minutes.",
+    "Increase to 350 and bake until brown.",
+    "Test with toothpick.  Remove from oven and invert over upturned funnel until cool.",
+    "Icing:",
+    "Grated rind of 1 orange",
+    "½ box of confectioners’ sugar",
+    "Orange juice",
+    "Mix together.  Should not be runny."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2746,
+        "end": 2763
+      },
+      "warnings": [
+        "1 egg yolks: Missing ingredients"
+      ]
+    }
+  }
+}

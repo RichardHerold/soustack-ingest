@@ -1,0 +1,23 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "AUNT MARTHA BAILEY’S PINEAPPLE SQUARES",
+  "stacks": {},
+  "ingredients": [
+    "2 tbsp cornstarch",
+    "1 cup sugar"
+  ],
+  "instructions": [
+    "1 egg"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3456,
+        "end": 3460
+      }
+    }
+  }
+}

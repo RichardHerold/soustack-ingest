@@ -1,0 +1,39 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "SCHNECKIN",
+  "stacks": {},
+  "ingredients": [
+    "3 cups flour",
+    "1 pkg. Dry yeast"
+  ],
+  "instructions": [
+    "½ lb butter",
+    "3 egg yolks",
+    "½ pint sour cream",
+    "1 ½ cups finely chopped nuts",
+    "1 ¼ cups sugar",
+    "½ tsp. Cinnamon",
+    "1/2 tsp. Cocoa",
+    "Combine flour and yeast, cut in butter",
+    "Mix egg yolks with sour cream and mix into flour mixture (dough will be stiff)",
+    "Form into a ball and refrigerate overnight",
+    "Mix together nuts, sugar, cinnamon and cocoa",
+    "Cut dough into 8 parts",
+    "Roll each part in the sugar mixture",
+    "Roll the dough thin and cut into 8 pie wedges",
+    "Dot each wedge at wide end with a small amount of raspberry or strawberry jelly or jam",
+    "Roll each wedge from wide end to tip to form a crescent",
+    "Bake on a greased cookie sheet at 350 degrees for 20-25 minutes"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3105,
+        "end": 3126
+      }
+    }
+  }
+}

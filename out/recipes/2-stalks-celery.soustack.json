@@ -1,0 +1,48 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "2 stalks celery",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "1 shallot",
+    "1 red pepper",
+    "1 green pepper",
+    "Large Chunk of Unsalted butter",
+    "1 lb. Flaked Maine crab meat",
+    "2 eggs, beaten",
+    "½ cup mayonnaise",
+    "Crushed Ritz crackers",
+    "Bremmer wafers",
+    "Salt & pepper",
+    "Fresh parsley",
+    "Dill",
+    "Chive",
+    "Pepperidge farm breadcrumbs",
+    "Mince or finely chop celery, shallot, green & red pepper",
+    "Sauté celery, shallot, and peppers in large chunk butter",
+    "When cooled, add to crab meat",
+    "Stir together",
+    "Add eggs",
+    "Add mayonnaise, crushed Ritz crackers, and Bremmer wafers (at least 1 sleeve of crackers).",
+    "Add salt & pepper, minced fresh parsley, dill, and chive.",
+    "You want mixture wet enough to form cakes but not too wet",
+    "Dust each crab cake in fresh Pepperidge farm breadcrumbs",
+    "Lightly fry in butter (can add a little oil so butter doesn’t burn)",
+    "Keep warm in oven",
+    "Serve with cocktail sauce and tartar sauce"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 807,
+        "end": 846
+      },
+      "warnings": [
+        "2 stalks celery: Missing ingredients"
+      ]
+    }
+  }
+}

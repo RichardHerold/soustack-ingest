@@ -1,0 +1,41 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "SPRITZ CHRISTMAS COOKIES",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "½ lb. soft butter",
+    "½ cup sugar",
+    "1 egg",
+    "2 ½ cups flour – ½ tsp. baking powder – sift together",
+    "Flavoring – 1 ½ tsp. - coloring",
+    "Cream together butter and sugar.",
+    "Add egg, flavoring and coloring.",
+    "Add flour mixture – blend well.",
+    "Press onto ungreased baking sheets",
+    "Bake at 425 5 to 7 minutes.",
+    "Flavor:",
+    "Almond",
+    "Lemon",
+    "Vanilla",
+    "Lemon",
+    "Color: Add colored sprinkles",
+    "Pink",
+    "Yellow",
+    "White"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2911,
+        "end": 2933
+      },
+      "warnings": [
+        "SPRITZ CHRISTMAS COOKIES: Missing ingredients"
+      ]
+    }
+  }
+}

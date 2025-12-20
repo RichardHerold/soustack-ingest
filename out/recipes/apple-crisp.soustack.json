@@ -1,0 +1,26 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "APPLE CRISP",
+  "stacks": {},
+  "ingredients": [
+    "4 cups apples – about 4 apples",
+    "2/3 to ¾ cup brown sugar packed"
+  ],
+  "instructions": [
+    "½ cup all-purpose flour",
+    "¾ cup oats",
+    "¾ tsp. cinnamon",
+    "¾ tsp. nutmeg"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3398,
+        "end": 3405
+      }
+    }
+  }
+}

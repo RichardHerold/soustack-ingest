@@ -1,0 +1,25 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "½ jar candied pineapples",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "Boil above ingredients 5 mins.  When cool add 2 tsp. Baking soda dissolved in one tbsp. lukewarm water.",
+    "Add 2 cups flour, ½ cup chopped nut meats, ½ jar candied cherries and ½ jar candied pineapple.  Mix fruit and nuts with flour.",
+    "Bake at least 1 ½ hours in greased and floured tube pan at 325. Double all ingredients for tube pan. Single recipe fits in 8x8 pans."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2505,
+        "end": 2510
+      },
+      "warnings": [
+        "½ jar candied pineapples: Missing ingredients"
+      ]
+    }
+  }
+}

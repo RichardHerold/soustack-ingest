@@ -1,0 +1,33 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "BRAN MUFFINS",
+  "stacks": {},
+  "ingredients": [
+    "5 cups flour",
+    "3 cups sugar"
+  ],
+  "instructions": [
+    "1 – 15 oz. Box raisin bran or bran flakes with 1 cup raisins",
+    "5 tsp. baking soda",
+    "2 tsp. Salt",
+    "1 quart buttermilk",
+    "4 eggs – lightly beaten",
+    "1 cup oil",
+    "Combine first 5 ingredients in a large bowl and blend well.",
+    "Combine buttermilk, eggs and oil and stir into dry ingredients just until blended.",
+    "Cover mixture and refrigerate overnight.",
+    "When ready to use, preheat oven to 400 (we use 350).",
+    "Fill cupcake papers ¾ full and bake 20 minutes or until toothpick comes out clean.  Keeps 6 weeks in refrigerator. Makes 4 or 5 dozen."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3559,
+        "end": 3574
+      }
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "1 Short loaf of Pepperidge Farm White Sandwich Bread",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "6 to 8 Biscuits of Shredded Wheat",
+    "Gizzards, heart, liver, neck",
+    "1/2 pound calves liver",
+    "6 stalks celery",
+    "2 yellow onions",
+    "Handful of walnuts",
+    "1 pound Jones Sausage in a roll",
+    "Bell’s poultry seasoning",
+    "Salt and Pepper",
+    "This is to be made on Wednesday before Thanksgiving.",
+    "On Tuesday Morning put the bread out to dry on a cookie sheet",
+    "On Wednesday  put into a large pan crumble dried bread and shredded wheat",
+    "Boil gizzards, heart, liver, neck in sauce pan covered w/ water, salt to taste for 30 minutes",
+    "Add pound calves liver to the pot and boil for another 30 minutes.",
+    "Dice celery, grind 2 medium yellow onions, grind walnuts handful (3/4 cup) add everything to bread mixture.  Fry sausage loosely *not brown",
+    "Let meat cool; save liquids",
+    "Grind liver, gizzards, heart and neck (take meat off of neck and discard neck) and add to bread mixture",
+    "Wet bread with juice from pan.",
+    "Refrigerate overnight",
+    "Just before stuffing turkey, add bell’s poultry dressing (always use fresh box)",
+    "Salt & pepper to taste.",
+    "Bake turkey according to Betty Crocker."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 1771,
+        "end": 1809
+      },
+      "warnings": [
+        "1 Short loaf of Pepperidge Farm White Sandwich Bread: Missing ingredients"
+      ]
+    }
+  }
+}

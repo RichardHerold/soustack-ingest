@@ -1,0 +1,25 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "3 eggs - beaten",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "Add the following to the mixture above",
+    "2 ½ cups flour",
+    "3 tsp. Baking powder"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3012,
+        "end": 3017
+      },
+      "warnings": [
+        "3 eggs - beaten: Missing ingredients"
+      ]
+    }
+  }
+}

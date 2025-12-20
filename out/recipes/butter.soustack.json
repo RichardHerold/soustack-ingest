@@ -1,0 +1,46 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "Butter",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "Brown sugar",
+    "3 Acorn squash",
+    "1 Sweet onion",
+    "Cut squash in half, cut onion into quarters, mix butter, brown sugar and onion quarters, put into squash where seeds come out.",
+    "Place face down on foil wrapped cookie sheet.  Bake for one hour at 400 degrees",
+    "Scoop out into a bowl and add butter."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2099,
+        "end": 2112
+      },
+      "warnings": [
+        "Butter: Missing ingredients"
+      ]
+    }
+  }
+}mp in butter & garlic sauce ,  put in shredded lobster tail meat",
+    "Add shrimp or lobster to parmesan sauce",
+    "Cook 2 packages of bow tie pasta",
+    "Throw grated cheese on top"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 907,
+        "end": 938
+      },
+      "warnings": [
+        "Butter: Missing ingredients"
+      ]
+    }
+  }
+}

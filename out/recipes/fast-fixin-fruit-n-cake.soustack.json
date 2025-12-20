@@ -1,0 +1,34 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "FAST FIXIN’ FRUIT ‘N’ CAKE",
+  "stacks": {},
+  "ingredients": [
+    "1 package Duncan Hines deluxe  white cake mix or Duncan Hines yellow cake mix",
+    "2 cans (20 to 23 oz.) Of pie filling*"
+  ],
+  "instructions": [
+    "¼ cup of oil",
+    "2 eggs",
+    "½ cup of water",
+    "*can use cherry, apple, blueberry, peach, strawberry, lemon, pineapple, pumpkin, or blackberry",
+    "Preheat oven to 350 degrees.",
+    "Pour oil into a 13x9x2 inch pan, tilt pan to cover bottom.",
+    "Put cake mix, eggs and water into pan, stir with fork or spoon until blended (about 2 minutes).",
+    "Scrape sides and spread batter evenly in pan.",
+    "Spoon pie filling into batter; use a fork to fold into batter just enough to create a marbled effect.",
+    "Bake at 350 degrees for 35-45 minutes, until toothpick inserted near center comes out clean.",
+    "Cool cake.  May be sprinkled with powdered sugar.",
+    "Cut and serve directly from the pan.  Store cake loosely covered."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2704,
+        "end": 2722
+      }
+    }
+  }
+}

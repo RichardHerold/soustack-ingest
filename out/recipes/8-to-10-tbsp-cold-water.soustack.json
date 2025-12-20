@@ -1,0 +1,25 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "8 to 10 tbsp. cold water",
+  "stacks": {},
+  "ingredients": [
+    "TRIPLE",
+    "2 cups plus 6 tbsp. shortening"
+  ],
+  "instructions": [
+    "6 cups flour",
+    "3 tsp. salt",
+    "12 to 15 tbsp. cold water"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2328,
+        "end": 2335
+      }
+    }
+  }
+}

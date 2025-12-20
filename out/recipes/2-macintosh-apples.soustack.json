@@ -1,0 +1,33 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "2 Macintosh apples",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "2 granny smith apples",
+    "½ cup water",
+    "Juice of a ½ lemon",
+    "1/8 tsp. nutmeg",
+    "½ cup of sugar",
+    "½ tsp. ground cinnamon",
+    "Peel apples, cut apples around core, cut apples into one inch chunks.",
+    "Combine apples, water and lemon juice into a pan.",
+    "Heat to boiling over medium heat.  Simmer uncovered stirring occasionally to break up apples, until tender – 5 to 10 min.",
+    "Mix nutmeg, cinnamon and sugar together.  Put in pan together.  Use low to medium heat.",
+    "Heat to a boil.  Cook for 1 minute until desired texture."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2193,
+        "end": 2212
+      },
+      "warnings": [
+        "2 Macintosh apples: Missing ingredients"
+      ]
+    }
+  }
+}

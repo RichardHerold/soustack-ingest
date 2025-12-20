@@ -1,0 +1,26 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "1 /2 tsp. vanilla extract",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "In top of double boiler over hot, not boiling water, melt chocolate",
+    "Add marshmallows; stir frequently until melted",
+    "Pour mixture into small mixer bowl; beat in butter and milk until smooth",
+    "Add sugar and vanilla; beat to desired consistency. About 2 ½ cups frosting"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2904,
+        "end": 2910
+      },
+      "warnings": [
+        "1 /2 tsp. vanilla extract: Missing ingredients"
+      ]
+    }
+  }
+}

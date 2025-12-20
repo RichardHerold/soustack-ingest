@@ -1,0 +1,29 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "2 lb. hamburger",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "½ cup plain crumbs",
+    "1 egg – beaten",
+    "Sprinkle of parsley flakes",
+    "Sprinkle of parmesan cheese",
+    "Make into balls",
+    "Bake at 350 for about 10 minutes",
+    "Turnover and bake another 10 – 15 minutes"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 1274,
+        "end": 1287
+      },
+      "warnings": [
+        "2 lb. hamburger: Missing ingredients"
+      ]
+    }
+  }
+}

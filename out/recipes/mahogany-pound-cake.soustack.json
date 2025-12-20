@@ -1,0 +1,32 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "MAHOGANY POUND CAKE",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "2½ cups flour",
+    "½ cup cocoa",
+    "1 cup softened butter",
+    "2 cups sugar",
+    "1 cup brown sugar",
+    "6 egg yolks",
+    "1 tsp. vanilla",
+    "1 cup sour cream",
+    "¼ tsp. baking soda",
+    "6 egg whites"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2570,
+        "end": 2581
+      },
+      "warnings": [
+        "MAHOGANY POUND CAKE: Missing ingredients"
+      ]
+    }
+  }
+}

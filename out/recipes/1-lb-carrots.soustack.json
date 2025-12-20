@@ -1,0 +1,33 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "1 lb. Carrots",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "Roll beef in flour",
+    "Brown meat thoroughly in heavy Dutch oven in butter and Crisco",
+    "Scrape carrots and celery",
+    "Cut into pieces about 1 ½” long",
+    "Add to pot with 1 cup water",
+    "Cover meat with water",
+    "Add  chopped chunks of onion or more according to taste",
+    "Cover tightly",
+    "Reduce heat",
+    "Add small can whole tomatoes, and peeled potatoes",
+    "Cook about 3 hours."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 316,
+        "end": 341
+      },
+      "warnings": [
+        "1 lb. Carrots: Missing ingredients"
+      ]
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "Remove to cooling rack",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "ELLEN FALVEY BUDRIS – STRAWBERRY STARS",
+    "2 1/4 cups flour",
+    "½ tsp. salt",
+    "1 cup butter",
+    "1 cup sugar"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3127,
+        "end": 3134
+      },
+      "warnings": [
+        "Remove to cooling rack: Missing ingredients"
+      ]
+    }
+  }
+}

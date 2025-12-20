@@ -1,0 +1,44 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "1 ½ lbs. Stew meat",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "1 tbsp. Garlic",
+    "3 large potatoes",
+    "1 Package Beef stew mix",
+    "1 large onion",
+    "1 pkg. Brown gravy",
+    "Small can sliced mushrooms",
+    "4 cups water",
+    "4 celery stalks",
+    "1 bay leaf",
+    "5-6 carrots",
+    "Flour",
+    "Oil",
+    "1-2 pkg. Adolf’s meat tenderizer",
+    "Prepare Adolf’s packet as directed",
+    "Soak meat 1-3 hours.  (beef does not have to be soaked, if preferred)",
+    "Pour off liquid",
+    "Brown meat in 2 tbsp. Vegetable  Oil and dust with flour",
+    "While cooking, add stew mix, brown gravy, onion, garlic, bay leaf and water",
+    "Simmer 1 hour",
+    "Cut up veggies and mushrooms and add to pot",
+    "Simmer ½ hour more or until meat and veggies are soft",
+    "Gravy may need to be thickened with flour & water"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 643,
+        "end": 677
+      },
+      "warnings": [
+        "1 ½ lbs. Stew meat: Missing ingredients"
+      ]
+    }
+  }
+}

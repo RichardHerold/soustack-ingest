@@ -1,0 +1,24 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "CHRIS & NANCY BOWMAN’S VENISON STEW/ BEEF STEW",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "By:",
+    "Chris Bowman and Nancy Bowman"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 636,
+        "end": 642
+      },
+      "warnings": [
+        "CHRIS & NANCY BOWMAN’S VENISON STEW/ BEEF STEW: Missing ingredients"
+      ]
+    }
+  }
+}

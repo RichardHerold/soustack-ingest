@@ -1,0 +1,24 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "CHICKEN PICCATTA",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "By:",
+    "Unknown"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 1587,
+        "end": 1592
+      },
+      "warnings": [
+        "CHICKEN PICCATTA: Missing ingredients"
+      ]
+    }
+  }
+}

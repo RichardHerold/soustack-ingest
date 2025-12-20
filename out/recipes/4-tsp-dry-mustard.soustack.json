@@ -1,0 +1,24 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "4 tsp. Dry mustard",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "Bake low 10-12 hours or Bake high 4-6 hours",
+    "Serve"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2129,
+        "end": 2135
+      },
+      "warnings": [
+        "4 tsp. Dry mustard: Missing ingredients"
+      ]
+    }
+  }
+}

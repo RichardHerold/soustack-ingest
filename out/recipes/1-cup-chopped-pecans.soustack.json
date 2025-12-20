@@ -1,0 +1,27 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "1 cup chopped pecans",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "Cream butter and sugar",
+    "Add vanilla and water",
+    "Add flour and pecans then roll into balls",
+    "Bake at 300 for 20 minutes",
+    "Roll in more powdered sugar while warm"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2965,
+        "end": 2972
+      },
+      "warnings": [
+        "1 cup chopped pecans: Missing ingredients"
+      ]
+    }
+  }
+}

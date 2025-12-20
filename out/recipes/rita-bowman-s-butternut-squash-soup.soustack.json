@@ -1,0 +1,33 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "RITA BOWMAN’S BUTTERNUT SQUASH SOUP",
+  "stacks": {},
+  "ingredients": [
+    "2-3 leeks (white part only) chopped",
+    "1 medium onion",
+    "1 stalk celery with leaves",
+    "2 cups butternut squash peeled",
+    "1 medium potato peeled",
+    "1 Qt. chicken broth",
+    "1 cup medium cream"
+  ],
+  "instructions": [
+    "By:",
+    "Rita Bowman",
+    "Cook leeks, onion, and celery in 1/.2 cup. Butter until soft",
+    "Add squash, potato & broth",
+    "Cook until soft & blend in blender",
+    "Add cream & stir frequently"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 213,
+        "end": 232
+      }
+    }
+  }
+}

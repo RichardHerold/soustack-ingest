@@ -1,0 +1,43 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "RITA BOWMAN’S CLAM CHOWDER",
+  "stacks": {},
+  "ingredients": [
+    "1 large salt pork cut into ¼” dice",
+    "2-3 chopped onions",
+    "12-15 tbsp. Flour",
+    "1+ qt. Heavy cream, 2+ Qt. Half & half or whole milk",
+    "Salt",
+    "White pepper",
+    "2 tbsp. Worchester",
+    "½ tsp. Thyme",
+    "12+ doz. Littleneck clams (Scrub clams well before steaming)",
+    "6-8 Cups Potatoes"
+  ],
+  "instructions": [
+    "By:",
+    "Rita Bowman",
+    "Cook salt pork in a large pot until very browned & remove.",
+    "Add onions, cooking until transparent.",
+    "Add flour and cook on low to get rid of flour taste",
+    "Add cream",
+    "Add salt & white pepper, Worchester, and Thyme",
+    "Steam clams in small amount of water",
+    "Remove when opened & cut up",
+    "Strain clam water 2-3 times through cheesecloth.",
+    "Cube potatoes and boil until soft but not too soft.",
+    "Add clams, potatoes & broth to milk mixture.",
+    "Can add some canned chopped clams if you need more & probably will.  Tastes better made a day ahead.  Can top with browned salt pork."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 233,
+        "end": 275
+      }
+    }
+  }
+}

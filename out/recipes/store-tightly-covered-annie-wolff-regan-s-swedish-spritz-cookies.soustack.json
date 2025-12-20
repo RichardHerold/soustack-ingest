@@ -1,0 +1,31 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "Store tightly covered.\f\t•\tANNIE WOLFF REGAN’S SWEDISH SPRITZ COOKIES",
+  "stacks": {},
+  "ingredients": [
+    "1 cup soft butter",
+    "2/3 cup sugar",
+    "1 tsp. Flavoring (vanilla/almond)",
+    "3 egg yolks"
+  ],
+  "instructions": [
+    "2 ½ cups sifted flour",
+    "Mix together butter, sugar, egg & flavoring",
+    "Work flour in with your hands.",
+    "Use cookie press to form cookies.",
+    "If dough won’t hold shape, refrigerate for a short time but don’t make dough too cold.",
+    "Bake at 400 degrees for 7-10 minutes.",
+    "Makes about 6 dozen."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 3263,
+        "end": 3276
+      }
+    }
+  }
+}

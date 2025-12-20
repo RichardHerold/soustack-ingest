@@ -1,0 +1,26 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "BOWMAN",
+  "stacks": {},
+  "ingredients": [
+    "FAMILY",
+    "COOKBOOK",
+    "2011",
+    "APPETIZERS & SOUPS"
+  ],
+  "instructions": [],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 1,
+        "end": 11
+      },
+      "warnings": [
+        "BOWMAN: Missing instructions"
+      ]
+    }
+  }
+}

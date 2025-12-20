@@ -1,0 +1,22 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "CRAZY CHOCOLATE CAKE",
+  "stacks": {},
+  "ingredients": [
+    "4 squares chocolate"
+  ],
+  "instructions": [
+    "½ cup butter"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2478,
+        "end": 2481
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "TERRY BOWMAN’S TURKEY MEATLOAF",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "By:",
+    "Terry Bowman"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 1565,
+        "end": 1569
+      },
+      "warnings": [
+        "TERRY BOWMAN’S TURKEY MEATLOAF: Missing ingredients"
+      ]
+    }
+  }
+}

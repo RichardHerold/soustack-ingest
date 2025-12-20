@@ -1,0 +1,40 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "TOMATO AND MUSHROOM RISOTTO",
+  "stacks": {},
+  "ingredients": [
+    "1 large shallot, finely chopped",
+    "1 tbsp. olive oil",
+    "8 oz. baby bellas mushrooms, sliced",
+    "10 oz. arborio rice"
+  ],
+  "instructions": [
+    "½ cup dry white wine",
+    "4 cups low sodium chicken broth",
+    "8 oz. plum tomatoes, skinned, seeded and finely chopped",
+    "1 tbsp. each chopped fresh basil, chives",
+    "1 tbsp. mascarpone cheese",
+    "3 tbsp. freshly grated parmesan cheese",
+    "Sea salt and freshly ground black pepper",
+    "In a large saucepan, saute the shallot with the olive oil for about 3 to 4 minute",
+    "Then add the mushrooms and continue to saute for another 5 minutes, stirring frequently until softened.",
+    "Stir in the rice and cook for another minute or two",
+    "Add the wine, stir and cook until absorbed.",
+    "Pour in a quarter of the chicken broth, bring to a boil and cook until absorbed, stirring frequently.",
+    "Gradually stir in the rest of the broth over a period of about 15 minutes, adding more as each previous amount is absorbed.  This helps to give you a creamy risotto.",
+    "When the rice is al dente, mix in the tomatoes and herbs.",
+    "Check the seasoning and stir in the cheeses.",
+    "Serve in warmed bowls topped with shaved aged parmesan."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2291,
+        "end": 2314
+      }
+    }
+  }
+}

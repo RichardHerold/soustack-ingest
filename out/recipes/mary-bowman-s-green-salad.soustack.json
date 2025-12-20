@@ -1,0 +1,34 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "MARY BOWMAN’S GREEN SALAD",
+  "stacks": {},
+  "ingredients": [
+    "Salad:",
+    "1 Head lettuce,",
+    "1 Tomato cut into bite size pieces",
+    "1 small cucumber, sliced",
+    "¼ red onion, sliced"
+  ],
+  "instructions": [
+    "By:",
+    "Mary Bowman",
+    "In a large bowl, toss together lettuce, cucumber and red onion; set aside",
+    "Put in refrigerator to crisp",
+    "In a glass jar with a tight-fitted lid, combine all dressing ingredients; shake until well blended",
+    "Just before serving, pour about ½ cup of dressing over salad; toss lightly",
+    "Cover and refrigerate remaining dressing",
+    "Will yield 3 cups dressing",
+    "If cooking for two: dressing may be kept in the refrigerator for up to 1 week"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 1892,
+        "end": 1919
+      }
+    }
+  }
+}

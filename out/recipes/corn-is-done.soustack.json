@@ -1,0 +1,24 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "Corn is done",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "MICHELLE BOWMAN’S APPLE SAUCE",
+    "By:"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2185,
+        "end": 2188
+      },
+      "warnings": [
+        "Corn is done: Missing ingredients"
+      ]
+    }
+  }
+}

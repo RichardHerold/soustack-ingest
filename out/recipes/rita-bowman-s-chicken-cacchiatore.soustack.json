@@ -1,0 +1,24 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "RITA BOWMAN’S CHICKEN CACCHIATORE",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "By:",
+    "Rita Bowman"
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 1668,
+        "end": 1672
+      },
+      "warnings": [
+        "RITA BOWMAN’S CHICKEN CACCHIATORE: Missing ingredients"
+      ]
+    }
+  }
+}

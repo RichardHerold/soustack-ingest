@@ -1,0 +1,23 @@
+{
+  "$schema": "https://soustack.spec/soustack.schema.json",
+  "profile": "lite",
+  "name": "BUTTERSCOTCH CREAM PIE",
+  "stacks": {},
+  "ingredients": [],
+  "instructions": [
+    "Substitute ¾ cup well-packed dark-brown sugar for the granulated sugar."
+  ],
+  "metadata": {
+    "ingest": {
+      "pipelineVersion": "0.1.0",
+      "sourcePath": "bowman.txt",
+      "sourceLines": {
+        "start": 2384,
+        "end": 2387
+      },
+      "warnings": [
+        "BUTTERSCOTCH CREAM PIE: Missing ingredients"
+      ]
+    }
+  }
+}
