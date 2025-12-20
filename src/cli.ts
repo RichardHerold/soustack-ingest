@@ -1,0 +1,73 @@
+import { Command } from "commander";
+import path from "path";
+import {
+  emit,
+  extract,
+  normalize,
+  segment,
+  toSoustack,
+  validate,
+  SoustackRecipe,
+} from "./pipeline";
+import { readRtfdZip, readTxt } from "./adapters";
+
+async function ingest(inputPath: string, outDir: string): Promise<void> {
+  const adapterOutput = await selectAdapter(inputPath);
+  const normalized = normalize(adapterOutput.text);
+  const segmented = segment(normalized.lines);
+
+  const recipes: SoustackRecipe[] = [];
+  const errors: string[] = [];
+
+  for (const chunk of segmented.chunks) {
+    const intermediate = extract(chunk, normalized.lines);
+    const recipe = toSoustack(intermediate, { sourcePath: adapterOutput.sourcePath });
+    const result = validate(recipe);
+    if (result.ok) {
+      recipes.push(recipe);
+    } else {
+      errors.push(...result.errors.map((error) => `${recipe.name}: ${error}`));
+    }
+  }
+
+  await emit(recipes, outDir);
+
+  console.log(`Ingested ${recipes.length} recipe(s) from ${inputPath}.`);
+  if (errors.length > 0) {
+    console.log("Validation errors:");
+    for (const error of errors) {
+      console.log(`- ${error}`);
+    }
+  }
+}
+
+async function selectAdapter(inputPath: string) {
+  const normalizedPath = inputPath.toLowerCase();
+  if (normalizedPath.endsWith(".rtfd.zip")) {
+    return readRtfdZip(inputPath);
+  }
+
+  const extension = path.extname(normalizedPath);
+  if (extension === ".txt") {
+    return readTxt(inputPath);
+  }
+
+  throw new Error(`Unsupported input extension: ${extension}`);
+}
+
+const program = new Command();
+
+program
+  .name("soustack-ingest")
+  .description("Ingest recipe sources into Soustack JSON")
+  .command("ingest")
+  .argument("<inputPath>", "Path to the source file")
+  .requiredOption("--out <outDir>", "Output directory")
+  .action(async (inputPath: string, options: { out: string }) => {
+    await ingest(inputPath, options.out);
+  });
+
+program.parseAsync(process.argv).catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
