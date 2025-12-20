@@ -2,7 +2,8 @@ import AdmZip from "adm-zip";
 import { existsSync, promises as fs } from "fs";
 import os from "os";
 import path from "path";
-import { describe, expect, it } from "vitest";
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
 import { loadInput } from "../src/adapters";
 import { emit } from "../src/pipeline/emit";
 import { extract } from "../src/pipeline/extract";
@@ -25,9 +26,9 @@ describe("rtfd zip adapter", () => {
 
     const output = await loadInput(zipPath);
 
-    expect(output.kind).toBe("text");
-    expect(output.text.toLowerCase()).toContain("test recipe");
-    expect(output.meta.sourcePath).toBe(zipPath);
+    assert.equal(output.kind, "text");
+    assert.ok(output.text.toLowerCase().includes("test recipe"));
+    assert.equal(output.meta.sourcePath, zipPath);
 
     await fs.rm(tempDir, { recursive: true, force: true });
   });
@@ -58,9 +59,9 @@ describe("rtfd zip integration", () => {
     const indexPath = path.join(tempDir, "out", "index.json");
     const recipesDir = path.join(tempDir, "out", "recipes");
 
-    await expect(fs.access(indexPath)).resolves.toBeUndefined();
+    await assert.doesNotReject(fs.access(indexPath));
     const recipeFiles = await fs.readdir(recipesDir);
-    expect(recipeFiles.length).toBeGreaterThanOrEqual(2);
+    assert.ok(recipeFiles.length >= 2);
 
     await fs.rm(tempDir, { recursive: true, force: true });
   });

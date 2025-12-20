@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "test": "vitest",
-    "ingest": "ts-node src/cli.ts ingest"
+    "test": "TS_NODE_PROJECT=tsconfig.test.json TS_NODE_TRANSPILE_ONLY=1 node -r ts-node/register --test test/*.spec.ts",
+    "ingest": "ts-node src/cli.ts ingest",
+    "repro": "npm run ingest -- test/fixtures/sample.rtf --out /tmp/soustack-ingest-repro"
   },
   "dependencies": {
     "adm-zip": "^0.5.10",
