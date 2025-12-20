@@ -51,6 +51,11 @@ export type ValidationResult = {
 };
 
 export type AdapterOutput = {
-  sourcePath: string;
+  kind: "text";
   text: string;
+  assets?: string[];
+  meta: {
+    sourcePath: string;
+    extractedPath?: string;
+  };
 };
