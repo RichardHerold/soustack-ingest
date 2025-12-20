@@ -21,7 +21,8 @@ function splitSections(lines: Line[]): {
     /^(instructions?|directions|method|preparation|steps?|step\s*\d+)$/i.test(
       normalizeHeader(text),
     );
-  const cleanIngredient = (text: string) => text.replace(/^[-*]\s+/, "").trim();
+  const bulletRegex = /^[-*•·‣◦–—]\s+/;
+  const cleanIngredient = (text: string) => text.replace(bulletRegex, "").trim();
   const cleanInstruction = (text: string) =>
     text
       .replace(/^(step\s*\d+[:.)]?\s*)/i, "")
@@ -29,7 +30,7 @@ function splitSections(lines: Line[]): {
       .trim();
   const ingredientStarters = ["salt", "pepper", "pinch", "dash"];
   const isIngredientLike = (text: string) =>
-    /^[-*]\s+/.test(text) ||
+    bulletRegex.test(text) ||
     /^(\d+([/-]\d+)?|\d+\s+\d\/\d)\s+\w+/.test(text) ||
     /^\d+\s*(cups?|tbsp|tablespoons?|tsp|teaspoons?|oz|ounces?|grams?|kg|ml|l)\b/i.test(
       text,
@@ -162,8 +163,9 @@ function splitSections(lines: Line[]): {
   }
 
   if (instructions.length === 0 && ingredients.length > 1) {
-    const lastIngredient = ingredients.pop();
-    if (lastIngredient) {
+    const lastIngredient = ingredients[ingredients.length - 1];
+    if (lastIngredient && isClearInstructionLike(lastIngredient)) {
+      ingredients.pop();
       instructions.push(cleanInstruction(lastIngredient));
     }
   }

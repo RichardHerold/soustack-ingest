@@ -166,6 +166,17 @@ describe("pipeline", () => {
       assert.ok(recipe.ingredients.includes("Salt and pepper"));
       assert.ok(recipe.instructions.join(" ").includes("Mix"));
     });
+
+    it("treats unicode bullets as ingredients", () => {
+      const text = ["BULLET LIST", "• 1 cup flour", "• 2 tbsp sugar"].join("\n");
+      const lines = normalize(text).lines;
+      const [chunk] = segment(lines).chunks;
+
+      const recipe = extract(chunk, lines);
+
+      assert.equal(recipe.ingredients.length, 2);
+      assert.deepEqual(recipe.ingredients, ["1 cup flour", "2 tbsp sugar"]);
+    });
   });
 
   describe("toSoustack", () => {
