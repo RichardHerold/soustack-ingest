@@ -14,7 +14,7 @@ declare module "adm-zip" {
   export default AdmZip;
 }
 
-declare module "rtf-to-text" {
+declare module "rtf2text" {
   const converter: unknown;
   export default converter;
 }
