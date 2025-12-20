@@ -194,20 +194,48 @@ describe("pipeline", () => {
 
       const recipe = toSoustack(intermediate, { sourcePath: "recipes.md" });
 
-      assert.equal(recipe.$schema, "https://soustack.ai/schemas/recipe.schema.json");
-      assert.equal(recipe["@type"], "Recipe");
-      assert.equal(recipe.level, "lite");
+      assert.equal(recipe.$schema, "https://soustack.spec/soustack.schema.json");
+      assert.equal(recipe.profile, "lite");
       assert.equal(recipe.name, intermediate.title);
       assert.deepEqual(recipe.ingredients, intermediate.ingredients);
       assert.deepEqual(recipe.instructions, intermediate.instructions);
       assert.deepEqual(recipe.stacks, {});
-      assert.deepEqual(recipe["x-ingest"], {
+      assert.deepEqual(recipe.metadata?.ingest, {
         pipelineVersion: "0.1.0",
         sourcePath: "recipes.md",
         sourceLines: {
           start: 1,
           end: 4,
         },
+      });
+    });
+
+    it("emits only spec-approved top-level fields", () => {
+      const intermediate: IntermediateRecipe = {
+        title: "Veggie Bowl",
+        ingredients: ["1 cup rice"],
+        instructions: ["Cook the rice."],
+        source: {
+          startLine: 1,
+          endLine: 4,
+          evidence: "Lines 1-4",
+        },
+      };
+
+      const recipe = toSoustack(intermediate);
+      const allowedKeys = new Set([
+        "$schema",
+        "profile",
+        "stacks",
+        "name",
+        "ingredients",
+        "instructions",
+        "metadata",
+      ]);
+
+      assert.equal(recipe.$schema, "https://soustack.spec/soustack.schema.json");
+      Object.keys(recipe).forEach((key) => {
+        assert.ok(allowedKeys.has(key), `Unexpected top-level key: ${key}`);
       });
     });
   });
@@ -226,14 +254,16 @@ describe("pipeline", () => {
     it("writes index and recipe files", async () => {
       const recipes: SoustackRecipe[] = [
         {
-          $schema: "https://soustack.ai/schemas/recipe.schema.json",
-          level: "recipe",
+          $schema: "https://soustack.spec/soustack.schema.json",
+          profile: "lite",
           name: "Test Recipe",
           stacks: [],
           ingredients: ["1 cup sugar"],
           instructions: ["Mix."],
-          "x-ingest": {
-            pipelineVersion: "0.1.0",
+          metadata: {
+            ingest: {
+              pipelineVersion: "0.1.0",
+            },
           },
         },
       ];
@@ -269,39 +299,42 @@ describe("pipeline", () => {
 
     it("accepts a minimal valid recipe", () => {
       const recipe: SoustackRecipe = {
-        $schema: "https://soustack.ai/schemas/recipe.schema.json",
-        level: "recipe",
+        $schema: "https://soustack.spec/soustack.schema.json",
+        profile: "lite",
         name: "Test Recipe",
         stacks: [],
         ingredients: ["1 cup sugar"],
         instructions: ["Mix."],
-        "x-ingest": {
-          pipelineVersion: "0.1.0",
+        metadata: {
+          ingest: {
+            pipelineVersion: "0.1.0",
+          },
         },
       };
 
       const result = validate(recipe);
 
-      assert.equal(result.ok, false);
-      assert.ok(result.errors.some((error) => error.includes("@type")));
+      assert.equal(result.ok, true);
+      assert.equal(result.errors.length, 0);
     });
 
     it("rejects a recipe missing a name", () => {
       const recipe = {
-        $schema: "https://soustack.ai/schemas/recipe.schema.json",
-        level: "recipe",
+        $schema: "https://soustack.spec/soustack.schema.json",
+        profile: "lite",
         stacks: [],
         ingredients: ["1 cup sugar"],
         instructions: ["Mix."],
-        "x-ingest": {
-          pipelineVersion: "0.1.0",
+        metadata: {
+          ingest: {
+            pipelineVersion: "0.1.0",
+          },
         },
       } as unknown as SoustackRecipe;
 
       const result = validate(recipe);
 
       assert.equal(result.ok, false);
-      assert.ok(result.errors.some((error) => error.includes("@type")));
       assert.ok(result.errors.some((error) => error.includes("name")));
     });
   });
