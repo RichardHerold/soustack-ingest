@@ -7,10 +7,11 @@ export function toSoustack(
   options?: { sourcePath?: string }
 ): SoustackRecipe {
   return {
+    "@type": "Recipe",
     $schema: SCHEMA_URL,
-    level: "recipe",
+    level: "lite",
     name: intermediate.title,
-    stacks: [],
+    stacks: {},
     ingredients: intermediate.ingredients,
     instructions: intermediate.instructions,
     "x-ingest": {
