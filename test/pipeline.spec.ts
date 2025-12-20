@@ -7,6 +7,7 @@ import { normalize } from "../src/pipeline/normalize";
 import { segment } from "../src/pipeline/segment";
 import { toSoustack } from "../src/pipeline/toSoustack";
 import { emit } from "../src/pipeline/emit";
+import { validate } from "../src/pipeline/validate";
 import { IntermediateRecipe, SoustackRecipe } from "../src/pipeline/types";
 
 describe("pipeline", () => {
@@ -158,6 +159,45 @@ describe("pipeline", () => {
 
       expect(recipePayload.name).toBe("Test Recipe");
       expect(recipePayload.ingredients).toEqual(["1 cup sugar"]);
+    });
+  });
+
+  describe("validate", () => {
+    it("accepts a minimal valid recipe", () => {
+      const recipe: SoustackRecipe = {
+        $schema: "https://soustack.ai/schemas/recipe.schema.json",
+        level: "recipe",
+        name: "Test Recipe",
+        stacks: [],
+        ingredients: ["1 cup sugar"],
+        instructions: ["Mix."],
+        "x-ingest": {
+          pipelineVersion: "0.1.0",
+        },
+      };
+
+      const result = validate(recipe);
+
+      expect(result.ok).toBe(true);
+      expect(result.errors).toEqual([]);
+    });
+
+    it("rejects a recipe missing a name", () => {
+      const recipe = {
+        $schema: "https://soustack.ai/schemas/recipe.schema.json",
+        level: "recipe",
+        stacks: [],
+        ingredients: ["1 cup sugar"],
+        instructions: ["Mix."],
+        "x-ingest": {
+          pipelineVersion: "0.1.0",
+        },
+      } as unknown as SoustackRecipe;
+
+      const result = validate(recipe);
+
+      expect(result.ok).toBe(false);
+      expect(result.errors.join(" ")).toContain("$.name");
     });
   });
 });
