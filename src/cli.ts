@@ -16,6 +16,7 @@ export async function ingest(inputPath: string, outDir: string): Promise<void> {
   const adapterOutput = await loadInput(inputPath);
   const normalized = normalize(adapterOutput.text);
   const segmented = segment(normalized.lines);
+  const chunksFound = segmented.chunks.length;
 
   const recipes: SoustackRecipe[] = [];
   const errors: string[] = [];
@@ -94,16 +95,17 @@ export async function ingest(inputPath: string, outDir: string): Promise<void> {
 
   await emit(recipes, outDir);
 
+  const emittedCount = recipes.length;
   console.log(
     [
-      `Chunks found: ${segmented.chunks.length}`,
+      `Chunks found: ${chunksFound}`,
       `Intermediates produced: ${intermediatesProduced}`,
       `Skipped empty ingredients/instructions: ${skippedEmpty}`,
       `Skipped due to validation: ${skippedValidation}`,
-      `Emitted: ${recipes.length}`,
+      `Emitted: ${emittedCount}`,
     ].join("\n"),
   );
-  console.log(`Ingested ${recipes.length} recipe(s) from ${inputPath}.`);
+  console.log(`Ingested ${emittedCount} recipe(s) from ${inputPath}.`);
   if (errors.length > 0) {
     console.log("Validation errors:");
     for (const error of errors) {
@@ -111,7 +113,7 @@ export async function ingest(inputPath: string, outDir: string): Promise<void> {
     }
   }
 
-  if (recipes.length === 0) {
+  if (emittedCount === 0) {
     const sortedReasons = [...skipReasons.entries()].sort((a, b) => b[1] - a[1]);
     console.log("Skip summary:");
     if (sortedReasons.length === 0) {
