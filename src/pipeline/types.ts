@@ -29,10 +29,11 @@ export type IntermediateRecipe = {
 };
 
 export type SoustackRecipe = {
+  "@type"?: "Recipe";
   $schema: string;
   level: string;
   name: string;
-  stacks: string[];
+  stacks?: Record<string, number> | string[];
   ingredients: string[];
   instructions: string[];
   "x-ingest": {

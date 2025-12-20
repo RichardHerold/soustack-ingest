@@ -22,6 +22,11 @@ async function ingest(inputPath: string, outDir: string): Promise<void> {
 
   for (const chunk of segmented.chunks) {
     const intermediate = extract(chunk, normalized.lines);
+    // Skip recipes with empty ingredients or instructions
+    if (intermediate.ingredients.length === 0 || intermediate.instructions.length === 0) {
+      errors.push(`${intermediate.title}: Missing ingredients or instructions`);
+      continue;
+    }
     const recipe = toSoustack(intermediate, { sourcePath: adapterOutput.meta.sourcePath });
     const result = validate(recipe);
     if (result.ok) {

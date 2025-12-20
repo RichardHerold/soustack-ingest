@@ -11,7 +11,7 @@ function slugify(value: string): string {
 }
 
 export async function emit(recipes: SoustackRecipe[], outDir: string): Promise<void> {
-  const outputRoot = path.join(outDir, "out");
+  const outputRoot = outDir;
   const recipesDir = path.join(outputRoot, "recipes");
 
   await fs.mkdir(recipesDir, { recursive: true });
