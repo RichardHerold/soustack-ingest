@@ -34,7 +34,7 @@ The ingest pipeline runs stages in order (`src/cli.ts`, `src/pipeline`).
 2. **segment** (`src/pipeline/segment.ts`)
    - **Input:** `Line[]`.
    - **Output:** `SegmentedText` with `Chunk[]`.
-   - **Contract:** currently returns a single chunk covering the full document, with a best-effort title guess from the first non-empty line.
+   - **Contract:** scores potential recipe boundaries and returns one chunk per inferred recipe with a best-effort title guess and confidence score.
 
 3. **extract** (`src/pipeline/extract.ts`)
    - **Input:** a `Chunk` plus the full `Line[]`.
@@ -60,7 +60,7 @@ The ingest pipeline runs stages in order (`src/cli.ts`, `src/pipeline`).
 
 ## Validator behavior & wiring `soustack-core`
 
-Validation is intentionally lightweight today. The pipeline starts with a stub validator that always returns `{ ok: true, errors: [] }` (`src/pipeline/validate.ts`). It attempts to load `soustack-core` at runtime:
+Validation is intentionally lightweight today. The pipeline starts with a stub validator built from a fallback schema (`src/pipeline/validate.ts`). It attempts to load `soustack-core` at runtime:
 
 - If `soustack-core` exports `validator`, that object is used.
 - If it exports `validateRecipe`, it is wrapped into a `validator`.
@@ -70,7 +70,7 @@ To wire `soustack-core` validation:
 
 1. Ensure `soustack-core` is installed (already in `package.json`).
 2. Export either a `validator` object with a `validate(recipe)` function, or a `validateRecipe(recipe)` function, from the `soustack-core` package entry point.
-3. Run the ingest CLI as normal; the dynamic import swaps in the core validator on startup.
+3. Call `initValidator()` once at startup (the CLI does this before any `validate()` calls) so the active validator is set deterministically.
 
 ## Build, test, and run
 

@@ -5,12 +5,14 @@ import {
   normalize,
   segment,
   toSoustack,
+  initValidator,
   validate,
   SoustackRecipe,
 } from "./pipeline";
 import { loadInput } from "./adapters";
 
 async function ingest(inputPath: string, outDir: string): Promise<void> {
+  await initValidator();
   const adapterOutput = await loadInput(inputPath);
   const normalized = normalize(adapterOutput.text);
   const segmented = segment(normalized.lines);

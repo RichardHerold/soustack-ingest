@@ -176,11 +176,12 @@ const coreValidatorPromise = (async () => {
   return null;
 })();
 
-void coreValidatorPromise.then((validator) => {
+export async function initValidator(): Promise<void> {
+  const validator = await coreValidatorPromise;
   if (validator) {
     activeValidator = validator;
   }
-});
+}
 
 export function validate(recipe: SoustackRecipe): ValidationResult {
   return activeValidator.validate(recipe);
