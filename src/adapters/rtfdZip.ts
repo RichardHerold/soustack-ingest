@@ -1,3 +1,4 @@
+/// <reference path="../types/external.d.ts" />
 import AdmZip from "adm-zip";
 import { spawn } from "child_process";
 import { promises as fs } from "fs";
@@ -79,7 +80,7 @@ function convertRtfFallback(rtf: string): string {
 
 async function convertWithNode(rtf: string): Promise<string | null> {
   try {
-    const module = await import("rtf-to-text");
+    const module = await import("rtf2text");
     const converter = (module as { default?: unknown }).default ?? module;
 
     if (typeof converter === "function") {
@@ -214,6 +215,24 @@ export async function readRtfdZip(filePath: string): Promise<AdapterOutput> {
     meta: {
       sourcePath: filePath,
       extractedPath,
+    },
+  };
+}
+
+export async function readRtfdDirectory(dirPath: string): Promise<AdapterOutput> {
+  const primaryRtf = await findPrimaryRtf(dirPath);
+  if (!primaryRtf) {
+    throw new Error(`No .rtf files found in ${dirPath}`);
+  }
+
+  const text = await convertRtfToText(primaryRtf.filePath);
+
+  return {
+    kind: "text",
+    text,
+    assets: [primaryRtf.filePath],
+    meta: {
+      sourcePath: dirPath,
     },
   };
 }

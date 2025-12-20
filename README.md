@@ -58,18 +58,18 @@ The ingest pipeline runs stages in order (`src/cli.ts`, `src/pipeline`).
      - `<outDir>/out/recipes/<slug>.soustack.json` files for each recipe.
    - **Contract:** recipe filenames are slugified from `recipe.name` and truncated to 80 characters.
 
-## Validator behavior & wiring `soustack-core`
+## Validator behavior & wiring `soustack`
 
-Validation is intentionally lightweight today. The pipeline starts with a stub validator built from a fallback schema (`src/pipeline/validate.ts`). It attempts to load `soustack-core` at runtime:
+Validation is intentionally lightweight today. The pipeline starts with a stub validator built from a fallback schema (`src/pipeline/validate.ts`). It attempts to load `soustack` at runtime:
 
-- If `soustack-core` exports `validator`, that object is used.
+- If `soustack` exports `validator`, that object is used.
 - If it exports `validateRecipe`, it is wrapped into a `validator`.
 - If neither exists or the import fails, the stub validator stays active.
 
-To wire `soustack-core` validation:
+To wire `soustack` validation:
 
-1. Ensure `soustack-core` is installed (already in `package.json`).
-2. Export either a `validator` object with a `validate(recipe)` function, or a `validateRecipe(recipe)` function, from the `soustack-core` package entry point.
+1. Ensure `soustack` is installed (already in `package.json`).
+2. Export either a `validator` object with a `validate(recipe)` function, or a `validateRecipe(recipe)` function, from the `soustack` package entry point.
 3. Call `initValidator()` once at startup (the CLI does this before any `validate()` calls) so the active validator is set deterministically.
 
 ## Build, test, and run
