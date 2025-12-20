@@ -8,7 +8,7 @@ import { segment } from "../src/pipeline/segment";
 import { extract } from "../src/pipeline/extract";
 import { toSoustack } from "../src/pipeline/toSoustack";
 import { emit } from "../src/pipeline/emit";
-import { validate } from "../src/pipeline/validate";
+import { initValidator, validate } from "../src/pipeline/validate";
 import { IntermediateRecipe, SoustackRecipe } from "../src/pipeline/types";
 
 describe("pipeline", () => {
@@ -124,8 +124,11 @@ describe("pipeline", () => {
 
       const recipe = extract(chunk, lines);
 
-      expect(recipe.ingredients.length).toBeGreaterThan(0);
-      expect(recipe.instructions.length).toBeGreaterThan(0);
+      expect(recipe.ingredients).toContain("2 cups mixed greens");
+      expect(recipe.ingredients).toContain("1 tbsp olive oil");
+      expect(recipe.ingredients).toContain("Pinch of salt");
+      expect(recipe.ingredients).not.toContain("SIMPLE SALAD");
+      expect(recipe.instructions.join(" ")).toContain("Toss");
     });
 
     it("handles ingredients before a preparation heading", () => {
@@ -142,9 +145,20 @@ describe("pipeline", () => {
 
       const recipe = extract(chunk, lines);
 
-      expect(recipe.ingredients.length).toBeGreaterThan(0);
-      expect(recipe.instructions.length).toBeGreaterThan(0);
+      expect(recipe.ingredients).toContain("2 slices bread");
+      expect(recipe.ingredients).toContain("1 tbsp butter");
       expect(recipe.instructions[0]).toContain("Toast");
+    });
+
+    it("keeps simple ingredient phrases without quantities", () => {
+      const text = ["SPICE BLEND", "Salt and pepper", "Mix well."].join("\n");
+      const lines = normalize(text).lines;
+      const [chunk] = segment(lines).chunks;
+
+      const recipe = extract(chunk, lines);
+
+      expect(recipe.ingredients).toContain("Salt and pepper");
+      expect(recipe.instructions.join(" ")).toContain("Mix");
     });
   });
 
@@ -230,6 +244,10 @@ describe("pipeline", () => {
   });
 
   describe("validate", () => {
+    beforeEach(async () => {
+      await initValidator();
+    });
+
     it("accepts a minimal valid recipe", () => {
       const recipe: SoustackRecipe = {
         $schema: "https://soustack.ai/schemas/recipe.schema.json",
