@@ -74,7 +74,7 @@ const BINARY_EXTENSIONS = new Set([
 
 function parseArgs(argv) {
   const args = {
-    out: 'repo-pack.md',
+    out: 'soustack-injest-repo-pack.md',
     maxFileKB: DEFAULT_MAX_FILE_KB,
     maxTotalMB: DEFAULT_MAX_TOTAL_MB
   };
