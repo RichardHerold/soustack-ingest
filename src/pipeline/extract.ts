@@ -185,9 +185,11 @@ export function extract(chunk: Chunk, lines: Line[]): IntermediateRecipe {
   const titleGuess = chunk.titleGuess?.trim();
   let title = titleGuess ?? "Untitled Recipe";
   let contentLines = relevantLines;
+  let titleIndex = -1;
+  let author: string | undefined;
 
   if (titleGuess) {
-    const titleIndex = relevantLines.findIndex((line) => line.text.trim() === titleGuess);
+    titleIndex = relevantLines.findIndex((line) => line.text.trim() === titleGuess);
     if (titleIndex >= 0) {
       contentLines = relevantLines.filter((_, index) => index !== titleIndex);
     }
@@ -195,7 +197,33 @@ export function extract(chunk: Chunk, lines: Line[]): IntermediateRecipe {
     const firstNonEmptyIndex = relevantLines.findIndex((line) => line.text.trim().length > 0);
     if (firstNonEmptyIndex >= 0) {
       title = relevantLines[firstNonEmptyIndex].text.trim();
+      titleIndex = firstNonEmptyIndex;
       contentLines = relevantLines.filter((_, index) => index !== firstNonEmptyIndex);
+    }
+  }
+
+  if (titleIndex >= 0) {
+    const authorLineIndexes = new Set<number>();
+    const candidateLines = relevantLines.slice(titleIndex + 1, titleIndex + 3);
+    candidateLines.forEach((line, offset) => {
+      const trimmed = line.text.trim();
+      if (!trimmed) {
+        return;
+      }
+      const match = trimmed.match(/^(by|from)\s+(.+)$/i);
+      if (!match) {
+        return;
+      }
+      if (!author) {
+        author = match[2].trim();
+      }
+      authorLineIndexes.add(titleIndex + 1 + offset);
+    });
+
+    if (authorLineIndexes.size > 0) {
+      contentLines = relevantLines.filter(
+        (_, index) => index !== titleIndex && !authorLineIndexes.has(index),
+      );
     }
   }
 
@@ -205,6 +233,7 @@ export function extract(chunk: Chunk, lines: Line[]): IntermediateRecipe {
     title,
     ingredients,
     instructions,
+    metadata: author ? { author } : undefined,
     source: {
       startLine: chunk.startLine,
       endLine: chunk.endLine,
