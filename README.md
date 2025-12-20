@@ -1,0 +1,76 @@
+# soustack-ingest
+
+## CLI usage
+
+```bash
+soustack-ingest ingest <inputPath> --out <outDir>
+```
+
+The CLI reads the input file, runs it through the ingest pipeline, and writes JSON outputs under `<outDir>/out` (see `src/cli.ts` and `src/pipeline/emit.ts`).
+
+## Adapter behavior
+
+Adapters are selected by file extension (`src/cli.ts`, `src/adapters`).
+
+- `.rtfd.zip`: handled by `readRtfdZip` (`src/adapters/rtfdZip.ts`). This is currently a placeholder that returns a fixed string when the archive is non-empty; no real RTFD parsing is implemented yet.
+- `.txt`: handled by `readTxt` (`src/adapters/txt.ts`). Reads the file as UTF-8 text and passes it to the pipeline.
+
+Unsupported extensions throw an error.
+
+## Pipeline stages & contracts
+
+The ingest pipeline runs stages in order (`src/cli.ts`, `src/pipeline`).
+
+1. **normalize** (`src/pipeline/normalize.ts`)
+   - **Input:** raw adapter text (`string`).
+   - **Output:** `NormalizedText` with `fullText` and line metadata (`Line[]`).
+   - **Contract:** normalize newlines to `\n` and assign 1-based line numbers.
+
+2. **segment** (`src/pipeline/segment.ts`)
+   - **Input:** `Line[]`.
+   - **Output:** `SegmentedText` with `Chunk[]`.
+   - **Contract:** currently returns a single chunk covering the full document, with a best-effort title guess from the first non-empty line.
+
+3. **extract** (`src/pipeline/extract.ts`)
+   - **Input:** a `Chunk` plus the full `Line[]`.
+   - **Output:** `IntermediateRecipe` containing title, ingredients, instructions, and source-line evidence.
+   - **Contract:** splits lines into `ingredients` and `instructions` sections by headers; lines before any header fall into instructions.
+
+4. **toSoustack** (`src/pipeline/toSoustack.ts`)
+   - **Input:** `IntermediateRecipe`.
+   - **Output:** `SoustackRecipe` (Soustack JSON shape) with `$schema`, `level`, `name`, and `x-ingest` metadata.
+   - **Contract:** embeds source path and line range into `x-ingest`.
+
+5. **validate** (`src/pipeline/validate.ts`)
+   - **Input:** `SoustackRecipe`.
+   - **Output:** `ValidationResult` (`ok`, `errors`).
+   - **Contract:** see validator notes below.
+
+6. **emit** (`src/pipeline/emit.ts`)
+   - **Input:** list of validated `SoustackRecipe` values and an output directory.
+   - **Output:**
+     - `<outDir>/out/index.json` with name/slug/path entries.
+     - `<outDir>/out/recipes/<slug>.soustack.json` files for each recipe.
+   - **Contract:** recipe filenames are slugified from `recipe.name` and truncated to 80 characters.
+
+## Validator behavior & wiring `soustack-core`
+
+Validation is intentionally lightweight today. The pipeline starts with a stub validator that always returns `{ ok: true, errors: [] }` (`src/pipeline/validate.ts`). It attempts to load `soustack-core` at runtime:
+
+- If `soustack-core` exports `validator`, that object is used.
+- If it exports `validateRecipe`, it is wrapped into a `validator`.
+- If neither exists or the import fails, the stub validator stays active.
+
+To wire `soustack-core` validation:
+
+1. Ensure `soustack-core` is installed (already in `package.json`).
+2. Export either a `validator` object with a `validate(recipe)` function, or a `validateRecipe(recipe)` function, from the `soustack-core` package entry point.
+3. Run the ingest CLI as normal; the dynamic import swaps in the core validator on startup.
+
+## Build, test, and run
+
+```bash
+npm run build
+npm test
+npm run ingest -- <inputPath> --out <outDir>
+```
