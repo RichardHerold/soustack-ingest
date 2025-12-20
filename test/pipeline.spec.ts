@@ -5,6 +5,7 @@ import path from "path";
 
 import { normalize } from "../src/pipeline/normalize";
 import { segment } from "../src/pipeline/segment";
+import { extract } from "../src/pipeline/extract";
 import { toSoustack } from "../src/pipeline/toSoustack";
 import { emit } from "../src/pipeline/emit";
 import { validate } from "../src/pipeline/validate";
@@ -78,6 +79,72 @@ describe("pipeline", () => {
       chunks.forEach((chunk) => {
         expect(chunk.confidence).toBeGreaterThan(0.6);
       });
+    });
+
+    it("handles ingredient lines with unit tokens but no leading numbers", () => {
+      const cookbook = [
+        "MORNING OATS",
+        "",
+        "cup rolled oats",
+        "tbsp chia seeds",
+        "pinch salt",
+        "",
+        "Stir together and soak overnight.",
+        "",
+        "HERB TEA",
+        "",
+        "tsp dried chamomile",
+        "cup hot water",
+        "",
+        "Steep for five minutes.",
+      ].join("\n");
+
+      const { chunks } = segment(normalize(cookbook).lines);
+
+      expect(chunks).toHaveLength(2);
+      expect(chunks[0].titleGuess).toBe("MORNING OATS");
+      expect(chunks[1].titleGuess).toBe("HERB TEA");
+      chunks.forEach((chunk) => {
+        expect(chunk.confidence).toBeGreaterThan(0.6);
+      });
+    });
+  });
+
+  describe("extract", () => {
+    it("returns ingredients and instructions when headings are missing", () => {
+      const text = [
+        "SIMPLE SALAD",
+        "2 cups mixed greens",
+        "1 tbsp olive oil",
+        "Pinch of salt",
+        "Toss everything together and serve.",
+      ].join("\n");
+      const lines = normalize(text).lines;
+      const [chunk] = segment(lines).chunks;
+
+      const recipe = extract(chunk, lines);
+
+      expect(recipe.ingredients.length).toBeGreaterThan(0);
+      expect(recipe.instructions.length).toBeGreaterThan(0);
+    });
+
+    it("handles ingredients before a preparation heading", () => {
+      const text = [
+        "QUICK TOAST",
+        "2 slices bread",
+        "1 tbsp butter",
+        "Preparation:",
+        "Toast the bread until golden.",
+        "Spread with butter.",
+      ].join("\n");
+      const lines = normalize(text).lines;
+      const [chunk] = segment(lines).chunks;
+
+      const recipe = extract(chunk, lines);
+
+      expect(recipe.ingredients.length).toBeGreaterThan(0);
+      expect(recipe.instructions.length).toBeGreaterThan(0);
+      expect(recipe.instructions[0]).toContain("Toast");
     });
   });
 
