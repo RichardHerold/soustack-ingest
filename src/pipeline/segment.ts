@@ -3,9 +3,11 @@ import { Line, SegmentedText, Chunk } from "./types";
 type LineFeatures = {
   isBlank: boolean;
   isTitleLike: boolean;
+  isAllCapsTitle: boolean;
   hasIngredientsMarker: boolean;
   hasInstructionMarker: boolean;
   isIngredientLine: boolean;
+  isImperativeLine: boolean;
 };
 
 const units = [
@@ -42,6 +44,8 @@ const ingredientMarker = /^(ingredients?)\b/i;
 const instructionMarker = /^(instructions?|directions?|method|steps?)\b/i;
 const endsWithPunctuation = /[.:;!?]$/;
 const unicodeFraction = /[¼½¾⅓⅔⅛⅜⅝⅞]/;
+const imperativeVerbRegex =
+  /^(add|mix|bake|toast|stir|cook|whisk|combine|place|pour|bring|boil|simmer|heat|serve|fold|sprinkle|chop|slice|preheat|roast|saute|grill|blend|beat|season|drain|flip|marinate|set)\b/i;
 
 function isTitleLikeLine(
   text: string,
@@ -111,6 +115,30 @@ function isIngredientCandidate(text: string): boolean {
   return isShort && letterRatio >= 0.5 && !endsWithPunctuation.test(trimmed);
 }
 
+function isAllCapsTitle(text: string): boolean {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    return false;
+  }
+  const lettersOnly = trimmed.replace(/[^A-Za-z]/g, "");
+  if (!lettersOnly) {
+    return false;
+  }
+  return lettersOnly === lettersOnly.toUpperCase();
+}
+
+function isImperativeLine(text: string): boolean {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    return false;
+  }
+  if (ingredientMarker.test(trimmed) || instructionMarker.test(trimmed)) {
+    return false;
+  }
+  const normalized = trimmed.replace(/^(\d+[\).\s]+|[-*•]\s*)/, "");
+  return imperativeVerbRegex.test(normalized);
+}
+
 function buildFeatures(lines: Line[]): LineFeatures[] {
   return lines.map((line, index) => {
     const text = line.text;
@@ -123,9 +151,11 @@ function buildFeatures(lines: Line[]): LineFeatures[] {
     return {
       isBlank: trimmed.length === 0,
       isTitleLike: isTitleLikeLine(text, prevBlank, nextBlank, index, lines.length),
+      isAllCapsTitle: isAllCapsTitle(text),
       hasIngredientsMarker: ingredientMarker.test(trimmed),
       hasInstructionMarker: instructionMarker.test(trimmed),
       isIngredientLine: isIngredientCandidate(text),
+      isImperativeLine: isImperativeLine(text),
     };
   });
 }
@@ -145,6 +175,17 @@ function ingredientDensity(features: LineFeatures[], start: number, window: numb
   return ingredientLines / nonEmpty.length;
 }
 
+function imperativeDensity(features: LineFeatures[], start: number, window: number): number {
+  const end = Math.min(features.length, start + window);
+  const slice = features.slice(start, end);
+  const nonEmpty = slice.filter((line) => !line.isBlank);
+  if (nonEmpty.length === 0) {
+    return 0;
+  }
+  const imperativeLines = nonEmpty.filter((line) => line.isImperativeLine).length;
+  return imperativeLines / nonEmpty.length;
+}
+
 type CandidateStart = {
   index: number;
   score: number;
@@ -157,8 +198,12 @@ function findCandidateStarts(lines: Line[], features: LineFeatures[]): Candidate
       continue;
     }
     const density = ingredientDensity(features, index + 1, 8);
-    const score = clamp(0.6 + density * 0.8);
-    if (density >= 0.25) {
+    const imperative = imperativeDensity(features, index + 1, 8);
+    const score = clamp(0.6 + Math.max(density, imperative) * 0.8);
+    const acceptsIngredient = density >= 0.25;
+    const acceptsImperative = imperative >= 0.3;
+    const acceptsCapsImperative = features[index].isAllCapsTitle && imperative >= 0.2;
+    if (acceptsIngredient || acceptsImperative || acceptsCapsImperative) {
       candidates.push({ index, score });
     }
   }
