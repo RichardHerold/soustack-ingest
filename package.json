@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "adm-zip": "^0.5.10",
+    "ajv": "^8.12.0",
     "commander": "^11.0.0",
     "fs-extra": "^11.2.0",
     "rtf-to-text": "^0.1.3",
