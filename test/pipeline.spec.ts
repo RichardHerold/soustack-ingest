@@ -40,6 +40,44 @@ describe("pipeline", () => {
         expect(sorted[index].startLine).toBeGreaterThan(sorted[index - 1].endLine);
       }
     });
+
+    it("segments a mini cookbook with inferred titles", () => {
+      const cookbook = [
+        "SUMMER SALAD",
+        "",
+        "2 cups mixed greens",
+        "1/2 cup cherry tomatoes",
+        "Pinch of salt",
+        "",
+        "Toss together and serve.",
+        "",
+        "COZY SOUP",
+        "",
+        "- 1 tbsp olive oil",
+        "- 1 cup broth",
+        "",
+        "Directions",
+        "Simmer for 10 minutes.",
+        "",
+        "PANCAKE BITES",
+        "",
+        "1 cup flour",
+        "1/2 cup milk",
+        "1 egg",
+        "",
+        "Cook on a griddle until golden.",
+      ].join("\n");
+
+      const { chunks } = segment(normalize(cookbook).lines);
+
+      expect(chunks).toHaveLength(3);
+      expect(chunks[0].titleGuess).toBe("SUMMER SALAD");
+      expect(chunks[1].titleGuess).toBe("COZY SOUP");
+      expect(chunks[2].titleGuess).toBe("PANCAKE BITES");
+      chunks.forEach((chunk) => {
+        expect(chunk.confidence).toBeGreaterThan(0.6);
+      });
+    });
   });
 
   describe("toSoustack", () => {
