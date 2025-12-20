@@ -21,6 +21,9 @@ export type IntermediateRecipe = {
   title: string;
   ingredients: string[];
   instructions: string[];
+  metadata?: {
+    author?: string;
+  };
   source: {
     startLine: number;
     endLine: number;
@@ -36,6 +39,7 @@ export type SoustackRecipe = {
   ingredients: string[];
   instructions: string[];
   metadata?: {
+    author?: string;
     ingest?: {
       pipelineVersion?: string;
       sourcePath?: string;
