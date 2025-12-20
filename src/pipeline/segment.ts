@@ -43,12 +43,15 @@ const instructionMarker = /^(instructions?|directions?|method|steps?)\b/i;
 const endsWithPunctuation = /[.:;!?]$/;
 const unicodeFraction = /[¼½¾⅓⅔⅛⅜⅝⅞]/;
 
-function isTitleLikeLine(text: string, prevBlank: boolean, nextBlank: boolean): boolean {
+function isTitleLikeLine(
+  text: string,
+  prevBlank: boolean,
+  nextBlank: boolean,
+  index: number,
+  totalLines: number,
+): boolean {
   const trimmed = text.trim();
   if (!trimmed) {
-    return false;
-  }
-  if (!prevBlank || !nextBlank) {
     return false;
   }
   if (endsWithPunctuation.test(trimmed)) {
@@ -62,7 +65,18 @@ function isTitleLikeLine(text: string, prevBlank: boolean, nextBlank: boolean): 
     return false;
   }
   const letters = trimmed.replace(/[^A-Za-z]/g, "").length;
-  return letters / trimmed.length >= 0.6;
+  const letterRatio = letters / trimmed.length;
+  if (letterRatio < 0.6) {
+    return false;
+  }
+  if (prevBlank && nextBlank) {
+    return true;
+  }
+  const isEdgePosition = index <= 1 || index >= totalLines - 2;
+  const capitalizedWords = words.filter((word) => /^[A-Z]/.test(word)).length;
+  const capitalRatio = words.length === 0 ? 0 : capitalizedWords / words.length;
+  const isShort = trimmed.length <= 30 || words.length <= 4;
+  return (prevBlank || nextBlank || isEdgePosition) && (capitalRatio >= 0.6 || isShort);
 }
 
 function isIngredientCandidate(text: string): boolean {
@@ -70,22 +84,31 @@ function isIngredientCandidate(text: string): boolean {
   if (!trimmed) {
     return false;
   }
+  if (ingredientMarker.test(trimmed) || instructionMarker.test(trimmed)) {
+    return false;
+  }
   const lower = trimmed.toLowerCase();
+  const hasUnitToken = units.some((unit) => new RegExp(`\\b${unit}\\b`, "i").test(lower));
   const startsWithQuantity =
     /^[-*•]/.test(trimmed) ||
     /^\d/.test(trimmed) ||
     /^\d+\s*\d+\/\d+/.test(trimmed) ||
     unicodeFraction.test(trimmed.charAt(0)) ||
     /^\d+\s*[¼½¾⅓⅔⅛⅜⅝⅞]/.test(trimmed);
-  if (!startsWithQuantity) {
-    return false;
+  const words = trimmed.split(/\s+/).filter(Boolean);
+  if (startsWithQuantity) {
+    if (hasUnitToken) {
+      return true;
+    }
+    return words.length <= 6;
   }
-  const hasUnitToken = units.some((unit) => new RegExp(`\\b${unit}\\b`, "i").test(lower));
   if (hasUnitToken) {
     return true;
   }
-  const words = trimmed.split(/\s+/).filter(Boolean);
-  return words.length <= 6;
+  const letters = trimmed.replace(/[^A-Za-z]/g, "").length;
+  const letterRatio = letters / trimmed.length;
+  const isShort = words.length <= 4;
+  return isShort && letterRatio >= 0.5 && !endsWithPunctuation.test(trimmed);
 }
 
 function buildFeatures(lines: Line[]): LineFeatures[] {
@@ -99,7 +122,7 @@ function buildFeatures(lines: Line[]): LineFeatures[] {
 
     return {
       isBlank: trimmed.length === 0,
-      isTitleLike: isTitleLikeLine(text, prevBlank, nextBlank),
+      isTitleLike: isTitleLikeLine(text, prevBlank, nextBlank, index, lines.length),
       hasIngredientsMarker: ingredientMarker.test(trimmed),
       hasInstructionMarker: instructionMarker.test(trimmed),
       isIngredientLine: isIngredientCandidate(text),
