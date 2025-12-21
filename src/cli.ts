@@ -11,11 +11,19 @@ import {
 } from "./pipeline";
 import { loadInput } from "./adapters";
 
-export async function ingest(inputPath: string, outDir: string): Promise<void> {
+type IngestOptions = {
+  debugSegmentation?: boolean;
+};
+
+export async function ingest(
+  inputPath: string,
+  outDir: string,
+  options: IngestOptions = {},
+): Promise<void> {
   await initValidator();
   const adapterOutput = await loadInput(inputPath);
   const normalized = normalize(adapterOutput.text);
-  const segmented = segment(normalized.lines);
+  const segmented = segment(normalized.lines, { debug: options.debugSegmentation });
   const chunksFound = segmented.chunks.length;
 
   const recipes: SoustackRecipe[] = [];
@@ -29,6 +37,15 @@ export async function ingest(inputPath: string, outDir: string): Promise<void> {
   let intermediatesProduced = 0;
   let skippedEmpty = 0;
   let skippedValidation = 0;
+
+  if (options.debugSegmentation) {
+    console.log("Segmentation debug:");
+    for (const chunk of segmented.chunks) {
+      console.log(
+        `- Lines ${chunk.startLine}-${chunk.endLine}: ${chunk.segmentationReason ?? "unknown"}`,
+      );
+    }
+  }
 
   for (const chunk of segmented.chunks) {
     const intermediate = extract(chunk, normalized.lines);
@@ -136,8 +153,16 @@ if (require.main === module) {
     .command("ingest")
     .argument("<inputPath>", "Path to the source file")
     .requiredOption("--out <outDir>", "Output directory")
-    .action(async (inputPath: string, options: { out: string }) => {
-      await ingest(inputPath, options.out);
+    .option("--debug-segmentation", "Log segmentation debug details")
+    .action(
+      async (
+        inputPath: string,
+        options: { out: string; debugSegmentation?: boolean },
+      ) => {
+        await ingest(inputPath, options.out, {
+          debugSegmentation: options.debugSegmentation,
+        });
+      },
     });
 
   program.parseAsync(process.argv).catch((error) => {

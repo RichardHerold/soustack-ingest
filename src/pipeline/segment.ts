@@ -1,4 +1,4 @@
-import { Line, SegmentedText, Chunk } from "./types";
+import { Line, SegmentedText, Chunk, SegmentationReason } from "./types";
 
 type LineFeatures = {
   isBlank: boolean;
@@ -189,6 +189,7 @@ function imperativeDensity(features: LineFeatures[], start: number, window: numb
 type CandidateStart = {
   index: number;
   score: number;
+  reason?: SegmentationReason;
 };
 
 function findCandidateStarts(lines: Line[], features: LineFeatures[]): CandidateStart[] {
@@ -210,7 +211,16 @@ function findCandidateStarts(lines: Line[], features: LineFeatures[]): Candidate
     const acceptsImperative = imperative >= 0.3;
     const acceptsCapsImperative = features[index].isAllCapsTitle && imperative >= 0.2;
     if (acceptsIngredient || acceptsImperative || acceptsCapsImperative) {
-      candidates.push({ index, score });
+      let reason: SegmentationReason | undefined;
+      if (acceptsCapsImperative) {
+        reason = "all-caps-imperative";
+      } else if (acceptsImperative && imperative >= density) {
+        reason = "imperative-density";
+      } else {
+        reason = "ingredient-density";
+      }
+
+      candidates.push({ index, score, reason });
     }
   }
 
@@ -249,13 +259,18 @@ function confidenceForChunk(
   return clamp(0.4 * titleScore + 0.4 * density + (instructionPresent ? 0.2 : 0));
 }
 
-export function segment(lines: Line[]): SegmentedText {
+export type SegmentOptions = {
+  debug?: boolean;
+};
+
+export function segment(lines: Line[], options: SegmentOptions = {}): SegmentedText {
   if (lines.length === 0) {
     return { chunks: [] };
   }
 
   const features = buildFeatures(lines);
   const candidates = findCandidateStarts(lines, features);
+  const includeDebug = options.debug === true;
 
   if (candidates.length === 0) {
     const nonEmpty = lines.find((line) => line.text.trim().length > 0);
@@ -291,6 +306,9 @@ export function segment(lines: Line[]): SegmentedText {
       titleGuess,
       confidence,
       evidence,
+      ...(includeDebug && candidate.reason
+        ? { segmentationReason: candidate.reason }
+        : {}),
     };
   });
 
