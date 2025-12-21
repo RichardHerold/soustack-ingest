@@ -40,6 +40,7 @@ export type SoustackRecipe = {
   instructions: string[];
   metadata?: {
     author?: string;
+    originalTitle?: string;
     ingest?: {
       pipelineVersion?: string;
       sourcePath?: string;

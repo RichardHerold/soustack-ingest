@@ -202,7 +202,7 @@ describe("pipeline", () => {
   describe("toSoustack", () => {
     it("includes required fields", () => {
       const intermediate: IntermediateRecipe = {
-        title: "Veggie Bowl",
+        title: "CINNAMON TOAST AND BUTTER",
         ingredients: ["1 cup rice"],
         instructions: ["Cook the rice."],
         source: {
@@ -216,10 +216,11 @@ describe("pipeline", () => {
 
       assert.equal(recipe.$schema, "https://soustack.spec/soustack.schema.json");
       assert.equal(recipe.profile, "lite");
-      assert.equal(recipe.name, intermediate.title);
+      assert.equal(recipe.name, "Cinnamon Toast and Butter");
       assert.deepEqual(recipe.ingredients, intermediate.ingredients);
       assert.deepEqual(recipe.instructions, intermediate.instructions);
       assert.deepEqual(recipe.stacks, {});
+      assert.equal(recipe.metadata?.originalTitle, intermediate.title);
       assert.deepEqual(recipe.metadata?.ingest, {
         pipelineVersion: "0.1.0",
         sourcePath: "recipes.md",
