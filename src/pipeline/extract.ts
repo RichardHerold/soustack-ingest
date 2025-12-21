@@ -174,10 +174,207 @@ function splitSections(lines: Line[]): {
     instructions.push(ingredients[0]);
   }
 
+  if (ingredients.length === 0) {
+    const inferredIngredients = inferIngredientsFromInstructions(instructions);
+    if (inferredIngredients.length > 0) {
+      ingredients.push(...inferredIngredients);
+    }
+  }
+
   return {
     ingredients,
     instructions,
   };
+}
+
+const IMPERATIVE_VERBS = [
+  "add",
+  "bake",
+  "beat",
+  "blend",
+  "boil",
+  "bring",
+  "broil",
+  "chop",
+  "combine",
+  "cook",
+  "dice",
+  "fold",
+  "fry",
+  "grill",
+  "heat",
+  "melt",
+  "mix",
+  "pour",
+  "preheat",
+  "roast",
+  "saute",
+  "season",
+  "serve",
+  "simmer",
+  "slice",
+  "sprinkle",
+  "spread",
+  "stir",
+  "toast",
+  "toss",
+  "whisk",
+];
+
+const INGREDIENT_UNITS = [
+  "cup",
+  "cups",
+  "tbsp",
+  "tablespoon",
+  "tablespoons",
+  "tsp",
+  "teaspoon",
+  "teaspoons",
+  "oz",
+  "ounce",
+  "ounces",
+  "gram",
+  "grams",
+  "g",
+  "kg",
+  "ml",
+  "l",
+  "lb",
+  "pound",
+  "pounds",
+  "pinch",
+  "dash",
+  "clove",
+  "cloves",
+  "slice",
+  "slices",
+  "piece",
+  "pieces",
+];
+
+const TOOL_WORDS = new Set([
+  "pan",
+  "skillet",
+  "pot",
+  "bowl",
+  "oven",
+  "tray",
+  "sheet",
+  "plate",
+  "dish",
+  "rack",
+  "knife",
+  "spoon",
+]);
+
+function inferIngredientsFromInstructions(instructions: string[]): string[] {
+  const imperativeLines = instructions.filter((line) => isImperativeLine(line));
+  if (imperativeLines.length < 2) {
+    return [];
+  }
+
+  const candidates: string[] = [];
+  for (const line of imperativeLines) {
+    const extracted = extractNounPhrasesFromImperative(line);
+    candidates.push(...extracted);
+  }
+
+  const deduped = dedupePreserveOrder(candidates);
+  if (deduped.length < 2) {
+    return [];
+  }
+
+  return deduped;
+}
+
+function isImperativeLine(text: string): boolean {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    return false;
+  }
+  const verbPattern = IMPERATIVE_VERBS.join("|");
+  return new RegExp(`^(${verbPattern})\\b`, "i").test(trimmed);
+}
+
+function extractNounPhrasesFromImperative(text: string): string[] {
+  const cleaned = text
+    .replace(/^(step\s*\d+[:.)]?\s*)/i, "")
+    .replace(/^\d+[.)]\s+/, "")
+    .trim();
+  const verbPattern = new RegExp(`^(${IMPERATIVE_VERBS.join("|")})\\b`, "i");
+  let remainder = cleaned.replace(verbPattern, "").trim();
+  remainder = remainder.replace(/^(slowly|gently|carefully)\b/i, "").trim();
+
+  if (!remainder) {
+    return [];
+  }
+
+  const segments = remainder
+    .split(
+      /(?:,|;|\band\b|\bor\b|\bwith\b|\binto\b|\bin\b|\bon\b|\bover\b|\bonto\b|\bfor\b|\bto\b|\buntil\b|\bthen\b)/i,
+    )
+    .map((segment) => segment.trim())
+    .filter(Boolean);
+
+  const phrases: string[] = [];
+  for (const segment of segments) {
+    const candidate = normalizeIngredientCandidate(segment);
+    if (candidate) {
+      phrases.push(candidate);
+    }
+  }
+
+  return phrases;
+}
+
+function normalizeIngredientCandidate(segment: string): string | null {
+  let candidate = segment.replace(/[.!?]+$/, "").trim();
+  candidate = candidate.replace(/^(the|a|an|some|your)\b\s*/i, "").trim();
+  if (!candidate) {
+    return null;
+  }
+
+  const quantityUnitPattern = new RegExp(
+    `^(?:\\d+(?:[/-]\\d+)?|\\d+\\s+\\d/\\d)\\s+(?:${INGREDIENT_UNITS.join(
+      "|",
+    )})\\b\\s*`,
+    "i",
+  );
+  candidate = candidate.replace(quantityUnitPattern, "").trim();
+  if (!candidate) {
+    return null;
+  }
+
+  if (/\d/.test(candidate)) {
+    return null;
+  }
+
+  const normalized = candidate.replace(/\s+/g, " ");
+  const words = normalized.split(" ");
+  if (words.length === 0 || words.length > 4) {
+    return null;
+  }
+
+  const lastWord = words[words.length - 1]?.toLowerCase();
+  if (lastWord && TOOL_WORDS.has(lastWord)) {
+    return null;
+  }
+
+  return normalized;
+}
+
+function dedupePreserveOrder(items: string[]): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const item of items) {
+    const key = item.toLowerCase();
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    result.push(item);
+  }
+  return result;
 }
 
 export function extract(chunk: Chunk, lines: Line[]): IntermediateRecipe {
