@@ -11,11 +11,17 @@ export type Chunk = {
   titleGuess?: string;
   confidence: number;
   evidence: string;
+  segmentationReason?: SegmentationReason;
 };
 
 export type SegmentedText = {
   chunks: Chunk[];
 };
+
+export type SegmentationReason =
+  | "ingredient-density"
+  | "imperative-density"
+  | "all-caps-imperative";
 
 export type IntermediateRecipe = {
   title: string;
