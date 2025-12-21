@@ -55,6 +55,7 @@ const vNextSchema = {
     metadata: {
       type: "object",
       properties: {
+        originalTitle: { type: "string" },
         ingest: {
           type: "object",
           properties: {
