@@ -212,6 +212,61 @@ describe("pipeline", () => {
       assert.equal(recipe.ingredients.length, 2);
       assert.deepEqual(recipe.ingredients, ["1 cup flour", "2 tbsp sugar"]);
     });
+
+    it("strips a multi-line By block from instructions", () => {
+      const text = [
+        "BOWMAN SALSA",
+        "By:",
+        "Jessie Bowman",
+        "",
+        "Ingredients",
+        "1 cup tomatoes",
+        "Directions",
+        "Mix together and serve.",
+      ].join("\n");
+      const lines = normalize(text).lines;
+      const chunk = {
+        startLine: 1,
+        endLine: lines.length,
+        titleGuess: "BOWMAN SALSA",
+        confidence: 1,
+        evidence: "test",
+      };
+
+      const recipe = extract(chunk, lines);
+
+      assert.equal(recipe.source.author, "Jessie Bowman");
+      const instructionsText = recipe.instructions.join(" ");
+      assert.ok(!instructionsText.includes("By:"));
+      assert.ok(!instructionsText.includes("Jessie Bowman"));
+    });
+
+    it("strips single-line By attribution from instructions", () => {
+      const text = [
+        "BOWMAN STEW",
+        "By: Jamie Bowman",
+        "",
+        "Ingredients",
+        "1 cup broth",
+        "Instructions",
+        "Simmer gently.",
+      ].join("\n");
+      const lines = normalize(text).lines;
+      const chunk = {
+        startLine: 1,
+        endLine: lines.length,
+        titleGuess: "BOWMAN STEW",
+        confidence: 1,
+        evidence: "test",
+      };
+
+      const recipe = extract(chunk, lines);
+
+      assert.equal(recipe.source.author, "Jamie Bowman");
+      const instructionsText = recipe.instructions.join(" ");
+      assert.ok(!instructionsText.includes("By:"));
+      assert.ok(!instructionsText.includes("Jamie Bowman"));
+    });
   });
 
   describe("toSoustack", () => {

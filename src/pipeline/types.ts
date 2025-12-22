@@ -27,13 +27,11 @@ export type IntermediateRecipe = {
   title: string;
   ingredients: string[];
   instructions: string[];
-  metadata?: {
-    author?: string;
-  };
   source: {
     startLine: number;
     endLine: number;
     evidence: string;
+    author?: string;
   };
 };
 

@@ -69,8 +69,8 @@ export function toSoustack(
     },
   };
 
-  if (intermediate.metadata?.author) {
-    metadata.author = intermediate.metadata.author;
+  if (intermediate.source.author) {
+    metadata.author = intermediate.source.author;
   }
 
   return {

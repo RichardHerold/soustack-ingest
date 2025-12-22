@@ -4,6 +4,59 @@ function sliceLines(lines: Line[], startLine: number, endLine: number): Line[] {
   return lines.filter((line) => line.n >= startLine && line.n <= endLine);
 }
 
+const AUTHOR_NAME_REGEX = /^[A-Za-z][A-Za-z.'-]*(\s+[A-Za-z][A-Za-z.'-]*){0,3}$/;
+
+function isAuthorNameLine(text: string): boolean {
+  return AUTHOR_NAME_REGEX.test(text);
+}
+
+function extractAuthorFromLines(lines: Line[]): {
+  author?: string;
+  filteredLines: Line[];
+} {
+  let author: string | undefined;
+  let awaitingAuthor = false;
+  const filteredLines: Line[] = [];
+
+  for (const line of lines) {
+    const trimmed = line.text.trim();
+    if (!trimmed) {
+      if (!awaitingAuthor) {
+        filteredLines.push(line);
+      }
+      continue;
+    }
+
+    if (awaitingAuthor) {
+      if (isAuthorNameLine(trimmed)) {
+        if (!author) {
+          author = trimmed;
+        }
+        awaitingAuthor = false;
+        continue;
+      }
+      awaitingAuthor = false;
+    }
+
+    const inlineMatch = trimmed.match(/^(by|from)[:\s]+(.+)$/i);
+    if (inlineMatch) {
+      if (!author) {
+        author = inlineMatch[2].trim();
+      }
+      continue;
+    }
+
+    if (/^by:\s*$/i.test(trimmed)) {
+      awaitingAuthor = true;
+      continue;
+    }
+
+    filteredLines.push(line);
+  }
+
+  return { author, filteredLines };
+}
+
 function splitSections(lines: Line[]): {
   ingredients: string[];
   instructions: string[];
@@ -22,8 +75,6 @@ function splitSections(lines: Line[]): {
       normalizeHeader(text),
     );
   const isByLine = (text: string) => /^by[:\s]/i.test(text);
-  const isAuthorNameLine = (text: string) =>
-    /^[A-Za-z][A-Za-z.'-]*(\s+[A-Za-z][A-Za-z.'-]*){0,3}$/.test(text);
   const bulletRegex = /^[-*•·‣◦–—]\s*/;
   const cleanIngredient = (text: string) => text.replace(bulletRegex, "").trim();
   const cleanInstruction = (text: string) =>
@@ -403,7 +454,6 @@ export function extract(chunk: Chunk, lines: Line[]): IntermediateRecipe {
   let title = titleGuess ?? "Untitled Recipe";
   let contentLines = relevantLines;
   let titleIndex = -1;
-  let author: string | undefined;
 
   if (titleGuess) {
     titleIndex = relevantLines.findIndex((line) => line.text.trim() === titleGuess);
@@ -419,30 +469,8 @@ export function extract(chunk: Chunk, lines: Line[]): IntermediateRecipe {
     }
   }
 
-  if (titleIndex >= 0) {
-    const authorLineIndexes = new Set<number>();
-    const candidateLines = relevantLines.slice(titleIndex + 1, titleIndex + 3);
-    candidateLines.forEach((line, offset) => {
-      const trimmed = line.text.trim();
-      if (!trimmed) {
-        return;
-      }
-      const match = trimmed.match(/^(by|from)\s+(.+)$/i);
-      if (!match) {
-        return;
-      }
-      if (!author) {
-        author = match[2].trim();
-      }
-      authorLineIndexes.add(titleIndex + 1 + offset);
-    });
-
-    if (authorLineIndexes.size > 0) {
-      contentLines = relevantLines.filter(
-        (_, index) => index !== titleIndex && !authorLineIndexes.has(index),
-      );
-    }
-  }
+  const { author, filteredLines } = extractAuthorFromLines(contentLines);
+  contentLines = filteredLines;
 
   const { ingredients, instructions } = splitSections(contentLines);
 
@@ -450,11 +478,11 @@ export function extract(chunk: Chunk, lines: Line[]): IntermediateRecipe {
     title,
     ingredients,
     instructions,
-    metadata: author ? { author } : undefined,
     source: {
       startLine: chunk.startLine,
       endLine: chunk.endLine,
       evidence: chunk.evidence,
+      author,
     },
   };
 }
