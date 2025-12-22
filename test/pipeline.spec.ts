@@ -223,6 +223,28 @@ describe("pipeline", () => {
       assert.deepEqual(recipe.ingredients, ["1 cup flour", "2 tbsp sugar"]);
     });
 
+    it("treats unicode fraction ingredient lines as ingredients without headings", () => {
+      const text = [
+        "FANCY VINAIGRETTE",
+        "½ cup olive oil",
+        "¼ cup white wine",
+        "¾ tsp salt",
+        "Whisk until emulsified.",
+      ].join("\n");
+      const lines = normalize(text).lines;
+      const [chunk] = segment(lines).chunks;
+
+      const recipe = extract(chunk, lines);
+
+      assert.ok(recipe.ingredients.includes("½ cup olive oil"));
+      assert.ok(recipe.ingredients.includes("¼ cup white wine"));
+      assert.ok(recipe.ingredients.includes("¾ tsp salt"));
+      assert.ok(!recipe.instructions.some((line) => line.includes("½ cup olive oil")));
+      assert.ok(!recipe.instructions.some((line) => line.includes("¼ cup white wine")));
+      assert.ok(!recipe.instructions.some((line) => line.includes("¾ tsp salt")));
+      assert.ok(recipe.instructions.join(" ").includes("Whisk"));
+    });
+
     it("strips a multi-line By block from instructions", () => {
       const text = [
         "BOWMAN SALSA",
