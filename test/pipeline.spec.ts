@@ -413,6 +413,54 @@ describe("pipeline", () => {
       assert.equal(recipePayload.name, "Test Recipe");
       assert.deepEqual(recipePayload.ingredients, ["1 cup sugar"]);
     });
+
+    it("writes unique paths for duplicate recipe names", async () => {
+      const recipes: SoustackRecipe[] = [
+        {
+          $schema: "https://soustack.spec/soustack.schema.json",
+          profile: "lite",
+          name: "Dup Recipe",
+          stacks: [],
+          ingredients: ["1 cup sugar"],
+          instructions: ["Mix."],
+          metadata: {
+            ingest: {
+              pipelineVersion: "0.1.0",
+            },
+          },
+        },
+        {
+          $schema: "https://soustack.spec/soustack.schema.json",
+          profile: "lite",
+          name: "Dup Recipe",
+          stacks: [],
+          ingredients: ["2 cups flour"],
+          instructions: ["Bake."],
+          metadata: {
+            ingest: {
+              pipelineVersion: "0.1.0",
+            },
+          },
+        },
+      ];
+
+      await emit(recipes, tempDir);
+
+      const indexPath = path.join(tempDir, "index.json");
+      const indexRaw = await fs.readFile(indexPath, "utf-8");
+      const indexPayload = JSON.parse(indexRaw) as Array<{ name: string; slug: string; path: string }>;
+      const paths = indexPayload.map((entry) => entry.path);
+
+      assert.equal(indexPayload.length, 2);
+      assert.equal(new Set(paths).size, 2);
+
+      for (const entry of indexPayload) {
+        const filePath = path.join(tempDir, entry.path);
+        const recipeRaw = await fs.readFile(filePath, "utf-8");
+        const recipePayload = JSON.parse(recipeRaw) as SoustackRecipe;
+        assert.ok(recipePayload.name);
+      }
+    });
   });
 
   describe("validate", () => {
