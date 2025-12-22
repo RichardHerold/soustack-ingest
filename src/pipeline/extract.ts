@@ -83,9 +83,11 @@ function splitSections(lines: Line[]): {
       .replace(/^\d+[.)]\s+/, "")
       .trim();
   const ingredientStarters = ["salt", "pepper", "pinch", "dash"];
+  const unicodeFractionRegex = /^[¼½¾⅓⅔⅛⅜⅝⅞]\s+\w+/;
   const isIngredientLike = (text: string) =>
     bulletRegex.test(text) ||
     /^(\d+([/-]\d+)?|\d+\s+\d\/\d)\s+\w+/.test(text) ||
+    unicodeFractionRegex.test(text) ||
     /^\d+\s*(cups?|tbsp|tablespoons?|tsp|teaspoons?|oz|ounces?|grams?|kg|ml|l)\b/i.test(
       text,
     ) ||
