@@ -113,6 +113,22 @@ describe("pipeline", () => {
       });
     });
 
+    it("avoids creating chunks on ingredient-like title candidates", () => {
+      const cookbook = [
+        "COZY SOUP",
+        "",
+        "Cup Rolled Oats",
+        "",
+        "Mix well.",
+      ].join("\n");
+
+      const { chunks } = segment(normalize(cookbook).lines);
+
+      assert.equal(chunks.length, 1);
+      assert.equal(chunks[0]?.titleGuess, "COZY SOUP");
+      assert.ok(!chunks.some((chunk) => chunk.titleGuess === "Cup Rolled Oats"));
+    });
+
     it("keeps all-caps titles above imperative-only instructions", async () => {
       const fixturePath = path.join(process.cwd(), "test", "fixtures", "cinnamon-toast.txt");
       const fixture = await fs.readFile(fixturePath, "utf-8");
