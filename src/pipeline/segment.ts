@@ -44,6 +44,8 @@ const ingredientMarker = /^(ingredients?)\b/i;
 const instructionMarker = /^(instructions?|directions?|method|steps?)\b/i;
 const endsWithPunctuation = /[.:;!?]$/;
 const unicodeFraction = /[¼½¾⅓⅔⅛⅜⅝⅞]/;
+const bulletStart = /^[-*•·‣◦–—]/;
+const titleInstructionVerbRegex = /^(add|mix|remove|cook|bake|stir|heat)\b/i;
 const imperativeVerbRegex =
   /^(add|mix|bake|toast|stir|cook|whisk|combine|place|pour|bring|boil|simmer|heat|serve|fold|sprinkle|chop|slice|preheat|roast|saute|grill|blend|beat|season|drain|flip|marinate|set)\b/i;
 
@@ -59,6 +61,15 @@ function isTitleLikeLine(
     return false;
   }
   if (endsWithPunctuation.test(trimmed)) {
+    return false;
+  }
+  if (/^\d/.test(trimmed) || unicodeFraction.test(trimmed.charAt(0))) {
+    return false;
+  }
+  if (bulletStart.test(trimmed)) {
+    return false;
+  }
+  if (titleInstructionVerbRegex.test(trimmed)) {
     return false;
   }
   if (trimmed.length < 3 || trimmed.length > 72) {
@@ -79,8 +90,7 @@ function isTitleLikeLine(
   const isEdgePosition = index <= 1 || index >= totalLines - 2;
   const capitalizedWords = words.filter((word) => /^[A-Z]/.test(word)).length;
   const capitalRatio = words.length === 0 ? 0 : capitalizedWords / words.length;
-  const isShort = trimmed.length <= 30 || words.length <= 4;
-  return (prevBlank || nextBlank || isEdgePosition) && (capitalRatio >= 0.6 || isShort);
+  return (prevBlank || nextBlank || isEdgePosition) && capitalRatio >= 0.6;
 }
 
 function isIngredientCandidate(text: string): boolean {
@@ -195,6 +205,9 @@ type CandidateStart = {
 function findCandidateStarts(lines: Line[], features: LineFeatures[]): CandidateStart[] {
   const candidates: CandidateStart[] = [];
   for (let index = 0; index < lines.length; index += 1) {
+    if (isIngredientCandidate(lines[index].text)) {
+      continue;
+    }
     if (!features[index].isTitleLike) {
       continue;
     }
