@@ -21,6 +21,9 @@ function splitSections(lines: Line[]): {
     /^(instructions?|directions|method|preparation|steps?|step\s*\d+)$/i.test(
       normalizeHeader(text),
     );
+  const isByLine = (text: string) => /^by[:\s]/i.test(text);
+  const isAuthorNameLine = (text: string) =>
+    /^[A-Za-z][A-Za-z.'-]*(\s+[A-Za-z][A-Za-z.'-]*){0,3}$/.test(text);
   const bulletRegex = /^[-*•·‣◦–—]\s*/;
   const cleanIngredient = (text: string) => text.replace(bulletRegex, "").trim();
   const cleanInstruction = (text: string) =>
@@ -49,7 +52,24 @@ function splitSections(lines: Line[]): {
   );
 
   if (hasExplicitHeadings) {
+    let skipNextAuthorLine = false;
     for (const text of trimmedLines) {
+      if (mode === "unknown") {
+        if (isByLine(text)) {
+          skipNextAuthorLine = true;
+          continue;
+        }
+        if (
+          skipNextAuthorLine &&
+          !isIngredientHeader(text) &&
+          !isInstructionHeader(text) &&
+          isAuthorNameLine(text)
+        ) {
+          skipNextAuthorLine = false;
+          continue;
+        }
+        skipNextAuthorLine = false;
+      }
       if (isIngredientHeader(text)) {
         mode = "ingredients";
         continue;
