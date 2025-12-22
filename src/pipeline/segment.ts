@@ -119,10 +119,7 @@ function isIngredientCandidate(text: string): boolean {
   if (hasUnitToken) {
     return true;
   }
-  const letters = trimmed.replace(/[^A-Za-z]/g, "").length;
-  const letterRatio = letters / trimmed.length;
-  const isShort = words.length <= 4;
-  return isShort && letterRatio >= 0.5 && !endsWithPunctuation.test(trimmed);
+  return false;
 }
 
 function isAllCapsTitle(text: string): boolean {
