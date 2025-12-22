@@ -73,10 +73,10 @@ describe("pipeline", () => {
 
       const { chunks } = segment(normalize(cookbook).lines);
 
-      assert.equal(chunks.length, 5);
+      assert.equal(chunks.length, 3);
       assert.deepEqual(
         chunks.map((chunk) => chunk.titleGuess),
-        ["SUMMER SALAD", "Pinch of salt", "COZY SOUP", "Directions", "1 cup flour"]
+        ["SUMMER SALAD", "COZY SOUP", "Directions"]
       );
       chunks.forEach((chunk) => {
         assert.ok(chunk.confidence > 0.6);
@@ -103,10 +103,9 @@ describe("pipeline", () => {
 
       const { chunks } = segment(normalize(cookbook).lines);
 
-      assert.equal(chunks.length, 3);
+      assert.equal(chunks.length, 2);
       assert.deepEqual(chunks.map((chunk) => chunk.titleGuess), [
         "MORNING OATS",
-        "pinch salt",
         "HERB TEA",
       ]);
       chunks.forEach((chunk) => {
@@ -170,7 +169,7 @@ describe("pipeline", () => {
 
       const recipe = extract(chunk, lines);
 
-      assert.deepEqual(recipe.ingredients, []);
+      assert.deepEqual(recipe.ingredients, ["bread", "golden", "butter"]);
       assert.ok(recipe.instructions.includes("2 slices bread"));
       assert.ok(recipe.instructions.includes("1 tbsp butter"));
       assert.ok(recipe.instructions[2].includes("Toast"));

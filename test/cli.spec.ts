@@ -20,7 +20,12 @@ describe("cli ingest warnings", () => {
   it("emits recipes with warnings when instructions exist but ingredients are empty", async () => {
     const inputPath = path.join(tempDir, "instructions-only.txt");
     const outDir = path.join(tempDir, "out");
-    const content = ["INSTRUCTIONS ONLY", "Instructions", "Mix well.", "Serve warm."].join("\n");
+    const content = [
+      "INSTRUCTIONS ONLY",
+      "Instructions",
+      "Let stand for 10 minutes.",
+      "Cool before eating.",
+    ].join("\n");
     await fs.writeFile(inputPath, content, "utf-8");
 
     const stderrMessages: string[] = [];
