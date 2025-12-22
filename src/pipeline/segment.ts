@@ -84,12 +84,11 @@ function isTitleLikeLine(
   if (letterRatio < 0.6) {
     return false;
   }
-  if (prevBlank && nextBlank) {
-    return true;
-  }
   const isEdgePosition = index <= 1 || index >= totalLines - 2;
   const capitalizedWords = words.filter((word) => /^[A-Z]/.test(word)).length;
   const capitalRatio = words.length === 0 ? 0 : capitalizedWords / words.length;
+  // Require capitalization even when surrounded by blank lines or at edges.
+  // This avoids tagging short ingredient lines like "Chicken breasts" as titles.
   return (prevBlank || nextBlank || isEdgePosition) && capitalRatio >= 0.6;
 }
 
