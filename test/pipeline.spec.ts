@@ -148,6 +148,16 @@ describe("pipeline", () => {
       assert.ok(chunkLines.includes("Sprinkle the cinnamon/sugar mix"));
       assert.ok(!chunks.some((chunk) => chunk.titleGuess === "Toast the white bread"));
     });
+
+    it("prefers structured cookbook titles over ingredient lines", async () => {
+      const fixturePath = path.join(process.cwd(), "test", "fixtures", "structured-cookbook.txt");
+      const fixture = await fs.readFile(fixturePath, "utf-8");
+      const lines = normalize(fixture).lines;
+      const { chunks } = segment(lines);
+
+      assert.equal(chunks[0]?.titleGuess, "CHICKEN PICCATTA");
+      assert.ok(!chunks.some((chunk) => chunk.titleGuess === "Chicken breasts"));
+    });
   });
 
   describe("extract", () => {

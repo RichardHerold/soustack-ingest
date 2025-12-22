@@ -42,6 +42,7 @@ const units = [
 
 const ingredientMarker = /^(ingredients?)\b/i;
 const instructionMarker = /^(instructions?|directions?|method|steps?)\b/i;
+const bylineMarker = /^(by|from)\b/i;
 const endsWithPunctuation = /[.:;!?]$/;
 const unicodeFraction = /[¼½¾⅓⅔⅛⅜⅝⅞]/;
 const bulletStart = /^[-*•·‣◦–—]/;
@@ -252,6 +253,57 @@ function findCandidateStarts(lines: Line[], features: LineFeatures[]): Candidate
   return deduped;
 }
 
+function hasNearbyStructuredMarker(lines: Line[], startIndex: number, window = 8): boolean {
+  const end = Math.min(lines.length - 1, startIndex + window);
+  for (let index = startIndex + 1; index <= end; index += 1) {
+    const trimmed = lines[index].text.trim();
+    if (!trimmed) {
+      continue;
+    }
+    if (ingredientMarker.test(trimmed) || bylineMarker.test(trimmed)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function isAuthorLine(lines: Line[], index: number): boolean {
+  const prev = lines[index - 1];
+  return prev ? bylineMarker.test(prev.text.trim()) : false;
+}
+
+function findStructuredCookbookStarts(lines: Line[], features: LineFeatures[]): number[] {
+  const ingredientIndices = lines
+    .map((line, index) => (features[index].hasIngredientsMarker ? index : -1))
+    .filter((index) => index >= 0);
+  const starts: number[] = [];
+
+  ingredientIndices.forEach((ingredientIndex) => {
+    for (let index = ingredientIndex - 1; index >= 0; index -= 1) {
+      const text = lines[index].text.trim();
+      if (!text) {
+        continue;
+      }
+      if (bylineMarker.test(text) || isAuthorLine(lines, index)) {
+        continue;
+      }
+      if (features[index].isIngredientLine) {
+        continue;
+      }
+      if (!features[index].isTitleLike) {
+        continue;
+      }
+      if (!hasNearbyStructuredMarker(lines, index)) {
+        continue;
+      }
+      starts.push(index);
+      break;
+    }
+  });
+
+  return starts;
+}
+
 function confidenceForChunk(
   lines: Line[],
   features: LineFeatures[],
@@ -278,10 +330,14 @@ export function segment(lines: Line[], options: SegmentOptions = {}): SegmentedT
   }
 
   const features = buildFeatures(lines);
-  const candidates = findCandidateStarts(lines, features);
+  const ingredientMarkerCount = features.filter((feature) => feature.hasIngredientsMarker).length;
+  const structuredStarts =
+    ingredientMarkerCount >= 5 ? findStructuredCookbookStarts(lines, features) : [];
+  const structuredCandidateStarts = Array.from(new Set(structuredStarts)).sort((a, b) => a - b);
+  const candidates = structuredCandidateStarts.length > 0 ? [] : findCandidateStarts(lines, features);
   const includeDebug = options.debug === true;
 
-  if (candidates.length === 0) {
+  if (structuredCandidateStarts.length === 0 && candidates.length === 0) {
     const nonEmpty = lines.find((line) => line.text.trim().length > 0);
     const titleGuess = nonEmpty?.text.trim();
     const chunk: Chunk = {
@@ -297,29 +353,46 @@ export function segment(lines: Line[], options: SegmentOptions = {}): SegmentedT
     return { chunks: [chunk] };
   }
 
-  const chunks: Chunk[] = candidates.map((candidate, index) => {
-    const next = candidates[index + 1];
-    const startIndex = candidate.index;
-    const endIndex = next ? next.index - 1 : lines.length - 1;
-    const titleGuess = lines[startIndex].text.trim();
-    const confidence = confidenceForChunk(lines, features, startIndex, endIndex);
-    const evidence = `Title candidate at line ${lines[startIndex].n} with density ${ingredientDensity(
-      features,
-      startIndex + 1,
-      8,
-    ).toFixed(2)}`;
+  const chunks: Chunk[] =
+    structuredCandidateStarts.length > 0
+      ? structuredCandidateStarts.map((startIndex, index) => {
+          const next = structuredCandidateStarts[index + 1];
+          const endIndex = next ? next - 1 : lines.length - 1;
+          const titleGuess = lines[startIndex].text.trim();
+          const confidence = confidenceForChunk(lines, features, startIndex, endIndex);
+          const evidence = `Structured cookbook start at line ${lines[startIndex].n}`;
 
-    return {
-      startLine: lines[startIndex].n,
-      endLine: lines[endIndex].n,
-      titleGuess,
-      confidence,
-      evidence,
-      ...(includeDebug && candidate.reason
-        ? { segmentationReason: candidate.reason }
-        : {}),
-    };
-  });
+          return {
+            startLine: lines[startIndex].n,
+            endLine: lines[endIndex].n,
+            titleGuess,
+            confidence,
+            evidence,
+          };
+        })
+      : candidates.map((candidate, index) => {
+          const next = candidates[index + 1];
+          const startIndex = candidate.index;
+          const endIndex = next ? next.index - 1 : lines.length - 1;
+          const titleGuess = lines[startIndex].text.trim();
+          const confidence = confidenceForChunk(lines, features, startIndex, endIndex);
+          const evidence = `Title candidate at line ${lines[startIndex].n} with density ${ingredientDensity(
+            features,
+            startIndex + 1,
+            8,
+          ).toFixed(2)}`;
+
+          return {
+            startLine: lines[startIndex].n,
+            endLine: lines[endIndex].n,
+            titleGuess,
+            confidence,
+            evidence,
+            ...(includeDebug && candidate.reason
+              ? { segmentationReason: candidate.reason }
+              : {}),
+          };
+        });
 
   return { chunks };
 }
