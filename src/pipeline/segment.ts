@@ -201,7 +201,7 @@ type CandidateStart = {
 function findCandidateStarts(lines: Line[], features: LineFeatures[]): CandidateStart[] {
   const candidates: CandidateStart[] = [];
   for (let index = 0; index < lines.length; index += 1) {
-    if (isIngredientCandidate(lines[index].text)) {
+    if (features[index].isIngredientLine) {
       continue;
     }
     if (!features[index].isTitleLike) {
