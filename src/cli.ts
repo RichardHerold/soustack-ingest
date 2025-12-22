@@ -162,8 +162,8 @@ if (require.main === module) {
         await ingest(inputPath, options.out, {
           debugSegmentation: options.debugSegmentation,
         });
-      },
-    });
+      }
+    );
 
   program.parseAsync(process.argv).catch((error) => {
     console.error(error);
