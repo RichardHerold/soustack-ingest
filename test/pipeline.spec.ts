@@ -26,6 +26,19 @@ describe("pipeline", () => {
         { n: 4, text: "Third line" },
       ]);
     });
+
+    it("treats form feeds as newlines", () => {
+      const input = "First line\fSecond line\f\fThird line";
+      const result = normalize(input);
+
+      assert.equal(result.fullText, "First line\nSecond line\n\nThird line");
+      assert.deepEqual(result.lines, [
+        { n: 1, text: "First line" },
+        { n: 2, text: "Second line" },
+        { n: 3, text: "" },
+        { n: 4, text: "Third line" },
+      ]);
+    });
   });
 
   describe("segment", () => {
