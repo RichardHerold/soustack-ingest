@@ -389,6 +389,8 @@ const TOOL_WORDS = new Set([
   "spoon",
 ]);
 
+type PrepExtractionMode = "conservative" | "aggressive";
+
 const PREP_BASE_WORDS = new Set([
   "chopped",
   "minced",
@@ -411,7 +413,19 @@ const PREP_BASE_WORDS = new Set([
   "ground",
 ]);
 
-function normalizePrepToken(token: string): string | null {
+const PREP_AGGRESSIVE_MODIFIERS = new Set([
+  "finely",
+  "roughly",
+  "coarsely",
+  "thinly",
+  "thickly",
+]);
+
+const PREP_AGGRESSIVE_ADJECTIVES = new Set(["soft"]);
+
+const PREP_AGGRESSIVE_INTENSIFIERS = new Set(["very", "extra", "super", "really"]);
+
+function normalizePrepToken(token: string, mode: PrepExtractionMode): string | null {
   const cleaned = token
     .toLowerCase()
     .replace(/[.!?]+$/, "")
@@ -429,18 +443,30 @@ function normalizePrepToken(token: string): string | null {
     return cleaned;
   }
 
-  const modifierMatch = cleaned.match(/^(finely|roughly|coarsely)\s+(\w+)$/);
-  if (modifierMatch) {
-    const [, modifier, base] = modifierMatch;
-    if (PREP_BASE_WORDS.has(base)) {
-      return `${modifier} ${base}`;
+  if (mode === "aggressive") {
+    const modifierMatch = cleaned.match(/^(\w+)\s+(\w+)$/);
+    if (modifierMatch) {
+      const [, modifier, base] = modifierMatch;
+      if (PREP_AGGRESSIVE_MODIFIERS.has(modifier) && PREP_BASE_WORDS.has(base)) {
+        return `${modifier} ${base}`;
+      }
+      if (PREP_AGGRESSIVE_INTENSIFIERS.has(modifier) && PREP_AGGRESSIVE_ADJECTIVES.has(base)) {
+        return `${modifier} ${base}`;
+      }
+    }
+
+    if (PREP_AGGRESSIVE_ADJECTIVES.has(cleaned)) {
+      return cleaned;
     }
   }
 
   return null;
 }
 
-function extractIngredientPrep(raw: string): { base: string; prep: string[] } {
+function extractIngredientPrep(
+  raw: string,
+  mode: PrepExtractionMode,
+): { base: string; prep: string[] } {
   let base = raw.trim();
   const prep: string[] = [];
 
@@ -452,7 +478,7 @@ function extractIngredientPrep(raw: string): { base: string; prep: string[] } {
         .filter(Boolean);
       const kept: string[] = [];
       for (const token of tokens) {
-        const normalized = normalizePrepToken(token);
+        const normalized = normalizePrepToken(token, mode);
         if (normalized) {
           prep.push(normalized);
         } else {
@@ -479,7 +505,7 @@ function extractIngredientPrep(raw: string): { base: string; prep: string[] } {
         return;
       }
 
-      const normalized = normalizePrepToken(segment);
+      const normalized = normalizePrepToken(segment, mode);
       if (normalized) {
         prep.push(normalized);
       } else {
@@ -602,7 +628,11 @@ function dedupePreserveOrder(items: string[]): string[] {
   return result;
 }
 
-export function extract(chunk: Chunk, lines: Line[]): IntermediateRecipe {
+export function extract(
+  chunk: Chunk,
+  lines: Line[],
+  options: { prepExtractionMode?: PrepExtractionMode } = {},
+): IntermediateRecipe {
   const relevantLines = sliceLines(lines, chunk.startLine, chunk.endLine);
   const titleGuess = chunk.titleGuess?.trim();
   let title = titleGuess ?? "Untitled Recipe";
@@ -628,9 +658,10 @@ export function extract(chunk: Chunk, lines: Line[]): IntermediateRecipe {
 
   const { ingredients, instructions, prep } = splitSections(contentLines);
   const ingredientPrep: IngredientPrep[] = [];
+  const prepExtractionMode = options.prepExtractionMode ?? "conservative";
 
   ingredients.forEach((ingredient, index) => {
-    const { base, prep: prepTokens } = extractIngredientPrep(ingredient);
+    const { base, prep: prepTokens } = extractIngredientPrep(ingredient, prepExtractionMode);
     if (prepTokens.length > 0) {
       ingredientPrep.push({
         index,
