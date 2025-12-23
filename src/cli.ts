@@ -8,11 +8,13 @@ import {
   initValidator,
   validate,
   SoustackRecipe,
+  PrepExtractionMode,
 } from "./pipeline";
 import { loadInput } from "./adapters";
 
 type IngestOptions = {
   debugSegmentation?: boolean;
+  prepExtractionMode?: PrepExtractionMode;
 };
 
 export async function ingest(
@@ -48,7 +50,9 @@ export async function ingest(
   }
 
   for (const chunk of segmented.chunks) {
-    const intermediate = extract(chunk, normalized.lines);
+    const intermediate = extract(chunk, normalized.lines, {
+      prepExtractionMode: options.prepExtractionMode,
+    });
     intermediatesProduced += 1;
     const missingIngredients = intermediate.ingredients.length === 0;
     const missingInstructions = intermediate.instructions.length === 0;
@@ -154,13 +158,24 @@ if (require.main === module) {
     .argument("<inputPath>", "Path to the source file")
     .requiredOption("--out <outDir>", "Output directory")
     .option("--debug-segmentation", "Log segmentation debug details")
+    .option(
+      "--prep-extraction-mode <mode>",
+      "Ingredient prep extraction mode (conservative|aggressive)",
+      "conservative",
+    )
     .action(
       async (
         inputPath: string,
-        options: { out: string; debugSegmentation?: boolean },
+        options: {
+          out: string;
+          debugSegmentation?: boolean;
+          prepExtractionMode?: string;
+        },
       ) => {
+        const prepExtractionMode = parsePrepExtractionMode(options.prepExtractionMode);
         await ingest(inputPath, options.out, {
           debugSegmentation: options.debugSegmentation,
+          prepExtractionMode,
         });
       }
     );
@@ -169,4 +184,13 @@ if (require.main === module) {
     console.error(error);
     process.exitCode = 1;
   });
+}
+
+function parsePrepExtractionMode(mode?: string): PrepExtractionMode {
+  if (!mode || mode === "conservative" || mode === "aggressive") {
+    return mode ?? "conservative";
+  }
+  throw new Error(
+    `Invalid --prep-extraction-mode "${mode}". Expected "conservative" or "aggressive".`,
+  );
 }

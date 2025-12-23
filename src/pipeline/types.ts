@@ -44,6 +44,8 @@ export type IngredientPrep = {
   prep: string[];
 };
 
+export type PrepExtractionMode = "conservative" | "aggressive";
+
 export type PrepMetadata = {
   section?: string[];
   ingredients?: IngredientPrep[];
