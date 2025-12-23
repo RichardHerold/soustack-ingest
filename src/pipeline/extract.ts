@@ -1,4 +1,10 @@
-import { Chunk, IntermediateRecipe, IngredientPrep, Line } from "./types";
+import {
+  Chunk,
+  IntermediateRecipe,
+  IngredientPrep,
+  Line,
+  PrepExtractionMode,
+} from "./types";
 
 function sliceLines(lines: Line[], startLine: number, endLine: number): Line[] {
   return lines.filter((line) => line.n >= startLine && line.n <= endLine);
@@ -389,8 +395,6 @@ const TOOL_WORDS = new Set([
   "spoon",
 ]);
 
-type PrepExtractionMode = "conservative" | "aggressive";
-
 const PREP_BASE_WORDS = new Set([
   "chopped",
   "minced",
@@ -515,7 +519,42 @@ function extractIngredientPrep(
     base = baseSegments.join(", ").trim();
   }
 
+  if (mode === "aggressive") {
+    const leadingPrep = extractLeadingPrepPhrase(base, mode);
+    if (leadingPrep) {
+      prep.push(leadingPrep.prep);
+      base = leadingPrep.base;
+    }
+  }
+
   return { base, prep };
+}
+
+function extractLeadingPrepPhrase(
+  text: string,
+  mode: PrepExtractionMode,
+): { base: string; prep: string } | null {
+  if (mode !== "aggressive") {
+    return null;
+  }
+
+  const words = text.split(/\s+/).filter(Boolean);
+  if (words.length < 3) {
+    return null;
+  }
+
+  const leadingToken = `${words[0]} ${words[1]}`;
+  const normalized = normalizePrepToken(leadingToken, mode);
+  if (!normalized) {
+    return null;
+  }
+
+  const remaining = words.slice(2).join(" ").trim();
+  if (!remaining) {
+    return null;
+  }
+
+  return { base: remaining, prep: normalized };
 }
 
 function inferIngredientsFromInstructions(instructions: string[]): string[] {
