@@ -1,4 +1,4 @@
-import { IntermediateRecipe, SoustackRecipe } from "./types";
+import { IntermediateRecipe, PrepMetadata, SoustackRecipe } from "./types";
 
 const SCHEMA_URL = "https://soustack.spec/soustack.schema.json";
 
@@ -60,7 +60,7 @@ export function toSoustack(
   const metadata: SoustackRecipe["metadata"] = {
     originalTitle: intermediate.title,
     ingest: {
-      pipelineVersion: "0.1.0",
+      pipelineVersion: "0.1.1",
       sourcePath: options?.sourcePath,
       sourceLines: {
         start: intermediate.source.startLine,
@@ -73,6 +73,15 @@ export function toSoustack(
     metadata.author = intermediate.source.author;
   }
 
+  const prepMetadata: PrepMetadata | undefined =
+    intermediate.prepSection || intermediate.ingredientPrep
+      ? {
+          section: intermediate.prepSection,
+          ingredients: intermediate.ingredientPrep,
+          generatedAt: new Date().toISOString(),
+        }
+      : undefined;
+
   return {
     $schema: SCHEMA_URL,
     profile: "lite",
@@ -80,6 +89,7 @@ export function toSoustack(
     stacks: {},
     ingredients: intermediate.ingredients,
     instructions: intermediate.instructions,
+    ...(prepMetadata ? { "x-prep": prepMetadata } : {}),
     metadata,
   };
 }

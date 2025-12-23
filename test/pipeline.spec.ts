@@ -204,14 +204,24 @@ describe("pipeline", () => {
         "Spread with butter.",
       ].join("\n");
       const lines = normalize(text).lines;
-      const [chunk] = segment(lines).chunks;
+      const chunk = {
+        startLine: 1,
+        endLine: lines.length,
+        titleGuess: "QUICK TOAST",
+        confidence: 1,
+        evidence: "test",
+      };
 
       const recipe = extract(chunk, lines);
 
       assert.deepEqual(recipe.ingredients, ["bread", "golden", "butter"]);
+      assert.deepEqual(recipe.prepSection, [
+        "Toast the bread until golden.",
+        "Spread with butter.",
+      ]);
       assert.ok(recipe.instructions.includes("2 slices bread"));
       assert.ok(recipe.instructions.includes("1 tbsp butter"));
-      assert.ok(recipe.instructions[2].includes("Toast"));
+      assert.ok(recipe.instructions.includes("Toast the bread until golden."));
     });
 
     it("keeps simple ingredient phrases without quantities", () => {
@@ -312,6 +322,57 @@ describe("pipeline", () => {
       assert.ok(!instructionsText.includes("By:"));
       assert.ok(!instructionsText.includes("Jamie Bowman"));
     });
+
+    it("captures prep sections and ingredient-level prep metadata", () => {
+      const text = [
+        "Title line",
+        "Prep:",
+        "- Dice the onion",
+        "- Mince garlic",
+        "Ingredients:",
+        "1 onion, diced",
+        "2 cloves garlic, minced",
+        "1 can diced tomatoes",
+        "Instructions:",
+        "1. Cook stuff.",
+      ].join("\n");
+      const lines = normalize(text).lines;
+      const chunk = {
+        startLine: 1,
+        endLine: lines.length,
+        titleGuess: "Title line",
+        confidence: 1,
+        evidence: "test",
+      };
+
+      const recipe = extract(chunk, lines);
+
+      assert.deepEqual(recipe.prepSection, ["Dice the onion", "Mince garlic"]);
+      assert.deepEqual(recipe.ingredients, [
+        "1 onion, diced",
+        "2 cloves garlic, minced",
+        "1 can diced tomatoes",
+      ]);
+      assert.deepEqual(recipe.instructions, [
+        "- Dice the onion",
+        "- Mince garlic",
+        "Cook stuff.",
+      ]);
+      assert.deepEqual(recipe.ingredientPrep, [
+        {
+          index: 0,
+          raw: "1 onion, diced",
+          base: "1 onion",
+          prep: ["diced"],
+        },
+        {
+          index: 1,
+          raw: "2 cloves garlic, minced",
+          base: "2 cloves garlic",
+          prep: ["minced"],
+        },
+      ]);
+    });
   });
 
   describe("toSoustack", () => {
@@ -337,13 +398,41 @@ describe("pipeline", () => {
       assert.deepEqual(recipe.stacks, {});
       assert.equal(recipe.metadata?.originalTitle, intermediate.title);
       assert.deepEqual(recipe.metadata?.ingest, {
-        pipelineVersion: "0.1.0",
+        pipelineVersion: "0.1.1",
         sourcePath: "recipes.md",
         sourceLines: {
           start: 1,
           end: 4,
         },
       });
+    });
+
+    it("emits prep metadata in the x-prep extension lane", () => {
+      const intermediate: IntermediateRecipe = {
+        title: "Prep Test",
+        ingredients: ["1 onion, diced"],
+        instructions: ["Cook the onion."],
+        prepSection: ["Dice the onion"],
+        ingredientPrep: [
+          {
+            index: 0,
+            raw: "1 onion, diced",
+            base: "1 onion",
+            prep: ["diced"],
+          },
+        ],
+        source: {
+          startLine: 1,
+          endLine: 4,
+          evidence: "Lines 1-4",
+        },
+      };
+
+      const recipe = toSoustack(intermediate);
+
+      assert.deepEqual(recipe["x-prep"]?.section, ["Dice the onion"]);
+      assert.deepEqual(recipe["x-prep"]?.ingredients, intermediate.ingredientPrep);
+      assert.ok(recipe["x-prep"]?.generatedAt);
     });
 
     it("emits only spec-approved top-level fields", () => {
@@ -366,6 +455,7 @@ describe("pipeline", () => {
         "name",
         "ingredients",
         "instructions",
+        "x-prep",
         "metadata",
       ]);
 

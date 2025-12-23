@@ -27,12 +27,27 @@ export type IntermediateRecipe = {
   title: string;
   ingredients: string[];
   instructions: string[];
+  prepSection?: string[];
+  ingredientPrep?: IngredientPrep[];
   source: {
     startLine: number;
     endLine: number;
     evidence: string;
     author?: string;
   };
+};
+
+export type IngredientPrep = {
+  index: number;
+  raw: string;
+  base: string;
+  prep: string[];
+};
+
+export type PrepMetadata = {
+  section?: string[];
+  ingredients?: IngredientPrep[];
+  generatedAt?: string;
 };
 
 export type SoustackRecipe = {
@@ -42,6 +57,7 @@ export type SoustackRecipe = {
   stacks?: Record<string, number> | string[];
   ingredients: string[];
   instructions: string[];
+  "x-prep"?: PrepMetadata;
   metadata?: {
     author?: string;
     originalTitle?: string;

@@ -1,4 +1,4 @@
-import { Chunk, IntermediateRecipe, Line } from "./types";
+import { Chunk, IntermediateRecipe, IngredientPrep, Line } from "./types";
 
 function sliceLines(lines: Line[], startLine: number, endLine: number): Line[] {
   return lines.filter((line) => line.n >= startLine && line.n <= endLine);
@@ -57,23 +57,34 @@ function extractAuthorFromLines(lines: Line[]): {
   return { author, filteredLines };
 }
 
+function isPrepHeader(text: string): boolean {
+  const normalized = text.toLowerCase().replace(/[:\s]+$/, "");
+  return (
+    normalized === "prep" ||
+    normalized === "preparation" ||
+    normalized === "mise en place" ||
+    normalized === "mise-en-place" ||
+    normalized === "before you start"
+  );
+}
+
 function splitSections(lines: Line[]): {
   ingredients: string[];
   instructions: string[];
+  prep: string[];
 } {
   const trimmedLines = lines
     .map((line) => line.text.trim())
     .filter((text) => Boolean(text));
   const ingredients: string[] = [];
   const instructions: string[] = [];
-  let mode: "ingredients" | "instructions" | "unknown" = "unknown";
+  const prep: string[] = [];
+  let mode: "ingredients" | "instructions" | "prep" | "unknown" = "unknown";
 
   const normalizeHeader = (text: string) => text.toLowerCase().replace(/[:\s]+$/, "");
   const isIngredientHeader = (text: string) => normalizeHeader(text) === "ingredients";
   const isInstructionHeader = (text: string) =>
-    /^(instructions?|directions|method|preparation|steps?|step\s*\d+)$/i.test(
-      normalizeHeader(text),
-    );
+    /^(instructions?|directions|method|steps?|step\s*\d+)$/i.test(normalizeHeader(text));
   const isByLine = (text: string) => /^by[:\s]/i.test(text);
   const bulletRegex = /^[-*•·‣◦–—]\s*/;
   const cleanIngredient = (text: string) => text.replace(bulletRegex, "").trim();
@@ -82,6 +93,8 @@ function splitSections(lines: Line[]): {
       .replace(/^(step\s*\d+[:.)]?\s*)/i, "")
       .replace(/^\d+[.)]\s+/, "")
       .trim();
+  const cleanPrep = (text: string) =>
+    cleanInstruction(text.replace(bulletRegex, "").trim());
   const ingredientStarters = ["salt", "pepper", "pinch", "dash"];
   const unicodeFractionRegex = /^[¼½¾⅓⅔⅛⅜⅝⅞]\s+\w+/;
   const isIngredientLike = (text: string) =>
@@ -131,6 +144,10 @@ function splitSections(lines: Line[]): {
         mode = "instructions";
         continue;
       }
+      if (isPrepHeader(text)) {
+        mode = "prep";
+        continue;
+      }
 
       if (mode === "ingredients") {
         ingredients.push(cleanIngredient(text));
@@ -138,6 +155,13 @@ function splitSections(lines: Line[]): {
       }
 
       if (mode === "instructions") {
+        instructions.push(cleanInstruction(text));
+        continue;
+      }
+
+      if (mode === "prep") {
+        const cleanedPrep = cleanPrep(text);
+        prep.push(cleanedPrep);
         instructions.push(cleanInstruction(text));
         continue;
       }
@@ -156,6 +180,10 @@ function splitSections(lines: Line[]): {
     let instructionCount = 0;
 
     for (const text of trimmedLines) {
+      if (isPrepHeader(text)) {
+        mode = "prep";
+        continue;
+      }
       if (isInstructionHeader(text)) {
         mode = "instructions";
         continue;
@@ -192,11 +220,19 @@ function splitSections(lines: Line[]): {
         continue;
       }
 
+      if (mode === "prep") {
+        const cleanedPrep = cleanPrep(text);
+        prep.push(cleanedPrep);
+        instructions.push(cleanInstruction(text));
+        instructionCount += 1;
+        continue;
+      }
+
       instructions.push(cleanInstruction(text));
       instructionCount += 1;
     }
 
-    if (ingredients.length === 0 && trimmedLines.length > 1) {
+    if (ingredients.length === 0 && trimmedLines.length > 1 && prep.length === 0) {
       ingredients.length = 0;
       instructions.length = 0;
       ingredientCount = 0;
@@ -204,8 +240,20 @@ function splitSections(lines: Line[]): {
       let inInstructions = false;
 
       for (const text of trimmedLines) {
+        if (isPrepHeader(text)) {
+          mode = "prep";
+          continue;
+        }
         const ingredientLike = isIngredientLike(text);
         const instructionLike = isInstructionLike(text) || isClearInstructionLike(text);
+
+        if (mode === "prep") {
+          const cleanedPrep = cleanPrep(text);
+          prep.push(cleanedPrep);
+          instructions.push(cleanInstruction(text));
+          instructionCount += 1;
+          continue;
+        }
 
         if (!inInstructions) {
           if (instructionLike && ingredientCount >= 1) {
@@ -257,6 +305,7 @@ function splitSections(lines: Line[]): {
   return {
     ingredients,
     instructions,
+    prep,
   };
 }
 
@@ -339,6 +388,109 @@ const TOOL_WORDS = new Set([
   "knife",
   "spoon",
 ]);
+
+const PREP_BASE_WORDS = new Set([
+  "chopped",
+  "minced",
+  "diced",
+  "sliced",
+  "grated",
+  "shredded",
+  "zested",
+  "juiced",
+  "peeled",
+  "seeded",
+  "drained",
+  "rinsed",
+  "softened",
+  "melted",
+  "cooled",
+  "thawed",
+  "toasted",
+  "crushed",
+  "ground",
+]);
+
+function normalizePrepToken(token: string): string | null {
+  const cleaned = token
+    .toLowerCase()
+    .replace(/[.!?]+$/, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!cleaned) {
+    return null;
+  }
+
+  if (/^(at\s+)?room\s+temp(erature)?$/.test(cleaned)) {
+    return "room temperature";
+  }
+
+  if (PREP_BASE_WORDS.has(cleaned)) {
+    return cleaned;
+  }
+
+  const modifierMatch = cleaned.match(/^(finely|roughly|coarsely)\s+(\w+)$/);
+  if (modifierMatch) {
+    const [, modifier, base] = modifierMatch;
+    if (PREP_BASE_WORDS.has(base)) {
+      return `${modifier} ${base}`;
+    }
+  }
+
+  return null;
+}
+
+function extractIngredientPrep(raw: string): { base: string; prep: string[] } {
+  let base = raw.trim();
+  const prep: string[] = [];
+
+  base = base
+    .replace(/\(([^)]+)\)/g, (_match, contents: string) => {
+      const tokens = contents
+        .split(",")
+        .map((token) => token.trim())
+        .filter(Boolean);
+      const kept: string[] = [];
+      for (const token of tokens) {
+        const normalized = normalizePrepToken(token);
+        if (normalized) {
+          prep.push(normalized);
+        } else {
+          kept.push(token);
+        }
+      }
+      if (kept.length > 0) {
+        return `(${kept.join(", ")})`;
+      }
+      return "";
+    })
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const segments = base
+    .split(",")
+    .map((segment) => segment.trim())
+    .filter(Boolean);
+  if (segments.length > 1) {
+    const baseSegments: string[] = [];
+    segments.forEach((segment, index) => {
+      if (index === 0) {
+        baseSegments.push(segment);
+        return;
+      }
+
+      const normalized = normalizePrepToken(segment);
+      if (normalized) {
+        prep.push(normalized);
+      } else {
+        baseSegments.push(segment);
+      }
+    });
+    base = baseSegments.join(", ").trim();
+  }
+
+  return { base, prep };
+}
 
 function inferIngredientsFromInstructions(instructions: string[]): string[] {
   const imperativeLines = instructions.filter((line) => isImperativeLine(line));
@@ -474,9 +626,22 @@ export function extract(chunk: Chunk, lines: Line[]): IntermediateRecipe {
   const { author, filteredLines } = extractAuthorFromLines(contentLines);
   contentLines = filteredLines;
 
-  const { ingredients, instructions } = splitSections(contentLines);
+  const { ingredients, instructions, prep } = splitSections(contentLines);
+  const ingredientPrep: IngredientPrep[] = [];
 
-  return {
+  ingredients.forEach((ingredient, index) => {
+    const { base, prep: prepTokens } = extractIngredientPrep(ingredient);
+    if (prepTokens.length > 0) {
+      ingredientPrep.push({
+        index,
+        raw: ingredient,
+        base,
+        prep: prepTokens,
+      });
+    }
+  });
+
+  const recipe: IntermediateRecipe = {
     title,
     ingredients,
     instructions,
@@ -487,4 +652,14 @@ export function extract(chunk: Chunk, lines: Line[]): IntermediateRecipe {
       author,
     },
   };
+
+  if (prep.length > 0) {
+    recipe.prepSection = prep;
+  }
+
+  if (ingredientPrep.length > 0) {
+    recipe.ingredientPrep = ingredientPrep;
+  }
+
+  return recipe;
 }
