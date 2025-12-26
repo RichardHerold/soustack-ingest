@@ -52,6 +52,36 @@ const vNextSchema = {
       type: "array",
       items: { type: "string" },
     },
+    "x-prep": {
+      type: "object",
+      properties: {
+        section: {
+          type: "array",
+          items: { type: "string" },
+        },
+        ingredients: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              index: { type: "number" },
+              raw: { type: "string" },
+              base: { type: "string" },
+              prep: {
+                type: "array",
+                items: { type: "string" },
+              },
+            },
+            required: ["index", "raw", "base", "prep"],
+            additionalProperties: false,
+          },
+        },
+        generatedAt: {
+          type: "string",
+        },
+      },
+      additionalProperties: false,
+    },
     metadata: {
       type: "object",
       properties: {
