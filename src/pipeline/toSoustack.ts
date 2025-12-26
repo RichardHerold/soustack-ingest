@@ -1,6 +1,5 @@
+import { VNEXT_SCHEMA_URL } from "./schema";
 import { IntermediateRecipe, PrepMetadata, SoustackRecipe } from "./types";
-
-const SCHEMA_URL = "https://soustack.spec/soustack.schema.json";
 
 const MINOR_WORDS = new Set([
   "a",
@@ -57,6 +56,13 @@ export function toSoustack(
   intermediate: IntermediateRecipe,
   options?: { sourcePath?: string }
 ): SoustackRecipe {
+  const ingredients = Array.isArray(intermediate.ingredients)
+    ? intermediate.ingredients.map((value) => `${value}`)
+    : [];
+  const instructions = Array.isArray(intermediate.instructions)
+    ? intermediate.instructions.map((value) => `${value}`)
+    : [];
+
   const metadata: SoustackRecipe["metadata"] = {
     originalTitle: intermediate.title,
     ingest: {
@@ -83,12 +89,12 @@ export function toSoustack(
       : undefined;
 
   return {
-    $schema: SCHEMA_URL,
+    $schema: VNEXT_SCHEMA_URL,
     profile: "lite",
     name: toTitleCase(intermediate.title),
     stacks: {},
-    ingredients: intermediate.ingredients,
-    instructions: intermediate.instructions,
+    ingredients,
+    instructions,
     ...(prepMetadata ? { "x-prep": prepMetadata } : {}),
     metadata,
   };

@@ -1,10 +1,9 @@
-/// <reference path="../types/external.d.ts" />
-import AdmZip from "adm-zip";
 import { spawn } from "child_process";
 import { promises as fs } from "fs";
 import os from "os";
 import path from "path";
 import { AdapterOutput } from "../pipeline";
+import { ZipArchive } from "../lib/zip";
 
 type RtfCandidate = {
   filePath: string;
@@ -181,7 +180,7 @@ async function convertRtfToText(rtfPath: string): Promise<string> {
 
 export async function readRtfdZip(filePath: string): Promise<AdapterOutput> {
   const extractedPath = await fs.mkdtemp(path.join(os.tmpdir(), "soustack-rtfd-"));
-  const zip = new AdmZip(filePath);
+  const zip = new ZipArchive(filePath);
   const entries = zip.getEntries();
 
   for (const entry of entries) {

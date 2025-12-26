@@ -17,15 +17,21 @@ async function emit(recipes, outDir) {
     const outputRoot = outDir;
     const recipesDir = path_1.default.join(outputRoot, "recipes");
     await fs_1.promises.mkdir(recipesDir, { recursive: true });
-    const indexPayload = recipes.map((recipe) => ({
-        name: recipe.name,
-        slug: slugify(recipe.name),
-        path: `recipes/${slugify(recipe.name)}.soustack.json`,
-    }));
-    await fs_1.promises.writeFile(path_1.default.join(outputRoot, "index.json"), JSON.stringify(indexPayload, null, 2), "utf-8");
-    await Promise.all(recipes.map(async (recipe) => {
-        const slug = slugify(recipe.name);
-        const filePath = path_1.default.join(recipesDir, `${slug}.soustack.json`);
+    const slugCounts = new Map();
+    const indexPayload = [];
+    for (const recipe of recipes) {
+        const baseSlug = slugify(recipe.name);
+        const nextCount = (slugCounts.get(baseSlug) ?? 0) + 1;
+        slugCounts.set(baseSlug, nextCount);
+        const resolvedSlug = nextCount === 1 ? baseSlug : `${baseSlug}-${nextCount}`;
+        const fileName = `${resolvedSlug}.soustack.json`;
+        indexPayload.push({
+            name: recipe.name,
+            slug: resolvedSlug,
+            path: `recipes/${fileName}`,
+        });
+        const filePath = path_1.default.join(recipesDir, fileName);
         await fs_1.promises.writeFile(filePath, JSON.stringify(recipe, null, 2), "utf-8");
-    }));
+    }
+    await fs_1.promises.writeFile(path_1.default.join(outputRoot, "index.json"), JSON.stringify(indexPayload, null, 2), "utf-8");
 }

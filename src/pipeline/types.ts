@@ -56,7 +56,7 @@ export type SoustackRecipe = {
   $schema: string;
   profile: "lite";
   name: string;
-  stacks?: Record<string, number> | string[];
+  stacks: Record<string, unknown>;
   ingredients: string[];
   instructions: string[];
   "x-prep"?: PrepMetadata;

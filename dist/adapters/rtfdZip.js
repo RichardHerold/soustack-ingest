@@ -38,12 +38,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.readRtfdZip = readRtfdZip;
 exports.readRtfdDirectory = readRtfdDirectory;
-/// <reference path="../types/external.d.ts" />
-const adm_zip_1 = __importDefault(require("adm-zip"));
 const child_process_1 = require("child_process");
 const fs_1 = require("fs");
 const os_1 = __importDefault(require("os"));
 const path_1 = __importDefault(require("path"));
+const zip_1 = require("../lib/zip");
 async function listFiles(root) {
     const entries = await fs_1.promises.readdir(root, { withFileTypes: true });
     const files = [];
@@ -192,7 +191,7 @@ async function convertRtfToText(rtfPath) {
 }
 async function readRtfdZip(filePath) {
     const extractedPath = await fs_1.promises.mkdtemp(path_1.default.join(os_1.default.tmpdir(), "soustack-rtfd-"));
-    const zip = new adm_zip_1.default(filePath);
+    const zip = new zip_1.ZipArchive(filePath);
     const entries = zip.getEntries();
     for (const entry of entries) {
         const entryName = entry.entryName;
