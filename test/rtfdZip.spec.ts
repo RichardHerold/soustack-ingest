@@ -3,6 +3,7 @@ import os from "os";
 import path from "path";
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import { execFileSync } from "node:child_process";
 import { ZipArchive } from "../src/lib/zip";
 import { loadInput } from "../src/adapters";
 import { emit } from "../src/pipeline/emit";
@@ -64,5 +65,23 @@ describe("rtfd zip integration", () => {
     assert.ok(recipeFiles.length >= 2);
 
     await fs.rm(tempDir, { recursive: true, force: true });
+  });
+});
+
+describe("zip validation", () => {
+  it("rejects archives that would write outside the destination", async () => {
+    const workDir = await fs.mkdtemp(path.join(os.tmpdir(), "soustack-zip-validation-"));
+    const extractionDir = path.join(workDir, "extract-here");
+    await fs.mkdir(extractionDir);
+
+    const evilPath = path.join(workDir, "evil.txt");
+    await fs.writeFile(evilPath, "clobber");
+
+    const zipPath = path.join(workDir, "traversal.zip");
+    execFileSync("zip", ["-q", zipPath, "../evil.txt"], { cwd: extractionDir });
+
+    assert.throws(() => new ZipArchive(zipPath), /unsafe zip entry/i);
+
+    await fs.rm(workDir, { recursive: true, force: true });
   });
 });
