@@ -43,8 +43,8 @@ The ingest pipeline runs stages in order (`src/cli.ts`, `src/pipeline`).
 
 4. **toSoustack** (`src/pipeline/toSoustack.ts`)
    - **Input:** `IntermediateRecipe`.
-   - **Output:** `SoustackRecipe` (Soustack JSON shape) with `$schema`, `level`, `name`, and `x-ingest` metadata.
-   - **Contract:** embeds source path and line range into `x-ingest`.
+   - **Output:** `SoustackRecipe` (Soustack JSON shape) with `$schema` (vNext canonical URL), `profile: "lite"`, `stacks` as an object map, normalized `ingredients`/`instructions` string arrays, and ingest metadata.
+   - **Contract:** embeds source path and line range into `metadata.ingest`.
 
 5. **validate** (`src/pipeline/validate.ts`)
    - **Input:** `SoustackRecipe`.

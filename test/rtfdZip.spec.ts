@@ -1,9 +1,9 @@
-import AdmZip from "adm-zip";
 import { existsSync, promises as fs } from "fs";
 import os from "os";
 import path from "path";
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import { ZipArchive } from "../src/lib/zip";
 import { loadInput } from "../src/adapters";
 import { emit } from "../src/pipeline/emit";
 import { extract } from "../src/pipeline/extract";
@@ -20,7 +20,7 @@ describe("rtfd zip adapter", () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "soustack-rtfd-test-"));
     const zipPath = path.join(tempDir, "sample.rtfd.zip");
     const rtfContents = await fs.readFile(fixturePath);
-    const zip = new AdmZip();
+    const zip = new ZipArchive();
     zip.addFile("Sample.rtfd/TXT.rtf", rtfContents);
     zip.writeZip(zipPath);
 

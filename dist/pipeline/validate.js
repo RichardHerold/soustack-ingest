@@ -42,16 +42,66 @@ const node_module_1 = require("node:module");
 const node_fs_1 = __importDefault(require("node:fs"));
 const node_path_1 = __importDefault(require("node:path"));
 const ajv_1 = __importDefault(require("ajv"));
-const fallbackSchema = {
+const schema_1 = require("./schema");
+const vNextSchema = {
     type: "object",
-    required: ["name"],
+    required: ["$schema", "profile", "name", "stacks", "ingredients", "instructions"],
     properties: {
+        $schema: {
+            const: schema_1.VNEXT_SCHEMA_URL,
+        },
+        profile: {
+            type: "string",
+            const: "lite",
+        },
         name: {
             type: "string",
             minLength: 1,
         },
+        stacks: {
+            type: "object",
+            additionalProperties: true,
+        },
+        ingredients: {
+            type: "array",
+            items: { type: "string" },
+            default: [],
+        },
+        instructions: {
+            type: "array",
+            items: { type: "string" },
+            default: [],
+        },
+        metadata: {
+            type: "object",
+            properties: {
+                originalTitle: { type: "string" },
+                ingest: {
+                    type: "object",
+                    properties: {
+                        pipelineVersion: { type: "string" },
+                        sourcePath: { type: "string" },
+                        sourceLines: {
+                            type: "object",
+                            properties: {
+                                start: { type: "number" },
+                                end: { type: "number" },
+                            },
+                            required: ["start", "end"],
+                            additionalProperties: false,
+                        },
+                        warnings: {
+                            type: "array",
+                            items: { type: "string" },
+                        },
+                    },
+                    additionalProperties: true,
+                },
+            },
+            additionalProperties: true,
+        },
     },
-    additionalProperties: true,
+    additionalProperties: false,
 };
 const moduleRequire = (0, node_module_1.createRequire)(typeof __filename !== "undefined" ? __filename : process.cwd());
 function toJsonPathSegment(segment) {
@@ -108,7 +158,7 @@ function resolveSchemaFromModule(core) {
     }
     return null;
 }
-async function loadSchemaFromString(schemaRef) {
+async function loadSchemaFromString(schemaRef, moduleName) {
     if (schemaRef.startsWith("http://") || schemaRef.startsWith("https://")) {
         const response = await fetch(schemaRef);
         if (!response.ok) {
@@ -119,7 +169,7 @@ async function loadSchemaFromString(schemaRef) {
     try {
         const resolved = node_path_1.default.isAbsolute(schemaRef)
             ? schemaRef
-            : node_path_1.default.join(node_path_1.default.dirname(moduleRequire.resolve("soustack/package.json")), schemaRef);
+            : node_path_1.default.join(node_path_1.default.dirname(moduleRequire.resolve(`${moduleName}/package.json`)), schemaRef);
         const raw = await node_fs_1.default.promises.readFile(resolved, "utf-8");
         return JSON.parse(raw);
     }
@@ -127,9 +177,9 @@ async function loadSchemaFromString(schemaRef) {
         return null;
     }
 }
-async function loadSchemaFromPackage() {
+async function loadSchemaFromPackage(moduleName) {
     try {
-        const root = node_path_1.default.dirname(moduleRequire.resolve("soustack/package.json"));
+        const root = node_path_1.default.dirname(moduleRequire.resolve(`${moduleName}/package.json`));
         const candidates = [
             "recipe.schema.json",
             "schema/recipe.schema.json",
@@ -151,40 +201,58 @@ async function loadSchemaFromPackage() {
     }
     return null;
 }
-let activeValidator = buildAjvValidator(fallbackSchema);
-const coreValidatorPromise = (async () => {
+function normalizeIssue(issue) {
+    if (typeof issue === "string") {
+        return issue;
+    }
+    if (issue && typeof issue === "object") {
+        const path = issue.path ?? "";
+        const message = issue.message ??
+            issue.error ??
+            "is invalid";
+        const normalizedPath = path || issue.instancePath || "";
+        return [normalizedPath, message].filter(Boolean).join(" ").trim();
+    }
+    return "is invalid";
+}
+function normalizeValidateRecipeResult(raw) {
+    if (!raw || typeof raw !== "object") {
+        return { ok: false, errors: ["Validator returned no result"] };
+    }
+    const typed = raw;
+    const errors = [];
+    for (const issue of typed.schemaErrors ?? []) {
+        errors.push(normalizeIssue(issue));
+    }
+    for (const issue of typed.conformanceIssues ?? []) {
+        errors.push(normalizeIssue(issue));
+    }
+    for (const issue of typed.errors ?? []) {
+        errors.push(normalizeIssue(issue));
+    }
+    const ok = Boolean(typed.ok ?? typed.valid ?? typed.success);
+    return { ok: ok && errors.length === 0, errors };
+}
+function wrapValidateRecipe(validateRecipeFn) {
+    return {
+        validate: (recipe) => {
+            const result = validateRecipeFn(recipe);
+            if (result && typeof result.then === "function") {
+                return {
+                    ok: false,
+                    errors: ["validateRecipe returned a Promise; async validators are not supported"],
+                };
+            }
+            return normalizeValidateRecipeResult(result);
+        },
+    };
+}
+async function selectValidatorFromModule(moduleName) {
     try {
-        // #region agent log
-        fetch('http://127.0.0.1:7246/ingest/e57cfe72-9edb-4211-85b1-172504310ac9', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'validate.ts:142', message: 'Importing soustack module', data: {}, timestamp: Date.now(), sessionId: 'debug-session', runId: 'pre-fix', hypothesisId: 'C' }) }).catch(() => { });
-        // #endregion
-        const module = await Promise.resolve().then(() => __importStar(require("soustack")));
-        // #region agent log
-        fetch('http://127.0.0.1:7246/ingest/e57cfe72-9edb-4211-85b1-172504310ac9', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'validate.ts:144', message: 'soustack module imported', data: { hasValidateRecipe: !!module.validateRecipe }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'pre-fix', hypothesisId: 'C' }) }).catch(() => { });
-        // #endregion
+        const module = await Promise.resolve(`${moduleName}`).then(s => __importStar(require(s)));
         const core = module;
         if (core.validateRecipe) {
-            const validateRecipeFn = core.validateRecipe;
-            return {
-                validate: (recipe) => {
-                    // #region agent log
-                    fetch('http://127.0.0.1:7246/ingest/e57cfe72-9edb-4211-85b1-172504310ac9', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'validate.ts:149', message: 'Calling soustack validateRecipe', data: { recipeName: recipe.name }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'pre-fix', hypothesisId: 'C' }) }).catch(() => { });
-                    // #endregion
-                    const result = validateRecipeFn(recipe);
-                    // #region agent log
-                    fetch('http://127.0.0.1:7246/ingest/e57cfe72-9edb-4211-85b1-172504310ac9', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'validate.ts:152', message: 'soustack validateRecipe result', data: { ok: result.ok, hasSchemaErrors: !!result.schemaErrors, hasConformanceIssues: !!result.conformanceIssues, schemaErrorCount: result.schemaErrors?.length || 0 }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'pre-fix', hypothesisId: 'C' }) }).catch(() => { });
-                    // #endregion
-                    // Convert soustack ValidateResult to local ValidationResult format
-                    const errors = [];
-                    const schemaErrors = Array.isArray(result.schemaErrors) ? result.schemaErrors : [];
-                    const conformanceIssues = Array.isArray(result.conformanceIssues) ? result.conformanceIssues : [];
-                    errors.push(...schemaErrors.map((e) => `${e.path} ${e.message}`));
-                    errors.push(...conformanceIssues.map((e) => `${e.path} ${e.message}`));
-                    return {
-                        ok: result.ok,
-                        errors,
-                    };
-                },
-            };
+            return wrapValidateRecipe(core.validateRecipe);
         }
         const moduleSchema = resolveSchemaFromModule(core);
         if (moduleSchema) {
@@ -196,12 +264,12 @@ const coreValidatorPromise = (async () => {
                 ? core.recipeSchema
                 : null;
         if (schemaRef) {
-            const resolved = await loadSchemaFromString(schemaRef);
+            const resolved = await loadSchemaFromString(schemaRef, moduleName);
             if (resolved) {
                 return buildAjvValidator(resolved);
             }
         }
-        const packagedSchema = await loadSchemaFromPackage();
+        const packagedSchema = await loadSchemaFromPackage(moduleName);
         if (packagedSchema) {
             return buildAjvValidator(packagedSchema);
         }
@@ -210,26 +278,25 @@ const coreValidatorPromise = (async () => {
         return null;
     }
     return null;
+}
+const validatorModuleCandidates = [
+    process.env.SOUSTACK_VALIDATOR_MODULE,
+    "soustack-core",
+].filter(Boolean);
+let activeValidator = buildAjvValidator(vNextSchema);
+const coreValidatorPromise = (async () => {
+    for (const moduleName of validatorModuleCandidates) {
+        const validator = await selectValidatorFromModule(moduleName);
+        if (validator) {
+            return validator;
+        }
+    }
+    return null;
 })();
 async function initValidator() {
-    // #region agent log
-    fetch('http://127.0.0.1:7246/ingest/e57cfe72-9edb-4211-85b1-172504310ac9', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'validate.ts:189', message: 'initValidator called', data: {}, timestamp: Date.now(), sessionId: 'debug-session', runId: 'pre-fix', hypothesisId: 'C' }) }).catch(() => { });
-    // #endregion
     const validator = await coreValidatorPromise;
-    // #region agent log
-    fetch('http://127.0.0.1:7246/ingest/e57cfe72-9edb-4211-85b1-172504310ac9', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'validate.ts:192', message: 'Validator resolved', data: { hasValidator: !!validator }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'pre-fix', hypothesisId: 'C' }) }).catch(() => { });
-    // #endregion
-    if (validator) {
-        activeValidator = validator;
-    }
+    activeValidator = validator ?? buildAjvValidator(vNextSchema);
 }
 function validate(recipe) {
-    // #region agent log
-    fetch('http://127.0.0.1:7246/ingest/e57cfe72-9edb-4211-85b1-172504310ac9', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'validate.ts:203', message: 'validate called', data: { recipeName: recipe.name }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'pre-fix', hypothesisId: 'C' }) }).catch(() => { });
-    // #endregion
-    const result = activeValidator.validate(recipe);
-    // #region agent log
-    fetch('http://127.0.0.1:7246/ingest/e57cfe72-9edb-4211-85b1-172504310ac9', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'validate.ts:206', message: 'validate result', data: { ok: result.ok, errorCount: result.errors.length }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'pre-fix', hypothesisId: 'C' }) }).catch(() => { });
-    // #endregion
-    return result;
+    return activeValidator.validate(recipe);
 }

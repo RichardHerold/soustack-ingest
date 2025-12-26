@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import Ajv, { ErrorObject, type AnySchema } from "ajv";
 
+import { VNEXT_SCHEMA_URL } from "./schema";
 import { SoustackRecipe, ValidationResult } from "./types";
 
 export interface Validator {
@@ -11,20 +12,34 @@ export interface Validator {
 
 type CoreValidationModule = {
   validator?: Validator;
-  validateRecipe?: (recipe: SoustackRecipe, options?: unknown) => {
-    ok: boolean;
-    schemaErrors?: Array<{ path: string; message: string }>;
-    conformanceIssues?: Array<{ path: string; message: string }>;
-    warnings?: string[];
-  };
+  validateRecipe?: (
+    recipe: SoustackRecipe,
+    options?: unknown
+  ) =>
+    | {
+        ok?: boolean;
+        valid?: boolean;
+        success?: boolean;
+        schemaErrors?: Array<{ path?: string; message?: string }>;
+        conformanceIssues?: Array<{ path?: string; message?: string }>;
+        errors?: Array<{ path?: string; message?: string } | string>;
+        warnings?: string[];
+      }
+    | Promise<{
+        ok?: boolean;
+        valid?: boolean;
+        success?: boolean;
+        schemaErrors?: Array<{ path?: string; message?: string }>;
+        conformanceIssues?: Array<{ path?: string; message?: string }>;
+        errors?: Array<{ path?: string; message?: string } | string>;
+        warnings?: string[];
+      }>;
   recipeSchema?: unknown;
   schema?: unknown;
   schemas?: {
     recipe?: unknown;
   };
 };
-
-const VNEXT_SCHEMA_URL = "https://soustack.spec/soustack.schema.json";
 
 const vNextSchema = {
   type: "object",
@@ -42,15 +57,18 @@ const vNextSchema = {
       minLength: 1,
     },
     stacks: {
-      anyOf: [{ type: "object" }, { type: "array" }],
+      type: "object",
+      additionalProperties: true,
     },
     ingredients: {
       type: "array",
       items: { type: "string" },
+      default: [],
     },
     instructions: {
       type: "array",
       items: { type: "string" },
+      default: [],
     },
     metadata: {
       type: "object",
@@ -82,18 +100,6 @@ const vNextSchema = {
     },
   },
   additionalProperties: false,
-};
-
-const fallbackSchema = {
-  type: "object",
-  required: ["name"],
-  properties: {
-    name: {
-      type: "string",
-      minLength: 1,
-    },
-  },
-  additionalProperties: true,
 };
 
 const moduleRequire = createRequire(typeof __filename !== "undefined" ? __filename : process.cwd());
@@ -158,7 +164,7 @@ function resolveSchemaFromModule(core: CoreValidationModule): unknown | null {
   return null;
 }
 
-async function loadSchemaFromString(schemaRef: string): Promise<unknown | null> {
+async function loadSchemaFromString(schemaRef: string, moduleName: string): Promise<unknown | null> {
   if (schemaRef.startsWith("http://") || schemaRef.startsWith("https://")) {
     const response = await fetch(schemaRef);
     if (!response.ok) {
@@ -169,7 +175,7 @@ async function loadSchemaFromString(schemaRef: string): Promise<unknown | null> 
   try {
     const resolved = path.isAbsolute(schemaRef)
       ? schemaRef
-      : path.join(path.dirname(moduleRequire.resolve("soustack/package.json")), schemaRef);
+      : path.join(path.dirname(moduleRequire.resolve(`${moduleName}/package.json`)), schemaRef);
     const raw = await fs.promises.readFile(resolved, "utf-8");
     return JSON.parse(raw) as unknown;
   } catch {
@@ -177,9 +183,9 @@ async function loadSchemaFromString(schemaRef: string): Promise<unknown | null> 
   }
 }
 
-async function loadSchemaFromPackage(): Promise<unknown | null> {
+async function loadSchemaFromPackage(moduleName: string): Promise<unknown | null> {
   try {
-    const root = path.dirname(moduleRequire.resolve("soustack/package.json"));
+    const root = path.dirname(moduleRequire.resolve(`${moduleName}/package.json`));
     const candidates = [
       "recipe.schema.json",
       "schema/recipe.schema.json",
@@ -201,42 +207,74 @@ async function loadSchemaFromPackage(): Promise<unknown | null> {
   return null;
 }
 
-let activeValidator: Validator = buildAjvValidator(fallbackSchema);
-const vNextValidator = buildAjvValidator(vNextSchema);
+function normalizeIssue(issue: unknown): string {
+  if (typeof issue === "string") {
+    return issue;
+  }
+  if (issue && typeof issue === "object") {
+    const path = (issue as { path?: string; instancePath?: string }).path ?? "";
+    const message =
+      (issue as { message?: string; error?: string }).message ??
+      (issue as { error?: string }).error ??
+      "is invalid";
+    const normalizedPath = path || (issue as { instancePath?: string }).instancePath || "";
+    return [normalizedPath, message].filter(Boolean).join(" ").trim();
+  }
+  return "is invalid";
+}
 
-const coreValidatorPromise = (async () => {
+function normalizeValidateRecipeResult(raw: unknown): ValidationResult {
+  if (!raw || typeof raw !== "object") {
+    return { ok: false, errors: ["Validator returned no result"] };
+  }
+
+  const typed = raw as {
+    ok?: boolean;
+    valid?: boolean;
+    success?: boolean;
+    schemaErrors?: Array<unknown>;
+    conformanceIssues?: Array<unknown>;
+    errors?: Array<unknown>;
+  };
+
+  const errors: string[] = [];
+  for (const issue of typed.schemaErrors ?? []) {
+    errors.push(normalizeIssue(issue));
+  }
+  for (const issue of typed.conformanceIssues ?? []) {
+    errors.push(normalizeIssue(issue));
+  }
+  for (const issue of typed.errors ?? []) {
+    errors.push(normalizeIssue(issue));
+  }
+
+  const ok = Boolean(typed.ok ?? typed.valid ?? typed.success);
+  return { ok: ok && errors.length === 0, errors };
+}
+
+function wrapValidateRecipe(
+  validateRecipeFn: NonNullable<CoreValidationModule["validateRecipe"]>
+): Validator {
+  return {
+    validate: (recipe: SoustackRecipe) => {
+      const result = validateRecipeFn(recipe);
+      if (result && typeof (result as Promise<unknown>).then === "function") {
+        return {
+          ok: false,
+          errors: ["validateRecipe returned a Promise; async validators are not supported"],
+        };
+      }
+      return normalizeValidateRecipeResult(result);
+    },
+  };
+}
+
+async function selectValidatorFromModule(moduleName: string): Promise<Validator | null> {
   try {
-    // #region agent log
-    fetch('http://127.0.0.1:7246/ingest/e57cfe72-9edb-4211-85b1-172504310ac9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'validate.ts:142',message:'Importing soustack module',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'C'})}).catch(()=>{});
-    // #endregion
-    const module = await import("soustack");
-    // #region agent log
-    fetch('http://127.0.0.1:7246/ingest/e57cfe72-9edb-4211-85b1-172504310ac9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'validate.ts:144',message:'soustack module imported',data:{hasValidateRecipe:!!(module as {validateRecipe?:unknown}).validateRecipe},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'C'})}).catch(()=>{});
-    // #endregion
+    const module = await import(moduleName);
     const core = module as CoreValidationModule;
     if (core.validateRecipe) {
-      const validateRecipeFn = core.validateRecipe;
-      return {
-        validate: (recipe: SoustackRecipe): ValidationResult => {
-          // #region agent log
-          fetch('http://127.0.0.1:7246/ingest/e57cfe72-9edb-4211-85b1-172504310ac9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'validate.ts:149',message:'Calling soustack validateRecipe',data:{recipeName:recipe.name},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'C'})}).catch(()=>{});
-          // #endregion
-          const result = validateRecipeFn(recipe);
-          // #region agent log
-          fetch('http://127.0.0.1:7246/ingest/e57cfe72-9edb-4211-85b1-172504310ac9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'validate.ts:152',message:'soustack validateRecipe result',data:{ok:result.ok,hasSchemaErrors:!!result.schemaErrors,hasConformanceIssues:!!result.conformanceIssues,schemaErrorCount:result.schemaErrors?.length||0},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'C'})}).catch(()=>{});
-          // #endregion
-          // Convert soustack ValidateResult to local ValidationResult format
-          const errors: string[] = [];
-          const schemaErrors = Array.isArray(result.schemaErrors) ? result.schemaErrors : [];
-          const conformanceIssues = Array.isArray(result.conformanceIssues) ? result.conformanceIssues : [];
-          errors.push(...schemaErrors.map((e) => `${e.path} ${e.message}`));
-          errors.push(...conformanceIssues.map((e) => `${e.path} ${e.message}`));
-          return {
-            ok: result.ok,
-            errors,
-          };
-        },
-      };
+      return wrapValidateRecipe(core.validateRecipe);
     }
     const moduleSchema = resolveSchemaFromModule(core);
     if (moduleSchema) {
@@ -249,12 +287,12 @@ const coreValidatorPromise = (async () => {
           ? core.recipeSchema
           : null;
     if (schemaRef) {
-      const resolved = await loadSchemaFromString(schemaRef);
+      const resolved = await loadSchemaFromString(schemaRef, moduleName);
       if (resolved) {
         return buildAjvValidator(resolved);
       }
     }
-    const packagedSchema = await loadSchemaFromPackage();
+    const packagedSchema = await loadSchemaFromPackage(moduleName);
     if (packagedSchema) {
       return buildAjvValidator(packagedSchema);
     }
@@ -262,33 +300,29 @@ const coreValidatorPromise = (async () => {
     return null;
   }
   return null;
+}
+
+const validatorModuleCandidates = [
+  process.env.SOUSTACK_VALIDATOR_MODULE,
+  "soustack-core",
+].filter(Boolean) as string[];
+
+let activeValidator: Validator = buildAjvValidator(vNextSchema);
+const coreValidatorPromise = (async () => {
+  for (const moduleName of validatorModuleCandidates) {
+    const validator = await selectValidatorFromModule(moduleName);
+    if (validator) {
+      return validator;
+    }
+  }
+  return null;
 })();
 
 export async function initValidator(): Promise<void> {
-  // #region agent log
-  fetch('http://127.0.0.1:7246/ingest/e57cfe72-9edb-4211-85b1-172504310ac9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'validate.ts:189',message:'initValidator called',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'C'})}).catch(()=>{});
-  // #endregion
   const validator = await coreValidatorPromise;
-  // #region agent log
-  fetch('http://127.0.0.1:7246/ingest/e57cfe72-9edb-4211-85b1-172504310ac9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'validate.ts:192',message:'Validator resolved',data:{hasValidator:!!validator},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'C'})}).catch(()=>{});
-  // #endregion
-  activeValidator = {
-    validate: (recipe: SoustackRecipe) => {
-      if (recipe.$schema === VNEXT_SCHEMA_URL) {
-        return vNextValidator.validate(recipe);
-      }
-      return (validator ?? vNextValidator).validate(recipe);
-    },
-  };
+  activeValidator = validator ?? buildAjvValidator(vNextSchema);
 }
 
 export function validate(recipe: SoustackRecipe): ValidationResult {
-  // #region agent log
-  fetch('http://127.0.0.1:7246/ingest/e57cfe72-9edb-4211-85b1-172504310ac9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'validate.ts:203',message:'validate called',data:{recipeName:recipe.name},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'C'})}).catch(()=>{});
-  // #endregion
-  const result = activeValidator.validate(recipe);
-  // #region agent log
-  fetch('http://127.0.0.1:7246/ingest/e57cfe72-9edb-4211-85b1-172504310ac9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'validate.ts:206',message:'validate result',data:{ok:result.ok,errorCount:result.errors.length},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'C'})}).catch(()=>{});
-  // #endregion
-  return result;
+  return activeValidator.validate(recipe);
 }

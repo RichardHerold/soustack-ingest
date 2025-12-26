@@ -32,14 +32,27 @@ const units = [
 ];
 const ingredientMarker = /^(ingredients?)\b/i;
 const instructionMarker = /^(instructions?|directions?|method|steps?)\b/i;
+const bylineMarker = /^(by|from)\b/i;
 const endsWithPunctuation = /[.:;!?]$/;
 const unicodeFraction = /[¼½¾⅓⅔⅛⅜⅝⅞]/;
+const bulletStart = /^[-*•·‣◦–—]/;
+const titleInstructionVerbRegex = /^(add|mix|remove|cook|bake|stir|heat)\b/i;
+const imperativeVerbRegex = /^(add|mix|bake|toast|stir|cook|whisk|combine|place|pour|bring|boil|simmer|heat|serve|fold|sprinkle|chop|slice|preheat|roast|saute|grill|blend|beat|season|drain|flip|marinate|set)\b/i;
 function isTitleLikeLine(text, prevBlank, nextBlank, index, totalLines) {
     const trimmed = text.trim();
     if (!trimmed) {
         return false;
     }
     if (endsWithPunctuation.test(trimmed)) {
+        return false;
+    }
+    if (/^\d/.test(trimmed) || unicodeFraction.test(trimmed.charAt(0))) {
+        return false;
+    }
+    if (bulletStart.test(trimmed)) {
+        return false;
+    }
+    if (titleInstructionVerbRegex.test(trimmed)) {
         return false;
     }
     if (trimmed.length < 3 || trimmed.length > 72) {
@@ -54,14 +67,12 @@ function isTitleLikeLine(text, prevBlank, nextBlank, index, totalLines) {
     if (letterRatio < 0.6) {
         return false;
     }
-    if (prevBlank && nextBlank) {
-        return true;
-    }
     const isEdgePosition = index <= 1 || index >= totalLines - 2;
     const capitalizedWords = words.filter((word) => /^[A-Z]/.test(word)).length;
     const capitalRatio = words.length === 0 ? 0 : capitalizedWords / words.length;
-    const isShort = trimmed.length <= 30 || words.length <= 4;
-    return (prevBlank || nextBlank || isEdgePosition) && (capitalRatio >= 0.6 || isShort);
+    // Require capitalization even when surrounded by blank lines or at edges.
+    // This avoids tagging short ingredient lines like "Chicken breasts" as titles.
+    return (prevBlank || nextBlank || isEdgePosition) && capitalRatio >= 0.6;
 }
 function isIngredientCandidate(text) {
     const trimmed = text.trim();
@@ -88,10 +99,29 @@ function isIngredientCandidate(text) {
     if (hasUnitToken) {
         return true;
     }
-    const letters = trimmed.replace(/[^A-Za-z]/g, "").length;
-    const letterRatio = letters / trimmed.length;
-    const isShort = words.length <= 4;
-    return isShort && letterRatio >= 0.5 && !endsWithPunctuation.test(trimmed);
+    return false;
+}
+function isAllCapsTitle(text) {
+    const trimmed = text.trim();
+    if (!trimmed) {
+        return false;
+    }
+    const lettersOnly = trimmed.replace(/[^A-Za-z]/g, "");
+    if (!lettersOnly) {
+        return false;
+    }
+    return lettersOnly === lettersOnly.toUpperCase();
+}
+function isImperativeLine(text) {
+    const trimmed = text.trim();
+    if (!trimmed) {
+        return false;
+    }
+    if (ingredientMarker.test(trimmed) || instructionMarker.test(trimmed)) {
+        return false;
+    }
+    const normalized = trimmed.replace(/^(\d+[\).\s]+|[-*•]\s*)/, "");
+    return imperativeVerbRegex.test(normalized);
 }
 function buildFeatures(lines) {
     return lines.map((line, index) => {
@@ -104,9 +134,11 @@ function buildFeatures(lines) {
         return {
             isBlank: trimmed.length === 0,
             isTitleLike: isTitleLikeLine(text, prevBlank, nextBlank, index, lines.length),
+            isAllCapsTitle: isAllCapsTitle(text),
             hasIngredientsMarker: ingredientMarker.test(trimmed),
             hasInstructionMarker: instructionMarker.test(trimmed),
             isIngredientLine: isIngredientCandidate(text),
+            isImperativeLine: isImperativeLine(text),
         };
     });
 }
@@ -123,16 +155,49 @@ function ingredientDensity(features, start, window) {
     const ingredientLines = nonEmpty.filter((line) => line.isIngredientLine).length;
     return ingredientLines / nonEmpty.length;
 }
+function imperativeDensity(features, start, window) {
+    const end = Math.min(features.length, start + window);
+    const slice = features.slice(start, end);
+    const nonEmpty = slice.filter((line) => !line.isBlank);
+    if (nonEmpty.length === 0) {
+        return 0;
+    }
+    const imperativeLines = nonEmpty.filter((line) => line.isImperativeLine).length;
+    return imperativeLines / nonEmpty.length;
+}
 function findCandidateStarts(lines, features) {
     const candidates = [];
     for (let index = 0; index < lines.length; index += 1) {
+        if (features[index].isIngredientLine) {
+            continue;
+        }
         if (!features[index].isTitleLike) {
             continue;
         }
+        if (features[index].isImperativeLine && !features[index].isAllCapsTitle) {
+            const prev = features[index - 1];
+            if (prev && !prev.isBlank) {
+                continue;
+            }
+        }
         const density = ingredientDensity(features, index + 1, 8);
-        const score = clamp(0.6 + density * 0.8);
-        if (density >= 0.25) {
-            candidates.push({ index, score });
+        const imperative = imperativeDensity(features, index + 1, 8);
+        const score = clamp(0.6 + Math.max(density, imperative) * 0.8);
+        const acceptsIngredient = density >= 0.25;
+        const acceptsImperative = imperative >= 0.3;
+        const acceptsCapsImperative = features[index].isAllCapsTitle && imperative >= 0.2;
+        if (acceptsIngredient || acceptsImperative || acceptsCapsImperative) {
+            let reason;
+            if (acceptsCapsImperative) {
+                reason = "all-caps-imperative";
+            }
+            else if (acceptsImperative && imperative >= density) {
+                reason = "imperative-density";
+            }
+            else {
+                reason = "ingredient-density";
+            }
+            candidates.push({ index, score, reason });
         }
     }
     const deduped = [];
@@ -152,6 +217,52 @@ function findCandidateStarts(lines, features) {
     });
     return deduped;
 }
+function hasNearbyStructuredMarker(lines, startIndex, window = 8) {
+    const end = Math.min(lines.length - 1, startIndex + window);
+    for (let index = startIndex + 1; index <= end; index += 1) {
+        const trimmed = lines[index].text.trim();
+        if (!trimmed) {
+            continue;
+        }
+        if (ingredientMarker.test(trimmed) || bylineMarker.test(trimmed)) {
+            return true;
+        }
+    }
+    return false;
+}
+function isAuthorLine(lines, index) {
+    const prev = lines[index - 1];
+    return prev ? bylineMarker.test(prev.text.trim()) : false;
+}
+function findStructuredCookbookStarts(lines, features) {
+    const ingredientIndices = lines
+        .map((line, index) => (features[index].hasIngredientsMarker ? index : -1))
+        .filter((index) => index >= 0);
+    const starts = [];
+    ingredientIndices.forEach((ingredientIndex) => {
+        for (let index = ingredientIndex - 1; index >= 0; index -= 1) {
+            const text = lines[index].text.trim();
+            if (!text) {
+                continue;
+            }
+            if (bylineMarker.test(text) || isAuthorLine(lines, index)) {
+                continue;
+            }
+            if (features[index].isIngredientLine) {
+                continue;
+            }
+            if (!features[index].isTitleLike) {
+                continue;
+            }
+            if (!hasNearbyStructuredMarker(lines, index)) {
+                continue;
+            }
+            starts.push(index);
+            break;
+        }
+    });
+    return starts;
+}
 function confidenceForChunk(lines, features, startIndex, endIndex) {
     const slice = features.slice(startIndex, endIndex + 1);
     const nonEmpty = slice.filter((line) => !line.isBlank);
@@ -161,13 +272,17 @@ function confidenceForChunk(lines, features, startIndex, endIndex) {
     const titleScore = features[startIndex]?.isTitleLike ? 1 : 0;
     return clamp(0.4 * titleScore + 0.4 * density + (instructionPresent ? 0.2 : 0));
 }
-function segment(lines) {
+function segment(lines, options = {}) {
     if (lines.length === 0) {
         return { chunks: [] };
     }
     const features = buildFeatures(lines);
-    const candidates = findCandidateStarts(lines, features);
-    if (candidates.length === 0) {
+    const ingredientMarkerCount = features.filter((feature) => feature.hasIngredientsMarker).length;
+    const structuredStarts = ingredientMarkerCount >= 5 ? findStructuredCookbookStarts(lines, features) : [];
+    const structuredCandidateStarts = Array.from(new Set(structuredStarts)).sort((a, b) => a - b);
+    const candidates = structuredCandidateStarts.length > 0 ? [] : findCandidateStarts(lines, features);
+    const includeDebug = options.debug === true;
+    if (structuredCandidateStarts.length === 0 && candidates.length === 0) {
         const nonEmpty = lines.find((line) => line.text.trim().length > 0);
         const titleGuess = nonEmpty?.text.trim();
         const chunk = {
@@ -181,20 +296,38 @@ function segment(lines) {
         };
         return { chunks: [chunk] };
     }
-    const chunks = candidates.map((candidate, index) => {
-        const next = candidates[index + 1];
-        const startIndex = candidate.index;
-        const endIndex = next ? next.index - 1 : lines.length - 1;
-        const titleGuess = lines[startIndex].text.trim();
-        const confidence = confidenceForChunk(lines, features, startIndex, endIndex);
-        const evidence = `Title candidate at line ${lines[startIndex].n} with density ${ingredientDensity(features, startIndex + 1, 8).toFixed(2)}`;
-        return {
-            startLine: lines[startIndex].n,
-            endLine: lines[endIndex].n,
-            titleGuess,
-            confidence,
-            evidence,
-        };
-    });
+    const chunks = structuredCandidateStarts.length > 0
+        ? structuredCandidateStarts.map((startIndex, index) => {
+            const next = structuredCandidateStarts[index + 1];
+            const endIndex = next ? next - 1 : lines.length - 1;
+            const titleGuess = lines[startIndex].text.trim();
+            const confidence = confidenceForChunk(lines, features, startIndex, endIndex);
+            const evidence = `Structured cookbook start at line ${lines[startIndex].n}`;
+            return {
+                startLine: lines[startIndex].n,
+                endLine: lines[endIndex].n,
+                titleGuess,
+                confidence,
+                evidence,
+            };
+        })
+        : candidates.map((candidate, index) => {
+            const next = candidates[index + 1];
+            const startIndex = candidate.index;
+            const endIndex = next ? next.index - 1 : lines.length - 1;
+            const titleGuess = lines[startIndex].text.trim();
+            const confidence = confidenceForChunk(lines, features, startIndex, endIndex);
+            const evidence = `Title candidate at line ${lines[startIndex].n} with density ${ingredientDensity(features, startIndex + 1, 8).toFixed(2)}`;
+            return {
+                startLine: lines[startIndex].n,
+                endLine: lines[endIndex].n,
+                titleGuess,
+                confidence,
+                evidence,
+                ...(includeDebug && candidate.reason
+                    ? { segmentationReason: candidate.reason }
+                    : {}),
+            };
+        });
     return { chunks };
 }

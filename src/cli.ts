@@ -187,8 +187,11 @@ if (require.main === module) {
 }
 
 function parsePrepExtractionMode(mode?: string): PrepExtractionMode {
-  if (!mode || mode === "conservative" || mode === "aggressive") {
-    return mode ?? "conservative";
+  if (mode === "conservative" || mode === "aggressive") {
+    return mode;
+  }
+  if (!mode) {
+    return "conservative";
   }
   throw new Error(
     `Invalid --prep-extraction-mode "${mode}". Expected "conservative" or "aggressive".`,

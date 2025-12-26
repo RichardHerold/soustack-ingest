@@ -390,7 +390,7 @@ describe("pipeline", () => {
 
       const recipe = toSoustack(intermediate, { sourcePath: "recipes.md" });
 
-      assert.equal(recipe.$schema, "https://soustack.spec/soustack.schema.json");
+      assert.equal(recipe.$schema, "https://spec.soustack.dev/recipe.schema.json");
       assert.equal(recipe.profile, "lite");
       assert.equal(recipe.name, "Cinnamon Toast and Butter");
       assert.deepEqual(recipe.ingredients, intermediate.ingredients);
@@ -435,6 +435,23 @@ describe("pipeline", () => {
       assert.ok(recipe["x-prep"]?.generatedAt);
     });
 
+    it("defaults to empty ingredient and instruction arrays when missing", () => {
+      const intermediate = {
+        title: "Empty Fields",
+        source: {
+          startLine: 1,
+          endLine: 1,
+          evidence: "Lines 1-1",
+        },
+      } as unknown as IntermediateRecipe;
+
+      const recipe = toSoustack(intermediate);
+
+      assert.deepEqual(recipe.ingredients, []);
+      assert.deepEqual(recipe.instructions, []);
+      assert.equal(recipe.stacks && typeof recipe.stacks, "object");
+    });
+
     it("emits only spec-approved top-level fields", () => {
       const intermediate: IntermediateRecipe = {
         title: "Veggie Bowl",
@@ -459,7 +476,7 @@ describe("pipeline", () => {
         "metadata",
       ]);
 
-      assert.equal(recipe.$schema, "https://soustack.spec/soustack.schema.json");
+      assert.equal(recipe.$schema, "https://spec.soustack.dev/recipe.schema.json");
       Object.keys(recipe).forEach((key) => {
         assert.ok(allowedKeys.has(key), `Unexpected top-level key: ${key}`);
       });
@@ -480,10 +497,10 @@ describe("pipeline", () => {
     it("writes index and recipe files", async () => {
       const recipes: SoustackRecipe[] = [
         {
-          $schema: "https://soustack.spec/soustack.schema.json",
+          $schema: "https://spec.soustack.dev/recipe.schema.json",
           profile: "lite",
           name: "Test Recipe",
-          stacks: [],
+          stacks: {},
           ingredients: ["1 cup sugar"],
           instructions: ["Mix."],
           metadata: {
@@ -520,10 +537,10 @@ describe("pipeline", () => {
     it("writes unique paths for duplicate recipe names", async () => {
       const recipes: SoustackRecipe[] = [
         {
-          $schema: "https://soustack.spec/soustack.schema.json",
+          $schema: "https://spec.soustack.dev/recipe.schema.json",
           profile: "lite",
           name: "Dup Recipe",
-          stacks: [],
+          stacks: {},
           ingredients: ["1 cup sugar"],
           instructions: ["Mix."],
           metadata: {
@@ -533,10 +550,10 @@ describe("pipeline", () => {
           },
         },
         {
-          $schema: "https://soustack.spec/soustack.schema.json",
+          $schema: "https://spec.soustack.dev/recipe.schema.json",
           profile: "lite",
           name: "Dup Recipe",
-          stacks: [],
+          stacks: {},
           ingredients: ["2 cups flour"],
           instructions: ["Bake."],
           metadata: {
@@ -573,10 +590,10 @@ describe("pipeline", () => {
 
     it("accepts a minimal valid recipe", () => {
       const recipe: SoustackRecipe = {
-        $schema: "https://soustack.spec/soustack.schema.json",
+        $schema: "https://spec.soustack.dev/recipe.schema.json",
         profile: "lite",
         name: "Test Recipe",
-        stacks: [],
+        stacks: {},
         ingredients: ["1 cup sugar"],
         instructions: ["Mix."],
         metadata: {
@@ -594,9 +611,9 @@ describe("pipeline", () => {
 
     it("rejects a recipe missing a name", () => {
       const recipe = {
-        $schema: "https://soustack.spec/soustack.schema.json",
+        $schema: "https://spec.soustack.dev/recipe.schema.json",
         profile: "lite",
-        stacks: [],
+        stacks: {},
         ingredients: ["1 cup sugar"],
         instructions: ["Mix."],
         metadata: {
