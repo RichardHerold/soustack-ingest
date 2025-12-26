@@ -52,6 +52,34 @@ function validateZipEntries(zipPath: string): void {
       throw new Error(`Unsafe zip entry path: ${rawEntry}`);
     }
   }
+
+  const info = execFileSync("zipinfo", ["-s", zipPath], { encoding: "utf-8" });
+  for (const line of info.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("Archive:") || trimmed.startsWith("Zip file size:")) {
+      continue;
+    }
+    if (trimmed[0] !== "l") {
+      continue;
+    }
+
+    const match = trimmed.match(/\d{2}:\d{2}\s+(.*)$/);
+    if (!match) {
+      continue;
+    }
+    const entryName = match[1];
+    const target = execFileSync("unzip", ["-p", zipPath, entryName], { encoding: "utf-8" }).trim();
+    const sanitizedTarget = target.replace(/\\/g, "/");
+    if (!sanitizedTarget || sanitizedTarget.includes("\0") || /^[a-zA-Z]:/.test(sanitizedTarget)) {
+      throw new Error(`Unsafe zip symlink target: ${target}`);
+    }
+
+    const baseDir = path.posix.dirname(entryName);
+    const resolved = path.posix.normalize(path.posix.join("/zip-root", baseDir, sanitizedTarget));
+    if (!resolved.startsWith("/zip-root/") && resolved !== "/zip-root") {
+      throw new Error(`Unsafe zip symlink target: ${target}`);
+    }
+  }
 }
 
 export class ZipArchive {

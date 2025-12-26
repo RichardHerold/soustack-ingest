@@ -84,4 +84,21 @@ describe("zip validation", () => {
 
     await fs.rm(workDir, { recursive: true, force: true });
   });
+
+  it("rejects symlink entries that would resolve outside the destination", async () => {
+    const workDir = await fs.mkdtemp(path.join(os.tmpdir(), "soustack-zip-symlink-"));
+    const zipRoot = path.join(workDir, "zip-root");
+    await fs.mkdir(zipRoot);
+    const safeDir = path.join(zipRoot, "safe");
+    await fs.mkdir(safeDir);
+    await fs.symlink("../../../../etc", path.join(safeDir, "escape"));
+    await fs.writeFile(path.join(safeDir, "payload"), "symlink escape");
+
+    const zipPath = path.join(workDir, "symlink-traversal.zip");
+    execFileSync("zip", ["-qry", zipPath, "."], { cwd: zipRoot });
+
+    assert.throws(() => new ZipArchive(zipPath), /unsafe zip symlink target/i);
+
+    await fs.rm(workDir, { recursive: true, force: true });
+  });
 });
