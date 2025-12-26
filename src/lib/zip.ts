@@ -15,6 +15,12 @@ function listPaths(root: string): string[] {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
+      if (entry.isSymbolicLink()) {
+        const resolved = fs.realpathSync(fullPath);
+        if (!resolved.startsWith(`${root}${path.sep}`) && resolved !== root) {
+          throw new Error(`Zip entry resolves outside of extraction directory: ${entry.name}`);
+        }
+      }
       results.push(fullPath);
       if (entry.isDirectory()) {
         walk(fullPath);
@@ -26,13 +32,26 @@ function listPaths(root: string): string[] {
 }
 
 function createEntry(entryPath: string, root: string): ZipEntry {
-  const stats = fs.statSync(entryPath);
+  const stats = fs.lstatSync(entryPath);
   const entryName = path.relative(root, entryPath).split(path.sep).join("/");
   return {
     entryName,
     isDirectory: stats.isDirectory(),
     getData: () => (stats.isDirectory() ? Buffer.alloc(0) : fs.readFileSync(entryPath)),
   };
+}
+
+function validateZipEntries(zipPath: string): void {
+  const listing = execFileSync("unzip", ["-Z1", zipPath], { encoding: "utf-8" });
+  const entries = listing.split("\n").filter(Boolean);
+
+  for (const rawEntry of entries) {
+    const normalized = path.posix.normalize(rawEntry.replace(/\\/g, "/"));
+    const isAbsolute = path.posix.isAbsolute(normalized) || /^[a-zA-Z]:/.test(normalized);
+    if (!normalized || normalized === "." || normalized.startsWith("..") || isAbsolute) {
+      throw new Error(`Unsafe zip entry path: ${rawEntry}`);
+    }
+  }
 }
 
 export class ZipArchive {
@@ -42,6 +61,7 @@ export class ZipArchive {
   constructor(zipPath?: string) {
     if (zipPath) {
       const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "soustack-zip-"));
+      validateZipEntries(zipPath);
       execFileSync("unzip", ["-qq", zipPath, "-d", tempDir]);
       this.entries = listPaths(tempDir).map((entryPath) => createEntry(entryPath, tempDir));
     }
