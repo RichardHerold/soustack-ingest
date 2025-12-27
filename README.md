@@ -19,6 +19,8 @@ Adapters are selected by file extension (`src/cli.ts`, `src/adapters`).
 
 - `.rtfd.zip`: handled by `readRtfdZip` (`src/adapters/rtfdZip.ts`). The adapter extracts the archive, locates the primary `.rtf` payload (preferring `TXT.rtf` or the largest `.rtf` file), and converts it to text. It tries a Node-based parser first, then falls back to `pandoc` and `textutil` when available.
 - `.txt`: handled by `readTxt` (`src/adapters/txt.ts`). Reads the file as UTF-8 text and passes it to the pipeline.
+- `.docx`: handled by `readDocx` (`src/adapters/docx.ts`). Extracts plain text from Microsoft Word documents using `mammoth`.
+- `.pdf`: handled by `readPdf` (`src/adapters/pdf.ts`). Extracts plain text from PDF files using `pdf-parse`.
 
 Unsupported extensions throw an error.
 
