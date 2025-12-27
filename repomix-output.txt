@@ -1,0 +1,4208 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+The content has been processed where empty lines have been removed, content has been compressed (code blocks are separated by ⋮---- delimiter).
+
+================================================================
+File Summary
+================================================================
+
+Purpose:
+--------
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+
+File Format:
+------------
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  a. A separator line (================)
+  b. The file path (File: path/to/file)
+  c. Another separator line
+  d. The full contents of the file
+  e. A blank line
+
+Usage Guidelines:
+-----------------
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+
+Notes:
+------
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Empty lines have been removed from all files
+- Content has been compressed - code blocks are separated by ⋮---- delimiter
+- Files are sorted by Git change count (files with more changes are at the bottom)
+
+
+================================================================
+Directory Structure
+================================================================
+scripts/
+  dump-repo-for-ai.mjs
+src/
+  adapters/
+    index.ts
+    rtfdZip.ts
+    txt.ts
+  lib/
+    zip.ts
+  pipeline/
+    emit.ts
+    extract.ts
+    index.ts
+    normalize.ts
+    schema.ts
+    segment.ts
+    toSoustack.ts
+    types.ts
+    validate.ts
+  types/
+    external.d.ts
+  cli.ts
+test/
+  fixtures/
+    .gitkeep
+    cinnamon-toast.txt
+    sample.rtf
+    structured-cookbook.txt
+  cli.spec.ts
+  pipeline.spec.ts
+  rtfdZip.spec.ts
+.gitignore
+LICENSE
+package.json
+README.md
+repomix-output.xml
+tsconfig.json
+tsconfig.test.json
+
+================================================================
+Files
+================================================================
+
+================
+File: repomix-output.xml
+================
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+<file_summary>
+This section contains a summary of this file.
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+</file_summary>
+<directory_structure>
+scripts/
+  dump-repo-for-ai.mjs
+src/
+  adapters/
+    index.ts
+    rtfdZip.ts
+    txt.ts
+  lib/
+    zip.ts
+  pipeline/
+    emit.ts
+    extract.ts
+    index.ts
+    normalize.ts
+    schema.ts
+    segment.ts
+    toSoustack.ts
+    types.ts
+    validate.ts
+  types/
+    external.d.ts
+  cli.ts
+test/
+  fixtures/
+    .gitkeep
+    cinnamon-toast.txt
+    sample.rtf
+    structured-cookbook.txt
+  cli.spec.ts
+  pipeline.spec.ts
+  rtfdZip.spec.ts
+.gitignore
+LICENSE
+package.json
+README.md
+tsconfig.json
+tsconfig.test.json
+</directory_structure>
+<files>
+This section contains the contents of the repository's files.
+<file path="src/lib/zip.ts">
+import { execFileSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+export type ZipEntry = {
+  entryName: string;
+  isDirectory: boolean;
+  getData: () => Buffer;
+};
+function listPaths(root: string): string[] {
+  const results: string[] = [];
+  const walk = (dir: string) => {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      results.push(fullPath);
+      if (entry.isDirectory()) {
+        walk(fullPath);
+      }
+    }
+  };
+  walk(root);
+  return results;
+}
+function createEntry(entryPath: string, root: string): ZipEntry {
+  const stats = fs.statSync(entryPath);
+  const entryName = path.relative(root, entryPath).split(path.sep).join("/");
+  return {
+    entryName,
+    isDirectory: stats.isDirectory(),
+    getData: () => (stats.isDirectory() ? Buffer.alloc(0) : fs.readFileSync(entryPath)),
+  };
+}
+export class ZipArchive {
+  private stagedEntries: Array<{ entryName: string; data: Buffer }> = [];
+  private entries: ZipEntry[] = [];
+  constructor(zipPath?: string) {
+    if (zipPath) {
+      const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "soustack-zip-"));
+      execFileSync("unzip", ["-qq", zipPath, "-d", tempDir]);
+      this.entries = listPaths(tempDir).map((entryPath) => createEntry(entryPath, tempDir));
+    }
+  }
+  addFile(entryName: string, data: Buffer): void {
+    this.stagedEntries.push({ entryName, data });
+  }
+  writeZip(targetPath: string): void {
+    const workDir = fs.mkdtempSync(path.join(os.tmpdir(), "soustack-zip-build-"));
+    for (const entry of this.stagedEntries) {
+      const destination = path.join(workDir, entry.entryName.split("/").join(path.sep));
+      fs.mkdirSync(path.dirname(destination), { recursive: true });
+      fs.writeFileSync(destination, entry.data);
+    }
+    const cwd = process.cwd();
+    process.chdir(workDir);
+    try {
+      execFileSync("zip", ["-qr", targetPath, "."]);
+    } finally {
+      process.chdir(cwd);
+    }
+  }
+  getEntries(): ZipEntry[] {
+    return this.entries;
+  }
+}
+</file>
+<file path="src/pipeline/schema.ts">
+export const VNEXT_SCHEMA_URL = "https://spec.soustack.dev/recipe.schema.json";
+</file>
+<file path="test/fixtures/.gitkeep">
+</file>
+<file path="test/fixtures/cinnamon-toast.txt">
+CINNAMON TOAST AND BUTTER
+Toast the white bread
+Add soft butter onto toast
+Sprinkle the cinnamon/sugar mix
+</file>
+<file path="test/fixtures/structured-cookbook.txt">
+CHICKEN PICCATTA
+By:
+Unknown
+Ingredients:
+Chicken breasts
+½ cup flour
+SPRING SALAD
+Ingredients:
+Lettuce
+QUICK SOUP
+Ingredients:
+Water
+EASY TOAST
+Ingredients:
+Bread
+SWEET TREAT
+Ingredients:
+Sugar
+</file>
+<file path="LICENSE">
+MIT License
+Copyright (c) 2025 RichardHerold
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+</file>
+<file path="tsconfig.test.json">
+{
+  "extends": "./tsconfig.json",
+  "include": ["src", "test"],
+  "compilerOptions": {
+    "types": ["node"]
+  }
+}
+</file>
+<file path="scripts/dump-repo-for-ai.mjs">
+#!/usr/bin/env node
+import { createHash } from 'crypto';
+import { execFileSync } from 'child_process';
+import fs from 'fs/promises';
+import path from 'path';
+const DEFAULT_MAX_FILE_KB = 256;
+const DEFAULT_MAX_TOTAL_MB = 10;
+const DEFAULT_IGNORE_PATTERNS = [
+  '.git/',
+  'node_modules/',
+  'dist/',
+  'build/',
+  '.next/',
+  'out/',
+  'coverage/',
+  '.cache/',
+  '.parcel-cache/',
+  '.turbo/',
+  '.DS_Store',
+  'package-lock.json',
+  'yarn.lock',
+  'pnpm-lock.yaml',
+  'bun.lockb',
+  'npm-shrinkwrap.json'
+];
+const BINARY_EXTENSIONS = new Set([
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.gif',
+  '.webp',
+  '.bmp',
+  '.ico',
+  '.tif',
+  '.tiff',
+  '.psd',
+  '.ai',
+  '.eps',
+  '.mp3',
+  '.wav',
+  '.flac',
+  '.aac',
+  '.ogg',
+  '.mp4',
+  '.mov',
+  '.avi',
+  '.mkv',
+  '.webm',
+  '.mpg',
+  '.mpeg',
+  '.zip',
+  '.tar',
+  '.gz',
+  '.tgz',
+  '.bz2',
+  '.7z',
+  '.rar',
+  '.pdf',
+  '.exe',
+  '.bin',
+  '.dll',
+  '.so',
+  '.dylib',
+  '.ttf',
+  '.otf',
+  '.woff',
+  '.woff2',
+  '.eot'
+]);
+function parseArgs(argv) {
+  const args = {
+    out: 'soustack-injest-repo-pack.md',
+    maxFileKB: DEFAULT_MAX_FILE_KB,
+    maxTotalMB: DEFAULT_MAX_TOTAL_MB
+  };
+  for (let i = 0; i < argv.length; i += 1) {
+    const arg = argv[i];
+    if (arg === '--out' && argv[i + 1]) {
+      args.out = argv[i + 1];
+      i += 1;
+      continue;
+    }
+    if (arg === '--maxFileKB' && argv[i + 1]) {
+      args.maxFileKB = Number(argv[i + 1]);
+      i += 1;
+      continue;
+    }
+    if (arg === '--maxTotalMB' && argv[i + 1]) {
+      args.maxTotalMB = Number(argv[i + 1]);
+      i += 1;
+      continue;
+    }
+  }
+  return args;
+}
+function toPosixPath(filePath) {
+  return filePath.split(path.sep).join('/');
+}
+function globToRegex(glob) {
+  let regex = '';
+  let i = 0;
+  while (i < glob.length) {
+    const char = glob[i];
+    if (char === '*') {
+      if (glob[i + 1] === '*') {
+        regex += '.*';
+        i += 2;
+      } else {
+        regex += '[^/]*';
+        i += 1;
+      }
+      continue;
+    }
+    if (char === '?') {
+      regex += '[^/]';
+      i += 1;
+      continue;
+    }
+    regex += char.replace(/[\\^$+?.()|{}\[\]]/g, '\\$&');
+    i += 1;
+  }
+  return new RegExp(`^${regex}$`);
+}
+function compilePatterns(patterns) {
+  return patterns.map((raw) => {
+    const trimmed = raw.trim();
+    if (!trimmed || trimmed.startsWith('#')) {
+      return null;
+    }
+    const negated = trimmed.startsWith('!');
+    const pattern = negated ? trimmed.slice(1) : trimmed;
+    const normalized = pattern.replace(/\\/g, '/').replace(/^\//, '');
+    return {
+      raw: trimmed,
+      negated,
+      pattern: normalized,
+      regex: globToRegex(normalized),
+      hasSlash: normalized.includes('/')
+    };
+  }).filter(Boolean);
+}
+function matchPattern(relPath, isDir, entryName, entry, patterns) {
+  let ignored = false;
+  const pathToMatch = isDir ? `${relPath}/` : relPath;
+  for (const pattern of patterns) {
+    if (!pattern) {
+      continue;
+    }
+    const matchesPath = pattern.regex.test(relPath) || pattern.regex.test(pathToMatch);
+    const matchesName = !pattern.hasSlash && pattern.regex.test(entryName);
+    if (matchesPath || matchesName) {
+      ignored = !pattern.negated;
+    }
+  }
+  if (ignored) {
+    entry.reason = 'ignored by pattern';
+  }
+  return ignored;
+}
+async function readIgnoreFile(root, filename) {
+  const filePath = path.join(root, filename);
+  try {
+    const content = await fs.readFile(filePath, 'utf8');
+    return content.split(/\r?\n/).map((line) => line.trim()).filter((line) => line.length > 0);
+  } catch (error) {
+    return [];
+  }
+}
+function isBinaryExtension(filePath) {
+  return BINARY_EXTENSIONS.has(path.extname(filePath).toLowerCase());
+}
+function isUtf8(buffer) {
+  if (buffer.includes(0)) {
+    return false;
+  }
+  const text = buffer.toString('utf8');
+  return Buffer.from(text, 'utf8').length === buffer.length;
+}
+function getTimestamp(repoRoot) {
+  const sourceDateEpoch = process.env.SOURCE_DATE_EPOCH;
+  if (sourceDateEpoch) {
+    const timestamp = Number(sourceDateEpoch) * 1000;
+    if (!Number.isNaN(timestamp)) {
+      return new Date(timestamp).toISOString();
+    }
+  }
+  try {
+    const commitTime = execFileSync('git', ['log', '-1', '--format=%cI'], {
+      cwd: repoRoot,
+      stdio: ['ignore', 'pipe', 'ignore']
+    }).toString().trim();
+    if (commitTime) {
+      return commitTime;
+    }
+  } catch (error) {
+    // ignore
+  }
+  return new Date().toISOString();
+}
+function getGitMetadata(repoRoot) {
+  try {
+    const branch = execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
+      cwd: repoRoot,
+      stdio: ['ignore', 'pipe', 'ignore']
+    }).toString().trim();
+    const sha = execFileSync('git', ['rev-parse', 'HEAD'], {
+      cwd: repoRoot,
+      stdio: ['ignore', 'pipe', 'ignore']
+    }).toString().trim();
+    const dirtyOutput = execFileSync('git', ['status', '--porcelain'], {
+      cwd: repoRoot,
+      stdio: ['ignore', 'pipe', 'ignore']
+    }).toString();
+    const dirty = dirtyOutput.trim().length > 0;
+    return { branch, sha, dirty };
+  } catch (error) {
+    return null;
+  }
+}
+async function collectFiles(repoRoot, options) {
+  const ignoreFiles = await Promise.all([
+    readIgnoreFile(repoRoot, '.gitignore'),
+    readIgnoreFile(repoRoot, '.repo-pack-ignore')
+  ]);
+  const ignorePatterns = [
+    ...compilePatterns(DEFAULT_IGNORE_PATTERNS),
+    ...compilePatterns(ignoreFiles[0]),
+    ...compilePatterns(ignoreFiles[1]),
+    ...compilePatterns([options.outFile])
+  ];
+  const included = [];
+  const skipped = [];
+  let totalBytes = 0;
+  async function walk(currentDir) {
+    let entries;
+    try {
+      entries = await fs.readdir(currentDir, { withFileTypes: true });
+    } catch (error) {
+      skipped.push({
+        path: toPosixPath(path.relative(repoRoot, currentDir)) || '.',
+        reason: `read error: ${error.message}`
+      });
+      return;
+    }
+    entries.sort((a, b) => a.name.localeCompare(b.name));
+    for (const entry of entries) {
+      const absolutePath = path.join(currentDir, entry.name);
+      const relativePath = toPosixPath(path.relative(repoRoot, absolutePath));
+      const skipEntry = { path: relativePath, reason: '' };
+      if (matchPattern(relativePath, entry.isDirectory(), entry.name, skipEntry, ignorePatterns)) {
+        skipped.push(skipEntry);
+        continue;
+      }
+      if (entry.isDirectory()) {
+        await walk(absolutePath);
+        continue;
+      }
+      if (entry.isSymbolicLink()) {
+        skipped.push({ path: relativePath, reason: 'symbolic link' });
+        continue;
+      }
+      if (isBinaryExtension(relativePath)) {
+        skipped.push({ path: relativePath, reason: 'binary extension' });
+        continue;
+      }
+      let buffer;
+      try {
+        buffer = await fs.readFile(absolutePath);
+      } catch (error) {
+        skipped.push({ path: relativePath, reason: `read error: ${error.message}` });
+        continue;
+      }
+      if (!isUtf8(buffer)) {
+        skipped.push({ path: relativePath, reason: 'non-utf8 or binary content' });
+        continue;
+      }
+      const fileSizeKB = buffer.length / 1024;
+      if (fileSizeKB > options.maxFileKB) {
+        skipped.push({
+          path: relativePath,
+          reason: `exceeds maxFileKB (${options.maxFileKB})`
+        });
+        continue;
+      }
+      if (totalBytes + buffer.length > options.maxTotalBytes) {
+        skipped.push({
+          path: relativePath,
+          reason: `exceeds maxTotalMB (${options.maxTotalMB})`
+        });
+        continue;
+      }
+      totalBytes += buffer.length;
+      included.push({
+        path: relativePath,
+        bytes: buffer.length,
+        sha256: createHash('sha256').update(buffer).digest('hex'),
+        contents: buffer.toString('utf8')
+      });
+    }
+  }
+  await walk(repoRoot);
+  return { included, skipped, totalBytes };
+}
+function formatOutput({ repoName, repoRoot, gitInfo, limits, files, skipped, totalBytes }) {
+  const lines = [];
+  lines.push(`# Repo Pack: ${repoName}`);
+  lines.push(`Generated: ${getTimestamp(repoRoot)}`);
+  if (gitInfo) {
+    lines.push(`Git: branch=${gitInfo.branch} sha=${gitInfo.sha} dirty=${gitInfo.dirty}`);
+  }
+  lines.push(`Limits: maxFileKB=${limits.maxFileKB}, maxTotalMB=${limits.maxTotalMB}`);
+  lines.push('');
+  lines.push('## File Tree (paths)');
+  lines.push('```text');
+  for (const file of files) {
+    lines.push(file.path);
+  }
+  lines.push('```');
+  lines.push('');
+  lines.push('Files (contents)');
+  lines.push('');
+  for (const file of files) {
+    lines.push(`FILE: ${file.path}`);
+    lines.push(`\t• bytes: ${file.bytes}`);
+    lines.push(`\t• sha256: ${file.sha256}`);
+    lines.push('');
+    lines.push(file.contents);
+    lines.push('');
+  }
+  lines.push('Summary');
+  lines.push('');
+  lines.push(`Included files: ${files.length}`);
+  lines.push(`Skipped files: ${skipped.length}`);
+  lines.push(`Total included bytes: ${totalBytes}`);
+  lines.push('');
+  lines.push('Skipped (top reasons)');
+  for (const entry of skipped) {
+    lines.push(`\t• ${entry.path}: ${entry.reason}`);
+  }
+  lines.push('');
+  return lines.join('\n');
+}
+async function main() {
+  const args = parseArgs(process.argv.slice(2));
+  const repoRoot = process.cwd();
+  const repoName = path.basename(repoRoot);
+  const limits = {
+    maxFileKB: Number.isFinite(args.maxFileKB) && args.maxFileKB > 0 ? args.maxFileKB : DEFAULT_MAX_FILE_KB,
+    maxTotalMB: Number.isFinite(args.maxTotalMB) && args.maxTotalMB > 0 ? args.maxTotalMB : DEFAULT_MAX_TOTAL_MB,
+    maxTotalBytes: (Number.isFinite(args.maxTotalMB) && args.maxTotalMB > 0 ? args.maxTotalMB : DEFAULT_MAX_TOTAL_MB) * 1024 * 1024
+  };
+  const gitInfo = getGitMetadata(repoRoot);
+  const outFile = toPosixPath(path.normalize(args.out));
+  const { included, skipped, totalBytes } = await collectFiles(repoRoot, {
+    ...limits,
+    outFile
+  });
+  const output = formatOutput({
+    repoName,
+    repoRoot,
+    gitInfo,
+    limits,
+    files: included,
+    skipped,
+    totalBytes
+  });
+  try {
+    await fs.writeFile(path.join(repoRoot, args.out), output, 'utf8');
+  } catch (error) {
+    console.error(`Failed to write output: ${error.message}`);
+    process.exitCode = 1;
+  }
+}
+main().catch((error) => {
+  console.error(`Unexpected error: ${error.message}`);
+  process.exitCode = 1;
+});
+</file>
+<file path="src/adapters/txt.ts">
+import { promises as fs } from "fs";
+import { AdapterOutput } from "../pipeline";
+export async function readTxt(filePath: string): Promise<AdapterOutput> {
+  const text = await fs.readFile(filePath, "utf-8");
+  return {
+    kind: "text",
+    text,
+    meta: {
+      sourcePath: filePath,
+    },
+  };
+}
+</file>
+<file path="src/pipeline/index.ts">
+export { normalize } from "./normalize";
+export { segment } from "./segment";
+export { extract } from "./extract";
+export { toSoustack } from "./toSoustack";
+export { initValidator, validate } from "./validate";
+export { emit } from "./emit";
+export * from "./types";
+</file>
+<file path="src/pipeline/normalize.ts">
+import { Line, NormalizedText } from "./types";
+export function normalize(input: string): NormalizedText {
+  const normalized = input.replace(/\r\n?/g, "\n").replace(/\f/g, "\n");
+  const lines: Line[] = normalized.split("\n").map((text, index) => ({
+    n: index + 1,
+    text,
+  }));
+  return {
+    fullText: normalized,
+    lines,
+  };
+}
+</file>
+<file path=".gitignore">
+soustack-injest-repo-pack.md
+/out
+.DS_Store
+</file>
+<file path="tsconfig.json">
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "rootDir": "src",
+    "outDir": "dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "types": ["node"]
+  },
+  "include": ["src"],
+  "ts-node": {
+    "esm": false
+  }
+}
+</file>
+<file path="src/adapters/index.ts">
+import path from "path";
+import { promises as fs } from "fs";
+import { readRtfdZip, readRtfdDirectory } from "./rtfdZip";
+import { readTxt } from "./txt";
+import { AdapterOutput } from "../pipeline";
+export { readTxt } from "./txt";
+export { readRtfdZip } from "./rtfdZip";
+export { readRtfdDirectory } from "./rtfdZip";
+export async function loadInput(inputPath: string): Promise<AdapterOutput> {
+  const normalizedPath = inputPath.toLowerCase();
+  if (normalizedPath.endsWith(".zip") && normalizedPath.includes(".rtfd")) {
+    return readRtfdZip(inputPath);
+  }
+  const extension = path.extname(normalizedPath);
+  if (extension === ".rtfd") {
+    // Check if it's a directory (rtfd bundle) or a zip file
+    const stats = await fs.stat(inputPath);
+    if (stats.isDirectory()) {
+      return readRtfdDirectory(inputPath);
+    } else {
+      // Treat as zip file
+      return readRtfdZip(inputPath);
+    }
+  }
+  if (extension === ".txt") {
+    return readTxt(inputPath);
+  }
+  throw new Error(`Unsupported input extension: ${extension}`);
+}
+</file>
+<file path="src/pipeline/emit.ts">
+import { promises as fs } from "fs";
+import path from "path";
+import { SoustackRecipe } from "./types";
+function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "")
+    .slice(0, 80) || "recipe";
+}
+export async function emit(recipes: SoustackRecipe[], outDir: string): Promise<void> {
+  const outputRoot = outDir;
+  const recipesDir = path.join(outputRoot, "recipes");
+  await fs.mkdir(recipesDir, { recursive: true });
+  const slugCounts = new Map<string, number>();
+  const indexPayload: Array<{ name: string; slug: string; path: string }> = [];
+  for (const recipe of recipes) {
+    const baseSlug = slugify(recipe.name);
+    const nextCount = (slugCounts.get(baseSlug) ?? 0) + 1;
+    slugCounts.set(baseSlug, nextCount);
+    const resolvedSlug = nextCount === 1 ? baseSlug : `${baseSlug}-${nextCount}`;
+    const fileName = `${resolvedSlug}.soustack.json`;
+    indexPayload.push({
+      name: recipe.name,
+      slug: resolvedSlug,
+      path: `recipes/${fileName}`,
+    });
+    const filePath = path.join(recipesDir, fileName);
+    await fs.writeFile(filePath, JSON.stringify(recipe, null, 2), "utf-8");
+  }
+  await fs.writeFile(
+    path.join(outputRoot, "index.json"),
+    JSON.stringify(indexPayload, null, 2),
+    "utf-8"
+  );
+}
+</file>
+<file path="test/rtfdZip.spec.ts">
+import { existsSync, promises as fs } from "fs";
+import os from "os";
+import path from "path";
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
+import { ZipArchive } from "../src/lib/zip";
+import { loadInput } from "../src/adapters";
+import { emit } from "../src/pipeline/emit";
+import { extract } from "../src/pipeline/extract";
+import { normalize } from "../src/pipeline/normalize";
+import { segment } from "../src/pipeline/segment";
+import { toSoustack } from "../src/pipeline/toSoustack";
+import { validate } from "../src/pipeline/validate";
+import { SoustackRecipe } from "../src/pipeline/types";
+const fixturePath = path.join(__dirname, "fixtures", "sample.rtf");
+describe("rtfd zip adapter", () => {
+  it("converts a tiny rtf payload to plain text", async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "soustack-rtfd-test-"));
+    const zipPath = path.join(tempDir, "sample.rtfd.zip");
+    const rtfContents = await fs.readFile(fixturePath);
+    const zip = new ZipArchive();
+    zip.addFile("Sample.rtfd/TXT.rtf", rtfContents);
+    zip.writeZip(zipPath);
+    const output = await loadInput(zipPath);
+    assert.equal(output.kind, "text");
+    assert.ok(output.text.toLowerCase().includes("test recipe"));
+    assert.equal(output.meta.sourcePath, zipPath);
+    await fs.rm(tempDir, { recursive: true, force: true });
+  });
+});
+describe("rtfd zip integration", () => {
+  const realPath = "/mnt/data/bowman cookbook.rtfd.zip";
+  const runTest = existsSync(realPath) ? it : it.skip;
+  runTest("ingests the cookbook end-to-end when present", async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "soustack-rtfd-it-"));
+    const adapterOutput = await loadInput(realPath);
+    const normalized = normalize(adapterOutput.text);
+    const segmented = segment(normalized.lines);
+    const recipes: SoustackRecipe[] = [];
+    for (const chunk of segmented.chunks) {
+      const intermediate = extract(chunk, normalized.lines);
+      const recipe = toSoustack(intermediate, { sourcePath: adapterOutput.meta.sourcePath });
+      const result = validate(recipe);
+      if (result.ok) {
+        recipes.push(recipe);
+      }
+    }
+    await emit(recipes, tempDir);
+    const indexPath = path.join(tempDir, "out", "index.json");
+    const recipesDir = path.join(tempDir, "out", "recipes");
+    await assert.doesNotReject(fs.access(indexPath));
+    const recipeFiles = await fs.readdir(recipesDir);
+    assert.ok(recipeFiles.length >= 2);
+    await fs.rm(tempDir, { recursive: true, force: true });
+  });
+});
+</file>
+<file path="src/types/external.d.ts">
+declare module "rtf2text" {
+  const converter: unknown;
+  export default converter;
+}
+</file>
+<file path="test/cli.spec.ts">
+import { afterEach, beforeEach, describe, it } from "node:test";
+import assert from "node:assert/strict";
+import { promises as fs } from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { ingest } from "../src/cli";
+describe("cli ingest warnings", () => {
+  let tempDir: string;
+  beforeEach(async () => {
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "soustack-cli-"));
+  });
+  afterEach(async () => {
+    await fs.rm(tempDir, { recursive: true, force: true });
+  });
+  it("emits recipes with warnings when instructions exist but ingredients are empty", async () => {
+    const inputPath = path.join(tempDir, "instructions-only.txt");
+    const outDir = path.join(tempDir, "out");
+    const content = [
+      "INSTRUCTIONS ONLY",
+      "Instructions",
+      "Let stand for 10 minutes.",
+      "Cool before eating.",
+    ].join("\n");
+    await fs.writeFile(inputPath, content, "utf-8");
+    const stderrMessages: string[] = [];
+    const originalError = console.error;
+    console.error = (...args: unknown[]) => {
+      stderrMessages.push(args.map(String).join(" "));
+    };
+    try {
+      await ingest(inputPath, outDir);
+    } finally {
+      console.error = originalError;
+    }
+    const indexRaw = await fs.readFile(path.join(outDir, "index.json"), "utf-8");
+    const indexPayload = JSON.parse(indexRaw) as Array<{ path: string }>;
+    assert.equal(indexPayload.length, 1);
+    const recipeRaw = await fs.readFile(path.join(outDir, indexPayload[0].path), "utf-8");
+    const recipe = JSON.parse(recipeRaw) as {
+      metadata?: { ingest?: { warnings?: string[] } };
+    };
+    const warnings = recipe.metadata?.ingest?.warnings ?? [];
+    assert.ok(warnings.some((warning) => warning.includes("Missing ingredients")));
+    assert.ok(stderrMessages.some((message) => message.includes("Missing ingredients")));
+  });
+  it("emits recipes with warnings when ingredients exist but instructions are empty", async () => {
+    const inputPath = path.join(tempDir, "ingredients-only.txt");
+    const outDir = path.join(tempDir, "out");
+    const content = [
+      "INGREDIENTS ONLY",
+      "Ingredients",
+      "- 1 cup flour",
+      "- 2 eggs",
+      "- pinch of salt",
+    ].join("\n");
+    await fs.writeFile(inputPath, content, "utf-8");
+    const stderrMessages: string[] = [];
+    const originalError = console.error;
+    console.error = (...args: unknown[]) => {
+      stderrMessages.push(args.map(String).join(" "));
+    };
+    try {
+      await ingest(inputPath, outDir);
+    } finally {
+      console.error = originalError;
+    }
+    const indexRaw = await fs.readFile(path.join(outDir, "index.json"), "utf-8");
+    const indexPayload = JSON.parse(indexRaw) as Array<{ path: string }>;
+    assert.equal(indexPayload.length, 1);
+    const recipeRaw = await fs.readFile(path.join(outDir, indexPayload[0].path), "utf-8");
+    const recipe = JSON.parse(recipeRaw) as {
+      metadata?: { ingest?: { warnings?: string[] } };
+    };
+    const warnings = recipe.metadata?.ingest?.warnings ?? [];
+    assert.ok(warnings.some((warning) => warning.includes("Missing instructions")));
+    assert.ok(stderrMessages.some((message) => message.includes("Missing instructions")));
+  });
+  it("creates index.json and recipes directory after ingest", async () => {
+    const inputPath = path.join(tempDir, "simple.txt");
+    const outDir = path.join(tempDir, "out");
+    const content = [
+      "SIMPLE RECIPE",
+      "Ingredients",
+      "- 1 cup water",
+      "Instructions",
+      "Boil the water.",
+    ].join("\n");
+    await fs.writeFile(inputPath, content, "utf-8");
+    await ingest(inputPath, outDir);
+    const indexStats = await fs.stat(path.join(outDir, "index.json"));
+    const recipesStats = await fs.stat(path.join(outDir, "recipes"));
+    assert.ok(indexStats.isFile());
+    assert.ok(recipesStats.isDirectory());
+  });
+});
+</file>
+<file path="src/adapters/rtfdZip.ts">
+import { spawn } from "child_process";
+import { promises as fs } from "fs";
+import os from "os";
+import path from "path";
+import { AdapterOutput } from "../pipeline";
+import { ZipArchive } from "../lib/zip";
+type RtfCandidate = {
+  filePath: string;
+  size: number;
+  priority: number;
+};
+async function listFiles(root: string): Promise<string[]> {
+  const entries = await fs.readdir(root, { withFileTypes: true });
+  const files: string[] = [];
+  for (const entry of entries) {
+    const fullPath = path.join(root, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...(await listFiles(fullPath)));
+    } else if (entry.isFile()) {
+      files.push(fullPath);
+    }
+  }
+  return files;
+}
+function scoreRtfCandidate(filePath: string): number {
+  const name = path.basename(filePath).toLowerCase();
+  if (name === "txt.rtf" || name === "text.rtf") {
+    return 3;
+  }
+  if (name.startsWith("txt") && name.endsWith(".rtf")) {
+    return 2;
+  }
+  return 1;
+}
+async function findPrimaryRtf(extractedPath: string): Promise<RtfCandidate | null> {
+  const files = await listFiles(extractedPath);
+  const rtfFiles = files.filter((file) => path.extname(file).toLowerCase() === ".rtf");
+  if (rtfFiles.length === 0) {
+    return null;
+  }
+  const candidates: RtfCandidate[] = [];
+  for (const filePath of rtfFiles) {
+    const stats = await fs.stat(filePath);
+    candidates.push({
+      filePath,
+      size: stats.size,
+      priority: scoreRtfCandidate(filePath),
+    });
+  }
+  candidates.sort((a, b) => {
+    if (a.priority !== b.priority) {
+      return b.priority - a.priority;
+    }
+    return b.size - a.size;
+  });
+  return candidates[0];
+}
+function convertRtfFallback(rtf: string): string {
+  return rtf
+    .replace(/\r\n/g, "\n")
+    .replace(/\\par[d]?/g, "\n")
+    .replace(/\\'[0-9a-fA-F]{2}/g, "")
+    .replace(/\\[a-zA-Z]+\d* ?/g, "")
+    .replace(/[{}]/g, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+async function convertWithNode(rtf: string): Promise<string | null> {
+  try {
+    const module = await import("rtf2text");
+    const converter = (module as { default?: unknown }).default ?? module;
+    if (typeof converter === "function") {
+      const result = await Promise.resolve((converter as (input: string) => string | Promise<string>)(rtf));
+      return result?.trim() ? result : null;
+    }
+    if (converter && typeof (converter as { fromString?: unknown }).fromString === "function") {
+      const result = await new Promise<string>((resolve, reject) => {
+        (converter as { fromString: (input: string, cb: (err: Error | null, text?: string) => void) => void }).fromString(
+          rtf,
+          (error, text) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(text ?? "");
+            }
+          },
+        );
+      });
+      return result.trim() ? result : null;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+async function runCommand(command: string, args: string[], input?: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args);
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk.toString();
+    });
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk.toString();
+    });
+    child.on("error", (error) => {
+      reject(error);
+    });
+    child.on("close", (code) => {
+      if (code === 0) {
+        resolve(stdout);
+      } else {
+        reject(new Error(stderr || `${command} exited with code ${code}`));
+      }
+    });
+    if (input) {
+      child.stdin.write(input);
+    }
+    child.stdin.end();
+  });
+}
+async function convertWithPandoc(rtfPath: string): Promise<string | null> {
+  try {
+    const result = await runCommand("pandoc", ["--from", "rtf", "--to", "plain", rtfPath]);
+    return result.trim() ? result : null;
+  } catch {
+    return null;
+  }
+}
+async function convertWithTextutil(rtfPath: string): Promise<string | null> {
+  try {
+    const result = await runCommand("textutil", ["-convert", "txt", "-stdout", rtfPath]);
+    return result.trim() ? result : null;
+  } catch {
+    return null;
+  }
+}
+async function convertRtfToText(rtfPath: string): Promise<string> {
+  const rtf = await fs.readFile(rtfPath, "utf-8");
+  const nodeResult = await convertWithNode(rtf);
+  if (nodeResult) {
+    return nodeResult;
+  }
+  const pandocResult = await convertWithPandoc(rtfPath);
+  if (pandocResult) {
+    return pandocResult;
+  }
+  const textutilResult = await convertWithTextutil(rtfPath);
+  if (textutilResult) {
+    return textutilResult;
+  }
+  return convertRtfFallback(rtf);
+}
+export async function readRtfdZip(filePath: string): Promise<AdapterOutput> {
+  const extractedPath = await fs.mkdtemp(path.join(os.tmpdir(), "soustack-rtfd-"));
+  const zip = new ZipArchive(filePath);
+  const entries = zip.getEntries();
+  for (const entry of entries) {
+    const entryName = entry.entryName;
+    const resolvedPath = path.resolve(extractedPath, entryName);
+    if (resolvedPath !== extractedPath && !resolvedPath.startsWith(`${extractedPath}${path.sep}`)) {
+      throw new Error(`Blocked zip entry with invalid path: ${entryName}`);
+    }
+    if (entry.isDirectory) {
+      await fs.mkdir(resolvedPath, { recursive: true });
+      continue;
+    }
+    await fs.mkdir(path.dirname(resolvedPath), { recursive: true });
+    const data = entry.getData();
+    await fs.writeFile(resolvedPath, data);
+  }
+  const primaryRtf = await findPrimaryRtf(extractedPath);
+  if (!primaryRtf) {
+    throw new Error(`No .rtf files found in ${filePath}`);
+  }
+  const text = await convertRtfToText(primaryRtf.filePath);
+  return {
+    kind: "text",
+    text,
+    assets: [primaryRtf.filePath],
+    meta: {
+      sourcePath: filePath,
+      extractedPath,
+    },
+  };
+}
+export async function readRtfdDirectory(dirPath: string): Promise<AdapterOutput> {
+  const primaryRtf = await findPrimaryRtf(dirPath);
+  if (!primaryRtf) {
+    throw new Error(`No .rtf files found in ${dirPath}`);
+  }
+  const text = await convertRtfToText(primaryRtf.filePath);
+  return {
+    kind: "text",
+    text,
+    assets: [primaryRtf.filePath],
+    meta: {
+      sourcePath: dirPath,
+    },
+  };
+}
+</file>
+<file path="package.json">
+{
+  "name": "soustack-ingest",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "test": "TS_NODE_PROJECT=tsconfig.test.json TS_NODE_TRANSPILE_ONLY=1 node -r ts-node/register --test test/*.spec.ts",
+    "ingest": "ts-node src/cli.ts ingest",
+    "repro": "npm run ingest -- test/fixtures/sample.rtf --out /tmp/soustack-ingest-repro"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.10",
+    "ajv": "^8.12.0",
+    "commander": "^11.0.0",
+    "fs-extra": "^11.2.0",
+    "rtf2text": "^1.0.1",
+    "slugify": "^1.6.6",
+    "soustack": "^0.4.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5",
+    "vitest": "^1.5.0"
+  }
+}
+</file>
+<file path="README.md">
+# soustack-ingest
+## CLI usage
+```bash
+soustack-ingest ingest <inputPath> --out <outDir>
+```
+The CLI reads the input file, runs it through the ingest pipeline, and writes JSON outputs under `<outDir>` (see `src/cli.ts` and `src/pipeline/emit.ts`).
+### Prerequisites
+- Node.js 18+ (or compatible)
+- Optional: `pandoc` for improved RTF/RTFD conversion (the adapter will fall back to a built-in parser when it is unavailable).
+## Adapter behavior
+Adapters are selected by file extension (`src/cli.ts`, `src/adapters`).
+- `.rtfd.zip`: handled by `readRtfdZip` (`src/adapters/rtfdZip.ts`). The adapter extracts the archive, locates the primary `.rtf` payload (preferring `TXT.rtf` or the largest `.rtf` file), and converts it to text. It tries a Node-based parser first, then falls back to `pandoc` and `textutil` when available.
+- `.txt`: handled by `readTxt` (`src/adapters/txt.ts`). Reads the file as UTF-8 text and passes it to the pipeline.
+Unsupported extensions throw an error.
+## Pipeline stages & contracts
+The ingest pipeline runs stages in order (`src/cli.ts`, `src/pipeline`).
+1. **normalize** (`src/pipeline/normalize.ts`)
+   - **Input:** raw adapter text (`string`).
+   - **Output:** `NormalizedText` with `fullText` and line metadata (`Line[]`).
+   - **Contract:** normalize newlines to `\n` and assign 1-based line numbers.
+2. **segment** (`src/pipeline/segment.ts`)
+   - **Input:** `Line[]`.
+   - **Output:** `SegmentedText` with `Chunk[]`.
+   - **Contract:** scores potential recipe boundaries and returns one chunk per inferred recipe with a best-effort title guess and confidence score.
+3. **extract** (`src/pipeline/extract.ts`)
+   - **Input:** a `Chunk` plus the full `Line[]`.
+   - **Output:** `IntermediateRecipe` containing title, ingredients, instructions, and source-line evidence.
+   - **Contract:** splits lines into `ingredients` and `instructions` sections by headers; lines before any header fall into instructions.
+4. **toSoustack** (`src/pipeline/toSoustack.ts`)
+   - **Input:** `IntermediateRecipe`.
+   - **Output:** `SoustackRecipe` (Soustack JSON shape) with `$schema` (vNext canonical URL), `profile: "lite"`, `stacks` as an object map, normalized `ingredients`/`instructions` string arrays, and ingest metadata.
+   - **Contract:** embeds source path and line range into `metadata.ingest`.
+5. **validate** (`src/pipeline/validate.ts`)
+   - **Input:** `SoustackRecipe`.
+   - **Output:** `ValidationResult` (`ok`, `errors`).
+   - **Contract:** see validator notes below.
+6. **emit** (`src/pipeline/emit.ts`)
+   - **Input:** list of validated `SoustackRecipe` values and an output directory.
+   - **Output:**
+     - `<outDir>/index.json` with name/slug/path entries.
+     - `<outDir>/recipes/<slug>.soustack.json` files for each recipe.
+   - **Contract:** recipe filenames are slugified from `recipe.name` and truncated to 80 characters.
+## Validator behavior & wiring `soustack`
+Validation is intentionally lightweight today. The pipeline starts with a stub validator built from a fallback schema (`src/pipeline/validate.ts`). It attempts to load `soustack` at runtime:
+- If `soustack` exports `validator`, that object is used.
+- If it exports `validateRecipe`, it is wrapped into a `validator`.
+- If neither exists or the import fails, the stub validator stays active.
+To wire `soustack` validation:
+1. Ensure `soustack` is installed (already in `package.json`).
+2. Export either a `validator` object with a `validate(recipe)` function, or a `validateRecipe(recipe)` function, from the `soustack` package entry point.
+3. Call `initValidator()` once at startup (the CLI does this before any `validate()` calls) so the active validator is set deterministically.
+## Build, test, and run
+```bash
+npm run build
+npm test
+npm run ingest -- <inputPath> --out <outDir>
+```
+### Example usage
+```bash
+npm run ingest -- "/mnt/data/bowman cookbook.rtfd.zip" --out ./output
+```
+</file>
+<file path="src/pipeline/toSoustack.ts">
+import { VNEXT_SCHEMA_URL } from "./schema";
+import { IntermediateRecipe, PrepMetadata, SoustackRecipe } from "./types";
+const MINOR_WORDS = new Set([
+  "a",
+  "an",
+  "and",
+  "as",
+  "at",
+  "but",
+  "by",
+  "for",
+  "from",
+  "in",
+  "into",
+  "nor",
+  "of",
+  "off",
+  "on",
+  "onto",
+  "or",
+  "over",
+  "per",
+  "the",
+  "to",
+  "via",
+  "with",
+]);
+function toTitleCase(rawTitle: string): string {
+  const words = rawTitle.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) {
+    return rawTitle;
+  }
+  return words
+    .map((word, index) => {
+      const lower = word.toLowerCase();
+      const isEdge = index === 0 || index === words.length - 1;
+      if (!isEdge && MINOR_WORDS.has(lower)) {
+        return lower;
+      }
+      const match = lower.match(/^([^\p{L}\p{N}]*)([\p{L}\p{N}])(.*)$/u);
+      if (!match) {
+        return lower;
+      }
+      const [, leading, firstChar, rest] = match;
+      return `${leading}${firstChar.toUpperCase()}${rest}`;
+    })
+    .join(" ");
+}
+export function toSoustack(
+  intermediate: IntermediateRecipe,
+  options?: { sourcePath?: string }
+): SoustackRecipe {
+  const ingredients = Array.isArray(intermediate.ingredients)
+    ? intermediate.ingredients.map((value) => `${value}`)
+    : [];
+  const instructions = Array.isArray(intermediate.instructions)
+    ? intermediate.instructions.map((value) => `${value}`)
+    : [];
+  const metadata: SoustackRecipe["metadata"] = {
+    originalTitle: intermediate.title,
+    ingest: {
+      pipelineVersion: "0.1.1",
+      sourcePath: options?.sourcePath,
+      sourceLines: {
+        start: intermediate.source.startLine,
+        end: intermediate.source.endLine,
+      },
+    },
+  };
+  if (intermediate.source.author) {
+    metadata.author = intermediate.source.author;
+  }
+  const prepMetadata: PrepMetadata | undefined =
+    intermediate.prepSection || intermediate.ingredientPrep
+      ? {
+          section: intermediate.prepSection,
+          ingredients: intermediate.ingredientPrep,
+          generatedAt: new Date().toISOString(),
+        }
+      : undefined;
+  return {
+    $schema: VNEXT_SCHEMA_URL,
+    profile: "lite",
+    name: toTitleCase(intermediate.title),
+    stacks: {},
+    ingredients,
+    instructions,
+    ...(prepMetadata ? { "x-prep": prepMetadata } : {}),
+    metadata,
+  };
+}
+</file>
+<file path="src/pipeline/validate.ts">
+import { createRequire } from "node:module";
+import fs from "node:fs";
+import path from "node:path";
+import Ajv, { ErrorObject, type AnySchema } from "ajv";
+import { VNEXT_SCHEMA_URL } from "./schema";
+import { SoustackRecipe, ValidationResult } from "./types";
+export interface Validator {
+  validate(recipe: SoustackRecipe): ValidationResult;
+}
+type CoreValidationModule = {
+  validator?: Validator;
+  validateRecipe?: (
+    recipe: SoustackRecipe,
+    options?: unknown
+  ) =>
+    | {
+        ok?: boolean;
+        valid?: boolean;
+        success?: boolean;
+        schemaErrors?: Array<{ path?: string; message?: string }>;
+        conformanceIssues?: Array<{ path?: string; message?: string }>;
+        errors?: Array<{ path?: string; message?: string } | string>;
+        warnings?: string[];
+      }
+    | Promise<{
+        ok?: boolean;
+        valid?: boolean;
+        success?: boolean;
+        schemaErrors?: Array<{ path?: string; message?: string }>;
+        conformanceIssues?: Array<{ path?: string; message?: string }>;
+        errors?: Array<{ path?: string; message?: string } | string>;
+        warnings?: string[];
+      }>;
+  recipeSchema?: unknown;
+  schema?: unknown;
+  schemas?: {
+    recipe?: unknown;
+  };
+};
+const vNextSchema = {
+  type: "object",
+  required: ["$schema", "profile", "name", "stacks", "ingredients", "instructions"],
+  properties: {
+    $schema: {
+      const: VNEXT_SCHEMA_URL,
+    },
+    profile: {
+      type: "string",
+      const: "lite",
+    },
+    name: {
+      type: "string",
+      minLength: 1,
+    },
+    stacks: {
+      type: "object",
+      additionalProperties: true,
+    },
+    ingredients: {
+      type: "array",
+      items: { type: "string" },
+      default: [],
+    },
+    instructions: {
+      type: "array",
+      items: { type: "string" },
+      default: [],
+    },
+    metadata: {
+      type: "object",
+      properties: {
+        originalTitle: { type: "string" },
+        ingest: {
+          type: "object",
+          properties: {
+            pipelineVersion: { type: "string" },
+            sourcePath: { type: "string" },
+            sourceLines: {
+              type: "object",
+              properties: {
+                start: { type: "number" },
+                end: { type: "number" },
+              },
+              required: ["start", "end"],
+              additionalProperties: false,
+            },
+            warnings: {
+              type: "array",
+              items: { type: "string" },
+            },
+          },
+          additionalProperties: true,
+        },
+      },
+      additionalProperties: true,
+    },
+  },
+  additionalProperties: false,
+};
+const moduleRequire = createRequire(typeof __filename !== "undefined" ? __filename : process.cwd());
+function toJsonPathSegment(segment: string): string {
+  if (/^\d+$/.test(segment)) {
+    return `[${segment}]`;
+  }
+  if (/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(segment)) {
+    return `.${segment}`;
+  }
+  return `['${segment.replace(/'/g, "\\'")}']`;
+}
+function toJsonPath(instancePath: string, missingProperty?: string): string {
+  const parts = instancePath
+    .split("/")
+    .filter(Boolean)
+    .map((part) => part.replace(/~1/g, "/").replace(/~0/g, "~"));
+  let jsonPath = "$";
+  for (const part of parts) {
+    jsonPath += toJsonPathSegment(part);
+  }
+  if (missingProperty) {
+    jsonPath += toJsonPathSegment(missingProperty);
+  }
+  return jsonPath;
+}
+function formatAjvError(error: ErrorObject): string {
+  const path = toJsonPath(error.instancePath, (error.params as { missingProperty?: string }).missingProperty);
+  const message = error.message ?? "is invalid";
+  return `${path} ${message}`.trim();
+}
+function buildAjvValidator(schema: unknown): Validator {
+  const ajv = new Ajv({ allErrors: true, strict: false });
+  const validateSchema = ajv.compile(schema as AnySchema);
+  return {
+    validate: (recipe: SoustackRecipe) => {
+      const ok = validateSchema(recipe) as boolean;
+      if (ok) {
+        return { ok: true, errors: [] };
+      }
+      const errors = (validateSchema.errors ?? []).map((error) => formatAjvError(error));
+      return { ok: false, errors };
+    },
+  };
+}
+function resolveSchemaFromModule(core: CoreValidationModule): unknown | null {
+  if (core.recipeSchema && typeof core.recipeSchema === "object") {
+    return core.recipeSchema;
+  }
+  if (core.schemas?.recipe && typeof core.schemas.recipe === "object") {
+    return core.schemas.recipe;
+  }
+  if (core.schema && typeof core.schema === "object") {
+    return core.schema;
+  }
+  return null;
+}
+async function loadSchemaFromString(schemaRef: string, moduleName: string): Promise<unknown | null> {
+  if (schemaRef.startsWith("http://") || schemaRef.startsWith("https://")) {
+    const response = await fetch(schemaRef);
+    if (!response.ok) {
+      return null;
+    }
+    return (await response.json()) as unknown;
+  }
+  try {
+    const resolved = path.isAbsolute(schemaRef)
+      ? schemaRef
+      : path.join(path.dirname(moduleRequire.resolve(`${moduleName}/package.json`)), schemaRef);
+    const raw = await fs.promises.readFile(resolved, "utf-8");
+    return JSON.parse(raw) as unknown;
+  } catch {
+    return null;
+  }
+}
+async function loadSchemaFromPackage(moduleName: string): Promise<unknown | null> {
+  try {
+    const root = path.dirname(moduleRequire.resolve(`${moduleName}/package.json`));
+    const candidates = [
+      "recipe.schema.json",
+      "schema/recipe.schema.json",
+      "schemas/recipe.schema.json",
+      "dist/recipe.schema.json",
+      "dist/schema/recipe.schema.json",
+      "dist/schemas/recipe.schema.json",
+    ];
+    for (const candidate of candidates) {
+      const filePath = path.join(root, candidate);
+      if (fs.existsSync(filePath)) {
+        const raw = await fs.promises.readFile(filePath, "utf-8");
+        return JSON.parse(raw) as unknown;
+      }
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+function normalizeIssue(issue: unknown): string {
+  if (typeof issue === "string") {
+    return issue;
+  }
+  if (issue && typeof issue === "object") {
+    const path = (issue as { path?: string; instancePath?: string }).path ?? "";
+    const message =
+      (issue as { message?: string; error?: string }).message ??
+      (issue as { error?: string }).error ??
+      "is invalid";
+    const normalizedPath = path || (issue as { instancePath?: string }).instancePath || "";
+    return [normalizedPath, message].filter(Boolean).join(" ").trim();
+  }
+  return "is invalid";
+}
+function normalizeValidateRecipeResult(raw: unknown): ValidationResult {
+  if (!raw || typeof raw !== "object") {
+    return { ok: false, errors: ["Validator returned no result"] };
+  }
+  const typed = raw as {
+    ok?: boolean;
+    valid?: boolean;
+    success?: boolean;
+    schemaErrors?: Array<unknown>;
+    conformanceIssues?: Array<unknown>;
+    errors?: Array<unknown>;
+  };
+  const errors: string[] = [];
+  for (const issue of typed.schemaErrors ?? []) {
+    errors.push(normalizeIssue(issue));
+  }
+  for (const issue of typed.conformanceIssues ?? []) {
+    errors.push(normalizeIssue(issue));
+  }
+  for (const issue of typed.errors ?? []) {
+    errors.push(normalizeIssue(issue));
+  }
+  const ok = Boolean(typed.ok ?? typed.valid ?? typed.success);
+  return { ok: ok && errors.length === 0, errors };
+}
+function wrapValidateRecipe(
+  validateRecipeFn: NonNullable<CoreValidationModule["validateRecipe"]>
+): Validator {
+  return {
+    validate: (recipe: SoustackRecipe) => {
+      const result = validateRecipeFn(recipe);
+      if (result && typeof (result as Promise<unknown>).then === "function") {
+        return {
+          ok: false,
+          errors: ["validateRecipe returned a Promise; async validators are not supported"],
+        };
+      }
+      return normalizeValidateRecipeResult(result);
+    },
+  };
+}
+async function selectValidatorFromModule(moduleName: string): Promise<Validator | null> {
+  try {
+    const module = await import(moduleName);
+    const core = module as CoreValidationModule;
+    if (core.validateRecipe) {
+      return wrapValidateRecipe(core.validateRecipe);
+    }
+    const moduleSchema = resolveSchemaFromModule(core);
+    if (moduleSchema) {
+      return buildAjvValidator(moduleSchema);
+    }
+    const schemaRef =
+      typeof core.schema === "string"
+        ? core.schema
+        : typeof core.recipeSchema === "string"
+          ? core.recipeSchema
+          : null;
+    if (schemaRef) {
+      const resolved = await loadSchemaFromString(schemaRef, moduleName);
+      if (resolved) {
+        return buildAjvValidator(resolved);
+      }
+    }
+    const packagedSchema = await loadSchemaFromPackage(moduleName);
+    if (packagedSchema) {
+      return buildAjvValidator(packagedSchema);
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+const validatorModuleCandidates = [
+  process.env.SOUSTACK_VALIDATOR_MODULE,
+  "soustack-core",
+].filter(Boolean) as string[];
+let activeValidator: Validator = buildAjvValidator(vNextSchema);
+const coreValidatorPromise = (async () => {
+  for (const moduleName of validatorModuleCandidates) {
+    const validator = await selectValidatorFromModule(moduleName);
+    if (validator) {
+      return validator;
+    }
+  }
+  return null;
+})();
+export async function initValidator(): Promise<void> {
+  const validator = await coreValidatorPromise;
+  activeValidator = validator ?? buildAjvValidator(vNextSchema);
+}
+export function validate(recipe: SoustackRecipe): ValidationResult {
+  return activeValidator.validate(recipe);
+}
+</file>
+<file path="src/pipeline/segment.ts">
+import { Line, SegmentedText, Chunk, SegmentationReason } from "./types";
+type LineFeatures = {
+  isBlank: boolean;
+  isTitleLike: boolean;
+  isAllCapsTitle: boolean;
+  hasIngredientsMarker: boolean;
+  hasInstructionMarker: boolean;
+  isIngredientLine: boolean;
+  isImperativeLine: boolean;
+};
+const units = [
+  "cup",
+  "cups",
+  "tbsp",
+  "tablespoon",
+  "tablespoons",
+  "tsp",
+  "teaspoon",
+  "teaspoons",
+  "oz",
+  "ounce",
+  "ounces",
+  "g",
+  "kg",
+  "ml",
+  "l",
+  "lb",
+  "lbs",
+  "pound",
+  "pounds",
+  "pinch",
+  "dash",
+  "clove",
+  "cloves",
+  "slice",
+  "slices",
+  "can",
+  "cans",
+];
+const ingredientMarker = /^(ingredients?)\b/i;
+const instructionMarker = /^(instructions?|directions?|method|steps?)\b/i;
+const bylineMarker = /^(by|from)\b/i;
+const endsWithPunctuation = /[.:;!?]$/;
+const unicodeFraction = /[¼½¾⅓⅔⅛⅜⅝⅞]/;
+const bulletStart = /^[-*•·‣◦–—]/;
+const titleInstructionVerbRegex = /^(add|mix|remove|cook|bake|stir|heat)\b/i;
+const imperativeVerbRegex =
+  /^(add|mix|bake|toast|stir|cook|whisk|combine|place|pour|bring|boil|simmer|heat|serve|fold|sprinkle|chop|slice|preheat|roast|saute|grill|blend|beat|season|drain|flip|marinate|set)\b/i;
+function isTitleLikeLine(
+  text: string,
+  prevBlank: boolean,
+  nextBlank: boolean,
+  index: number,
+  totalLines: number,
+): boolean {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    return false;
+  }
+  if (endsWithPunctuation.test(trimmed)) {
+    return false;
+  }
+  if (/^\d/.test(trimmed) || unicodeFraction.test(trimmed.charAt(0))) {
+    return false;
+  }
+  if (bulletStart.test(trimmed)) {
+    return false;
+  }
+  if (titleInstructionVerbRegex.test(trimmed)) {
+    return false;
+  }
+  if (trimmed.length < 3 || trimmed.length > 72) {
+    return false;
+  }
+  const words = trimmed.split(/\s+/).filter(Boolean);
+  if (words.length > 10) {
+    return false;
+  }
+  const letters = trimmed.replace(/[^A-Za-z]/g, "").length;
+  const letterRatio = letters / trimmed.length;
+  if (letterRatio < 0.6) {
+    return false;
+  }
+  const isEdgePosition = index <= 1 || index >= totalLines - 2;
+  const capitalizedWords = words.filter((word) => /^[A-Z]/.test(word)).length;
+  const capitalRatio = words.length === 0 ? 0 : capitalizedWords / words.length;
+  // Require capitalization even when surrounded by blank lines or at edges.
+  // This avoids tagging short ingredient lines like "Chicken breasts" as titles.
+  return (prevBlank || nextBlank || isEdgePosition) && capitalRatio >= 0.6;
+}
+function isIngredientCandidate(text: string): boolean {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    return false;
+  }
+  if (ingredientMarker.test(trimmed) || instructionMarker.test(trimmed)) {
+    return false;
+  }
+  const lower = trimmed.toLowerCase();
+  const hasUnitToken = units.some((unit) => new RegExp(`\\b${unit}\\b`, "i").test(lower));
+  const startsWithQuantity =
+    /^[-*•]/.test(trimmed) ||
+    /^\d/.test(trimmed) ||
+    /^\d+\s*\d+\/\d+/.test(trimmed) ||
+    unicodeFraction.test(trimmed.charAt(0)) ||
+    /^\d+\s*[¼½¾⅓⅔⅛⅜⅝⅞]/.test(trimmed);
+  const words = trimmed.split(/\s+/).filter(Boolean);
+  if (startsWithQuantity) {
+    if (hasUnitToken) {
+      return true;
+    }
+    return words.length <= 6;
+  }
+  if (hasUnitToken) {
+    return true;
+  }
+  return false;
+}
+function isAllCapsTitle(text: string): boolean {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    return false;
+  }
+  const lettersOnly = trimmed.replace(/[^A-Za-z]/g, "");
+  if (!lettersOnly) {
+    return false;
+  }
+  return lettersOnly === lettersOnly.toUpperCase();
+}
+function isImperativeLine(text: string): boolean {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    return false;
+  }
+  if (ingredientMarker.test(trimmed) || instructionMarker.test(trimmed)) {
+    return false;
+  }
+  const normalized = trimmed.replace(/^(\d+[\).\s]+|[-*•]\s*)/, "");
+  return imperativeVerbRegex.test(normalized);
+}
+function buildFeatures(lines: Line[]): LineFeatures[] {
+  return lines.map((line, index) => {
+    const text = line.text;
+    const trimmed = text.trim();
+    const prev = lines[index - 1];
+    const next = lines[index + 1];
+    const prevBlank = !prev || prev.text.trim().length === 0;
+    const nextBlank = !next || next.text.trim().length === 0;
+    return {
+      isBlank: trimmed.length === 0,
+      isTitleLike: isTitleLikeLine(text, prevBlank, nextBlank, index, lines.length),
+      isAllCapsTitle: isAllCapsTitle(text),
+      hasIngredientsMarker: ingredientMarker.test(trimmed),
+      hasInstructionMarker: instructionMarker.test(trimmed),
+      isIngredientLine: isIngredientCandidate(text),
+      isImperativeLine: isImperativeLine(text),
+    };
+  });
+}
+function clamp(value: number, min = 0, max = 1): number {
+  return Math.min(max, Math.max(min, value));
+}
+function ingredientDensity(features: LineFeatures[], start: number, window: number): number {
+  const end = Math.min(features.length, start + window);
+  const slice = features.slice(start, end);
+  const nonEmpty = slice.filter((line) => !line.isBlank);
+  if (nonEmpty.length === 0) {
+    return 0;
+  }
+  const ingredientLines = nonEmpty.filter((line) => line.isIngredientLine).length;
+  return ingredientLines / nonEmpty.length;
+}
+function imperativeDensity(features: LineFeatures[], start: number, window: number): number {
+  const end = Math.min(features.length, start + window);
+  const slice = features.slice(start, end);
+  const nonEmpty = slice.filter((line) => !line.isBlank);
+  if (nonEmpty.length === 0) {
+    return 0;
+  }
+  const imperativeLines = nonEmpty.filter((line) => line.isImperativeLine).length;
+  return imperativeLines / nonEmpty.length;
+}
+type CandidateStart = {
+  index: number;
+  score: number;
+  reason?: SegmentationReason;
+};
+function findCandidateStarts(lines: Line[], features: LineFeatures[]): CandidateStart[] {
+  const candidates: CandidateStart[] = [];
+  for (let index = 0; index < lines.length; index += 1) {
+    if (features[index].isIngredientLine) {
+      continue;
+    }
+    if (!features[index].isTitleLike) {
+      continue;
+    }
+    if (features[index].isImperativeLine && !features[index].isAllCapsTitle) {
+      const prev = features[index - 1];
+      if (prev && !prev.isBlank) {
+        continue;
+      }
+    }
+    const density = ingredientDensity(features, index + 1, 8);
+    const imperative = imperativeDensity(features, index + 1, 8);
+    const score = clamp(0.6 + Math.max(density, imperative) * 0.8);
+    const acceptsIngredient = density >= 0.25;
+    const acceptsImperative = imperative >= 0.3;
+    const acceptsCapsImperative = features[index].isAllCapsTitle && imperative >= 0.2;
+    if (acceptsIngredient || acceptsImperative || acceptsCapsImperative) {
+      let reason: SegmentationReason | undefined;
+      if (acceptsCapsImperative) {
+        reason = "all-caps-imperative";
+      } else if (acceptsImperative && imperative >= density) {
+        reason = "imperative-density";
+      } else {
+        reason = "ingredient-density";
+      }
+      candidates.push({ index, score, reason });
+    }
+  }
+  const deduped: CandidateStart[] = [];
+  candidates.forEach((candidate) => {
+    const last = deduped[deduped.length - 1];
+    if (!last) {
+      deduped.push(candidate);
+      return;
+    }
+    if (candidate.index - last.index <= 3) {
+      if (candidate.score > last.score) {
+        deduped[deduped.length - 1] = candidate;
+      }
+      return;
+    }
+    deduped.push(candidate);
+  });
+  return deduped;
+}
+function hasNearbyStructuredMarker(lines: Line[], startIndex: number, window = 8): boolean {
+  const end = Math.min(lines.length - 1, startIndex + window);
+  for (let index = startIndex + 1; index <= end; index += 1) {
+    const trimmed = lines[index].text.trim();
+    if (!trimmed) {
+      continue;
+    }
+    if (ingredientMarker.test(trimmed) || bylineMarker.test(trimmed)) {
+      return true;
+    }
+  }
+  return false;
+}
+function isAuthorLine(lines: Line[], index: number): boolean {
+  const prev = lines[index - 1];
+  return prev ? bylineMarker.test(prev.text.trim()) : false;
+}
+function findStructuredCookbookStarts(lines: Line[], features: LineFeatures[]): number[] {
+  const ingredientIndices = lines
+    .map((line, index) => (features[index].hasIngredientsMarker ? index : -1))
+    .filter((index) => index >= 0);
+  const starts: number[] = [];
+  ingredientIndices.forEach((ingredientIndex) => {
+    for (let index = ingredientIndex - 1; index >= 0; index -= 1) {
+      const text = lines[index].text.trim();
+      if (!text) {
+        continue;
+      }
+      if (bylineMarker.test(text) || isAuthorLine(lines, index)) {
+        continue;
+      }
+      if (features[index].isIngredientLine) {
+        continue;
+      }
+      if (!features[index].isTitleLike) {
+        continue;
+      }
+      if (!hasNearbyStructuredMarker(lines, index)) {
+        continue;
+      }
+      starts.push(index);
+      break;
+    }
+  });
+  return starts;
+}
+function confidenceForChunk(
+  lines: Line[],
+  features: LineFeatures[],
+  startIndex: number,
+  endIndex: number,
+): number {
+  const slice = features.slice(startIndex, endIndex + 1);
+  const nonEmpty = slice.filter((line) => !line.isBlank);
+  const ingredientLines = slice.filter((line) => line.isIngredientLine).length;
+  const density = nonEmpty.length === 0 ? 0 : ingredientLines / nonEmpty.length;
+  const instructionPresent = slice.some((line) => line.hasInstructionMarker);
+  const titleScore = features[startIndex]?.isTitleLike ? 1 : 0;
+  return clamp(0.4 * titleScore + 0.4 * density + (instructionPresent ? 0.2 : 0));
+}
+export type SegmentOptions = {
+  debug?: boolean;
+};
+export function segment(lines: Line[], options: SegmentOptions = {}): SegmentedText {
+  if (lines.length === 0) {
+    return { chunks: [] };
+  }
+  const features = buildFeatures(lines);
+  const ingredientMarkerCount = features.filter((feature) => feature.hasIngredientsMarker).length;
+  const structuredStarts =
+    ingredientMarkerCount >= 5 ? findStructuredCookbookStarts(lines, features) : [];
+  const structuredCandidateStarts = Array.from(new Set(structuredStarts)).sort((a, b) => a - b);
+  const candidates = structuredCandidateStarts.length > 0 ? [] : findCandidateStarts(lines, features);
+  const includeDebug = options.debug === true;
+  if (structuredCandidateStarts.length === 0 && candidates.length === 0) {
+    const nonEmpty = lines.find((line) => line.text.trim().length > 0);
+    const titleGuess = nonEmpty?.text.trim();
+    const chunk: Chunk = {
+      startLine: lines[0]?.n ?? 1,
+      endLine: lines.length > 0 ? lines[lines.length - 1].n : 1,
+      titleGuess,
+      confidence: 0.2,
+      evidence: titleGuess
+        ? `Title guessed from line ${nonEmpty?.n}`
+        : "No non-empty lines to infer title.",
+    };
+    return { chunks: [chunk] };
+  }
+  const chunks: Chunk[] =
+    structuredCandidateStarts.length > 0
+      ? structuredCandidateStarts.map((startIndex, index) => {
+          const next = structuredCandidateStarts[index + 1];
+          const endIndex = next ? next - 1 : lines.length - 1;
+          const titleGuess = lines[startIndex].text.trim();
+          const confidence = confidenceForChunk(lines, features, startIndex, endIndex);
+          const evidence = `Structured cookbook start at line ${lines[startIndex].n}`;
+          return {
+            startLine: lines[startIndex].n,
+            endLine: lines[endIndex].n,
+            titleGuess,
+            confidence,
+            evidence,
+          };
+        })
+      : candidates.map((candidate, index) => {
+          const next = candidates[index + 1];
+          const startIndex = candidate.index;
+          const endIndex = next ? next.index - 1 : lines.length - 1;
+          const titleGuess = lines[startIndex].text.trim();
+          const confidence = confidenceForChunk(lines, features, startIndex, endIndex);
+          const evidence = `Title candidate at line ${lines[startIndex].n} with density ${ingredientDensity(
+            features,
+            startIndex + 1,
+            8,
+          ).toFixed(2)}`;
+          return {
+            startLine: lines[startIndex].n,
+            endLine: lines[endIndex].n,
+            titleGuess,
+            confidence,
+            evidence,
+            ...(includeDebug && candidate.reason
+              ? { segmentationReason: candidate.reason }
+              : {}),
+          };
+        });
+  return { chunks };
+}
+</file>
+<file path="src/cli.ts">
+import { Command } from "commander";
+import {
+  emit,
+  extract,
+  normalize,
+  segment,
+  toSoustack,
+  initValidator,
+  validate,
+  SoustackRecipe,
+  PrepExtractionMode,
+} from "./pipeline";
+import { loadInput } from "./adapters";
+type IngestOptions = {
+  debugSegmentation?: boolean;
+  prepExtractionMode?: PrepExtractionMode;
+};
+export async function ingest(
+  inputPath: string,
+  outDir: string,
+  options: IngestOptions = {},
+): Promise<void> {
+  await initValidator();
+  const adapterOutput = await loadInput(inputPath);
+  const normalized = normalize(adapterOutput.text);
+  const segmented = segment(normalized.lines, { debug: options.debugSegmentation });
+  const chunksFound = segmented.chunks.length;
+  const recipes: SoustackRecipe[] = [];
+  const errors: string[] = [];
+  const skipReasons = new Map<string, number>();
+  const recordSkip = (reason: string) => {
+    skipReasons.set(reason, (skipReasons.get(reason) ?? 0) + 1);
+  };
+  let intermediatesProduced = 0;
+  let skippedEmpty = 0;
+  let skippedValidation = 0;
+  if (options.debugSegmentation) {
+    console.log("Segmentation debug:");
+    for (const chunk of segmented.chunks) {
+      console.log(
+        `- Lines ${chunk.startLine}-${chunk.endLine}: ${chunk.segmentationReason ?? "unknown"}`,
+      );
+    }
+  }
+  for (const chunk of segmented.chunks) {
+    const intermediate = extract(chunk, normalized.lines, {
+      prepExtractionMode: options.prepExtractionMode,
+    });
+    intermediatesProduced += 1;
+    const missingIngredients = intermediate.ingredients.length === 0;
+    const missingInstructions = intermediate.instructions.length === 0;
+    const warningMessages: string[] = [];
+    if (missingIngredients && missingInstructions) {
+      errors.push(`${intermediate.title}: Missing ingredients and instructions`);
+      skippedEmpty += 1;
+      recordSkip("empty ingredients/instructions");
+      continue;
+    }
+    if (missingIngredients) {
+      warningMessages.push(`${intermediate.title}: Missing ingredients`);
+    }
+    if (missingInstructions) {
+      warningMessages.push(`${intermediate.title}: Missing instructions`);
+    }
+    if (warningMessages.length > 0) {
+      for (const warning of warningMessages) {
+        console.error(`Warning: ${warning}`);
+      }
+    }
+    const recipe = toSoustack(intermediate, { sourcePath: adapterOutput.meta.sourcePath });
+    if (warningMessages.length > 0) {
+      recipe.metadata = {
+        ...(recipe.metadata ?? {}),
+        ingest: {
+          ...(recipe.metadata?.ingest ?? {}),
+          warnings: [...(recipe.metadata?.ingest?.warnings ?? []), ...warningMessages],
+        },
+      };
+    }
+    const result = validate(recipe);
+    if (result.ok) {
+      recipes.push(recipe);
+      continue;
+    }
+    if (warningMessages.length > 0) {
+      const filteredErrors = result.errors.filter((error) => {
+        if (missingIngredients && error.includes("/ingredients")) {
+          return false;
+        }
+        if (missingInstructions && error.includes("/instructions")) {
+          return false;
+        }
+        return true;
+      });
+      if (filteredErrors.length === 0) {
+        recipes.push(recipe);
+        continue;
+      }
+      errors.push(...filteredErrors.map((error) => `${recipe.name}: ${error}`));
+    } else {
+      errors.push(...result.errors.map((error) => `${recipe.name}: ${error}`));
+    }
+    skippedValidation += 1;
+    recordSkip("validation");
+  }
+  await emit(recipes, outDir);
+  const emittedCount = recipes.length;
+  console.log(
+    [
+      `Chunks found: ${chunksFound}`,
+      `Intermediates produced: ${intermediatesProduced}`,
+      `Skipped empty ingredients/instructions: ${skippedEmpty}`,
+      `Skipped due to validation: ${skippedValidation}`,
+      `Emitted: ${emittedCount}`,
+    ].join("\n"),
+  );
+  console.log(`Ingested ${emittedCount} recipe(s) from ${inputPath}.`);
+  if (errors.length > 0) {
+    console.log("Validation errors:");
+    for (const error of errors) {
+      console.log(`- ${error}`);
+    }
+  }
+  if (emittedCount === 0) {
+    const sortedReasons = [...skipReasons.entries()].sort((a, b) => b[1] - a[1]);
+    console.log("Skip summary:");
+    if (sortedReasons.length === 0) {
+      console.log("- No skip reasons recorded.");
+    } else {
+      for (const [reason, count] of sortedReasons) {
+        console.log(`- ${reason}: ${count}`);
+      }
+    }
+    process.exitCode = 1;
+  }
+}
+const program = new Command();
+if (require.main === module) {
+  program
+    .name("soustack-ingest")
+    .description("Ingest recipe sources into Soustack JSON")
+    .command("ingest")
+    .argument("<inputPath>", "Path to the source file")
+    .requiredOption("--out <outDir>", "Output directory")
+    .option("--debug-segmentation", "Log segmentation debug details")
+    .option(
+      "--prep-extraction-mode <mode>",
+      "Ingredient prep extraction mode (conservative|aggressive)",
+      "conservative",
+    )
+    .action(
+      async (
+        inputPath: string,
+        options: {
+          out: string;
+          debugSegmentation?: boolean;
+          prepExtractionMode?: string;
+        },
+      ) => {
+        const prepExtractionMode = parsePrepExtractionMode(options.prepExtractionMode);
+        await ingest(inputPath, options.out, {
+          debugSegmentation: options.debugSegmentation,
+          prepExtractionMode,
+        });
+      }
+    );
+  program.parseAsync(process.argv).catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}
+function parsePrepExtractionMode(mode?: string): PrepExtractionMode {
+  if (mode === "conservative" || mode === "aggressive") {
+    return mode;
+  }
+  if (!mode) {
+    return "conservative";
+  }
+  throw new Error(
+    `Invalid --prep-extraction-mode "${mode}". Expected "conservative" or "aggressive".`,
+  );
+}
+</file>
+<file path="src/pipeline/types.ts">
+export type Line = { n: number; text: string };
+export type NormalizedText = {
+  fullText: string;
+  lines: Line[];
+};
+export type Chunk = {
+  startLine: number;
+  endLine: number;
+  titleGuess?: string;
+  confidence: number;
+  evidence: string;
+  segmentationReason?: SegmentationReason;
+};
+export type SegmentedText = {
+  chunks: Chunk[];
+};
+export type SegmentationReason =
+  | "ingredient-density"
+  | "imperative-density"
+  | "all-caps-imperative";
+export type IntermediateRecipe = {
+  title: string;
+  ingredients: string[];
+  instructions: string[];
+  prepSection?: string[];
+  ingredientPrep?: IngredientPrep[];
+  source: {
+    startLine: number;
+    endLine: number;
+    evidence: string;
+    author?: string;
+  };
+};
+export type IngredientPrep = {
+  index: number;
+  raw: string;
+  base: string;
+  prep: string[];
+};
+export type PrepExtractionMode = "conservative" | "aggressive";
+export type PrepMetadata = {
+  section?: string[];
+  ingredients?: IngredientPrep[];
+  generatedAt?: string;
+};
+export type SoustackRecipe = {
+  $schema: string;
+  profile: "lite";
+  name: string;
+  stacks: Record<string, unknown>;
+  ingredients: string[];
+  instructions: string[];
+  "x-prep"?: PrepMetadata;
+  metadata?: {
+    author?: string;
+    originalTitle?: string;
+    ingest?: {
+      pipelineVersion?: string;
+      sourcePath?: string;
+      sourceLines?: {
+        start: number;
+        end: number;
+      };
+      warnings?: string[];
+    };
+  };
+};
+export type ValidationResult = {
+  ok: boolean;
+  errors: string[];
+};
+export type AdapterOutput = {
+  kind: "text";
+  text: string;
+  assets?: string[];
+  meta: {
+    sourcePath: string;
+    extractedPath?: string;
+  };
+};
+</file>
+<file path="src/pipeline/extract.ts">
+import {
+  Chunk,
+  IntermediateRecipe,
+  IngredientPrep,
+  Line,
+  PrepExtractionMode,
+} from "./types";
+function sliceLines(lines: Line[], startLine: number, endLine: number): Line[] {
+  return lines.filter((line) => line.n >= startLine && line.n <= endLine);
+}
+const AUTHOR_NAME_REGEX = /^[A-Za-z][A-Za-z.'-]*(\s+[A-Za-z][A-Za-z.'-]*){0,3}$/;
+function isAuthorNameLine(text: string): boolean {
+  return AUTHOR_NAME_REGEX.test(text);
+}
+function extractAuthorFromLines(lines: Line[]): {
+  author?: string;
+  filteredLines: Line[];
+} {
+  let author: string | undefined;
+  let awaitingAuthor = false;
+  const filteredLines: Line[] = [];
+  for (const line of lines) {
+    const trimmed = line.text.trim();
+    if (!trimmed) {
+      if (!awaitingAuthor) {
+        filteredLines.push(line);
+      }
+      continue;
+    }
+    if (awaitingAuthor) {
+      if (isAuthorNameLine(trimmed)) {
+        if (!author) {
+          author = trimmed;
+        }
+        awaitingAuthor = false;
+        continue;
+      }
+      awaitingAuthor = false;
+    }
+    const inlineMatch = trimmed.match(/^(by|from)[:\s]+(.+)$/i);
+    if (inlineMatch) {
+      if (!author) {
+        author = inlineMatch[2].trim();
+      }
+      continue;
+    }
+    if (/^by:\s*$/i.test(trimmed)) {
+      awaitingAuthor = true;
+      continue;
+    }
+    filteredLines.push(line);
+  }
+  return { author, filteredLines };
+}
+function isPrepHeader(text: string): boolean {
+  const normalized = text.toLowerCase().replace(/[:\s]+$/, "");
+  return (
+    normalized === "prep" ||
+    normalized === "preparation" ||
+    normalized === "mise en place" ||
+    normalized === "mise-en-place" ||
+    normalized === "before you start"
+  );
+}
+function splitSections(lines: Line[]): {
+  ingredients: string[];
+  instructions: string[];
+  prep: string[];
+} {
+  const trimmedLines = lines
+    .map((line) => line.text.trim())
+    .filter((text) => Boolean(text));
+  const ingredients: string[] = [];
+  const instructions: string[] = [];
+  const prep: string[] = [];
+  let mode: "ingredients" | "instructions" | "prep" | "unknown" = "unknown";
+  const normalizeHeader = (text: string) => text.toLowerCase().replace(/[:\s]+$/, "");
+  const isIngredientHeader = (text: string) => normalizeHeader(text) === "ingredients";
+  const isInstructionHeader = (text: string) =>
+    /^(instructions?|directions|method|steps?|step\s*\d+)$/i.test(normalizeHeader(text));
+  const isByLine = (text: string) => /^by[:\s]/i.test(text);
+  const bulletRegex = /^[-*•·‣◦–—]\s*/;
+  const cleanIngredient = (text: string) => text.replace(bulletRegex, "").trim();
+  const cleanInstruction = (text: string) =>
+    text
+      .replace(/^(step\s*\d+[:.)]?\s*)/i, "")
+      .replace(/^\d+[.)]\s+/, "")
+      .trim();
+  const cleanPrep = (text: string) =>
+    cleanInstruction(text.replace(bulletRegex, "").trim());
+  const ingredientStarters = ["salt", "pepper", "pinch", "dash"];
+  const unicodeFractionRegex = /^[¼½¾⅓⅔⅛⅜⅝⅞]\s+\w+/;
+  const isIngredientLike = (text: string) =>
+    bulletRegex.test(text) ||
+    /^(\d+([/-]\d+)?|\d+\s+\d\/\d)\s+\w+/.test(text) ||
+    unicodeFractionRegex.test(text) ||
+    /^\d+\s*(cups?|tbsp|tablespoons?|tsp|teaspoons?|oz|ounces?|grams?|kg|ml|l)\b/i.test(
+      text,
+    ) ||
+    ingredientStarters.some((starter) => text.toLowerCase().startsWith(starter));
+  const isInstructionLike = (text: string) =>
+    /^\d+[.)]\s+/.test(text) || /[.!?]\s*$/.test(text) || /\w+\s+\w+/.test(text);
+  const isClearInstructionLike = (text: string) =>
+    /[.!?]\s*$/.test(text) ||
+    /^(mix|stir|cook|bake|toast|toss|combine|whisk|simmer|bring|add|preheat|heat|serve)\b/i.test(
+      text,
+    );
+  const hasExplicitHeadings = trimmedLines.some(
+    (text) => isIngredientHeader(text) || isInstructionHeader(text),
+  );
+  if (hasExplicitHeadings) {
+    let skipNextAuthorLine = false;
+    for (const text of trimmedLines) {
+      if (mode === "unknown") {
+        if (isByLine(text)) {
+          skipNextAuthorLine = true;
+          continue;
+        }
+        if (
+          skipNextAuthorLine &&
+          !isIngredientHeader(text) &&
+          !isInstructionHeader(text) &&
+          isAuthorNameLine(text)
+        ) {
+          skipNextAuthorLine = false;
+          continue;
+        }
+        skipNextAuthorLine = false;
+      }
+      if (isIngredientHeader(text)) {
+        mode = "ingredients";
+        continue;
+      }
+      if (isInstructionHeader(text)) {
+        mode = "instructions";
+        continue;
+      }
+      if (isPrepHeader(text)) {
+        mode = "prep";
+        continue;
+      }
+      if (mode === "ingredients") {
+        ingredients.push(cleanIngredient(text));
+        continue;
+      }
+      if (mode === "instructions") {
+        instructions.push(cleanInstruction(text));
+        continue;
+      }
+      if (mode === "prep") {
+        const cleanedPrep = cleanPrep(text);
+        prep.push(cleanedPrep);
+        instructions.push(cleanInstruction(text));
+        continue;
+      }
+      instructions.push(text);
+    }
+  } else {
+    const sample = trimmedLines.slice(0, 5);
+    const sampleIngredientCount = sample.filter((text) => isIngredientLike(text)).length;
+    const sampleInstructionCount = sample.filter((text) => isInstructionLike(text)).length;
+    if (sampleIngredientCount > 0 && sampleIngredientCount >= sampleInstructionCount) {
+      mode = "ingredients";
+    }
+    let ingredientCount = 0;
+    let instructionCount = 0;
+    for (const text of trimmedLines) {
+      if (isPrepHeader(text)) {
+        mode = "prep";
+        continue;
+      }
+      if (isInstructionHeader(text)) {
+        mode = "instructions";
+        continue;
+      }
+      const ingredientLike = isIngredientLike(text);
+      const instructionLike = isInstructionLike(text) || isClearInstructionLike(text);
+      if (mode === "unknown") {
+        if (ingredientLike && !instructionLike) {
+          mode = "ingredients";
+          ingredients.push(cleanIngredient(text));
+          ingredientCount += 1;
+          continue;
+        }
+        if (instructionLike) {
+          mode = "instructions";
+          instructions.push(cleanInstruction(text));
+          instructionCount += 1;
+          continue;
+        }
+        continue;
+      }
+      if (mode === "ingredients") {
+        if (instructionLike && ingredientCount >= 2) {
+          mode = "instructions";
+          instructions.push(cleanInstruction(text));
+          instructionCount += 1;
+          continue;
+        }
+        ingredients.push(cleanIngredient(text));
+        ingredientCount += 1;
+        continue;
+      }
+      if (mode === "prep") {
+        const cleanedPrep = cleanPrep(text);
+        prep.push(cleanedPrep);
+        instructions.push(cleanInstruction(text));
+        instructionCount += 1;
+        continue;
+      }
+      instructions.push(cleanInstruction(text));
+      instructionCount += 1;
+    }
+    if (ingredients.length === 0 && trimmedLines.length > 1 && prep.length === 0) {
+      ingredients.length = 0;
+      instructions.length = 0;
+      ingredientCount = 0;
+      instructionCount = 0;
+      let inInstructions = false;
+      for (const text of trimmedLines) {
+        if (isPrepHeader(text)) {
+          mode = "prep";
+          continue;
+        }
+        const ingredientLike = isIngredientLike(text);
+        const instructionLike = isInstructionLike(text) || isClearInstructionLike(text);
+        if (mode === "prep") {
+          const cleanedPrep = cleanPrep(text);
+          prep.push(cleanedPrep);
+          instructions.push(cleanInstruction(text));
+          instructionCount += 1;
+          continue;
+        }
+        if (!inInstructions) {
+          if (instructionLike && ingredientCount >= 1) {
+            instructionCount += 1;
+            if (instructionCount > ingredientCount) {
+              inInstructions = true;
+              instructions.push(cleanInstruction(text));
+              continue;
+            }
+          }
+          if (ingredientLike || !instructionLike) {
+            ingredients.push(cleanIngredient(text));
+            ingredientCount += 1;
+            continue;
+          }
+          inInstructions = true;
+          instructionCount += 1;
+          instructions.push(cleanInstruction(text));
+          continue;
+        }
+        instructions.push(cleanInstruction(text));
+        instructionCount += 1;
+      }
+    }
+  }
+  if (instructions.length === 0 && ingredients.length > 1) {
+    const lastIngredient = ingredients[ingredients.length - 1];
+    if (lastIngredient && isClearInstructionLike(lastIngredient)) {
+      ingredients.pop();
+      instructions.push(cleanInstruction(lastIngredient));
+    }
+  }
+  if (instructions.length === 0 && ingredients.length === 1) {
+    instructions.push(ingredients[0]);
+  }
+  if (ingredients.length === 0) {
+    const inferredIngredients = inferIngredientsFromInstructions(instructions);
+    if (inferredIngredients.length > 0) {
+      ingredients.push(...inferredIngredients);
+    }
+  }
+  return {
+    ingredients,
+    instructions,
+    prep,
+  };
+}
+const IMPERATIVE_VERBS = [
+  "add",
+  "bake",
+  "beat",
+  "blend",
+  "boil",
+  "bring",
+  "broil",
+  "chop",
+  "combine",
+  "cook",
+  "dice",
+  "fold",
+  "fry",
+  "grill",
+  "heat",
+  "melt",
+  "mix",
+  "pour",
+  "preheat",
+  "roast",
+  "saute",
+  "season",
+  "serve",
+  "simmer",
+  "slice",
+  "sprinkle",
+  "spread",
+  "stir",
+  "toast",
+  "toss",
+  "whisk",
+];
+const INGREDIENT_UNITS = [
+  "cup",
+  "cups",
+  "tbsp",
+  "tablespoon",
+  "tablespoons",
+  "tsp",
+  "teaspoon",
+  "teaspoons",
+  "oz",
+  "ounce",
+  "ounces",
+  "gram",
+  "grams",
+  "g",
+  "kg",
+  "ml",
+  "l",
+  "lb",
+  "pound",
+  "pounds",
+  "pinch",
+  "dash",
+  "clove",
+  "cloves",
+  "slice",
+  "slices",
+  "piece",
+  "pieces",
+];
+const TOOL_WORDS = new Set([
+  "pan",
+  "skillet",
+  "pot",
+  "bowl",
+  "oven",
+  "tray",
+  "sheet",
+  "plate",
+  "dish",
+  "rack",
+  "knife",
+  "spoon",
+]);
+const PREP_BASE_WORDS = new Set([
+  "chopped",
+  "minced",
+  "diced",
+  "sliced",
+  "grated",
+  "shredded",
+  "zested",
+  "juiced",
+  "peeled",
+  "seeded",
+  "drained",
+  "rinsed",
+  "softened",
+  "melted",
+  "cooled",
+  "thawed",
+  "toasted",
+  "crushed",
+  "ground",
+]);
+const PREP_AGGRESSIVE_MODIFIERS = new Set([
+  "finely",
+  "roughly",
+  "coarsely",
+  "thinly",
+  "thickly",
+]);
+const PREP_AGGRESSIVE_ADJECTIVES = new Set(["soft"]);
+const PREP_AGGRESSIVE_INTENSIFIERS = new Set(["very", "extra", "super", "really"]);
+function normalizePrepToken(token: string, mode: PrepExtractionMode): string | null {
+  const cleaned = token
+    .toLowerCase()
+    .replace(/[.!?]+$/, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!cleaned) {
+    return null;
+  }
+  if (/^(at\s+)?room\s+temp(erature)?$/.test(cleaned)) {
+    return "room temperature";
+  }
+  if (PREP_BASE_WORDS.has(cleaned)) {
+    return cleaned;
+  }
+  if (mode === "aggressive") {
+    const modifierMatch = cleaned.match(/^(\w+)\s+(\w+)$/);
+    if (modifierMatch) {
+      const [, modifier, base] = modifierMatch;
+      if (PREP_AGGRESSIVE_MODIFIERS.has(modifier) && PREP_BASE_WORDS.has(base)) {
+        return `${modifier} ${base}`;
+      }
+      if (PREP_AGGRESSIVE_INTENSIFIERS.has(modifier) && PREP_AGGRESSIVE_ADJECTIVES.has(base)) {
+        return `${modifier} ${base}`;
+      }
+    }
+    if (PREP_AGGRESSIVE_ADJECTIVES.has(cleaned)) {
+      return cleaned;
+    }
+  }
+  return null;
+}
+function extractIngredientPrep(
+  raw: string,
+  mode: PrepExtractionMode,
+): { base: string; prep: string[] } {
+  let base = raw.trim();
+  const prep: string[] = [];
+  base = base
+    .replace(/\(([^)]+)\)/g, (_match, contents: string) => {
+      const tokens = contents
+        .split(",")
+        .map((token) => token.trim())
+        .filter(Boolean);
+      const kept: string[] = [];
+      for (const token of tokens) {
+        const normalized = normalizePrepToken(token, mode);
+        if (normalized) {
+          prep.push(normalized);
+        } else {
+          kept.push(token);
+        }
+      }
+      if (kept.length > 0) {
+        return `(${kept.join(", ")})`;
+      }
+      return "";
+    })
+    .replace(/\s+/g, " ")
+    .trim();
+  const segments = base
+    .split(",")
+    .map((segment) => segment.trim())
+    .filter(Boolean);
+  if (segments.length > 1) {
+    const baseSegments: string[] = [];
+    segments.forEach((segment, index) => {
+      if (index === 0) {
+        baseSegments.push(segment);
+        return;
+      }
+      const normalized = normalizePrepToken(segment, mode);
+      if (normalized) {
+        prep.push(normalized);
+      } else {
+        baseSegments.push(segment);
+      }
+    });
+    base = baseSegments.join(", ").trim();
+  }
+  if (mode === "aggressive") {
+    const leadingPrep = extractLeadingPrepPhrase(base, mode);
+    if (leadingPrep) {
+      prep.push(leadingPrep.prep);
+      base = leadingPrep.base;
+    }
+  }
+  return { base, prep };
+}
+function extractLeadingPrepPhrase(
+  text: string,
+  mode: PrepExtractionMode,
+): { base: string; prep: string } | null {
+  if (mode !== "aggressive") {
+    return null;
+  }
+  const words = text.split(/\s+/).filter(Boolean);
+  if (words.length < 3) {
+    return null;
+  }
+  const leadingToken = `${words[0]} ${words[1]}`;
+  const normalized = normalizePrepToken(leadingToken, mode);
+  if (!normalized) {
+    return null;
+  }
+  const remaining = words.slice(2).join(" ").trim();
+  if (!remaining) {
+    return null;
+  }
+  return { base: remaining, prep: normalized };
+}
+function inferIngredientsFromInstructions(instructions: string[]): string[] {
+  const imperativeLines = instructions.filter((line) => isImperativeLine(line));
+  if (imperativeLines.length < 2) {
+    return [];
+  }
+  const candidates: string[] = [];
+  for (const line of imperativeLines) {
+    const extracted = extractNounPhrasesFromImperative(line);
+    candidates.push(...extracted);
+  }
+  const deduped = dedupePreserveOrder(candidates);
+  if (deduped.length < 2) {
+    return [];
+  }
+  return deduped;
+}
+function isImperativeLine(text: string): boolean {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    return false;
+  }
+  const verbPattern = IMPERATIVE_VERBS.join("|");
+  return new RegExp(`^(${verbPattern})\\b`, "i").test(trimmed);
+}
+function extractNounPhrasesFromImperative(text: string): string[] {
+  const cleaned = text
+    .replace(/^(step\s*\d+[:.)]?\s*)/i, "")
+    .replace(/^\d+[.)]\s+/, "")
+    .trim();
+  const verbPattern = new RegExp(`^(${IMPERATIVE_VERBS.join("|")})\\b`, "i");
+  let remainder = cleaned.replace(verbPattern, "").trim();
+  remainder = remainder.replace(/^(slowly|gently|carefully)\b/i, "").trim();
+  if (!remainder) {
+    return [];
+  }
+  const segments = remainder
+    .split(
+      /(?:,|;|\band\b|\bor\b|\bwith\b|\binto\b|\bin\b|\bon\b|\bover\b|\bonto\b|\bfor\b|\bto\b|\buntil\b|\bthen\b)/i,
+    )
+    .map((segment) => segment.trim())
+    .filter(Boolean);
+  const phrases: string[] = [];
+  for (const segment of segments) {
+    const candidate = normalizeIngredientCandidate(segment);
+    if (candidate) {
+      phrases.push(candidate);
+    }
+  }
+  return phrases;
+}
+function normalizeIngredientCandidate(segment: string): string | null {
+  let candidate = segment.replace(/[.!?]+$/, "").trim();
+  candidate = candidate.replace(/^(the|a|an|some|your)\b\s*/i, "").trim();
+  if (!candidate) {
+    return null;
+  }
+  const quantityUnitPattern = new RegExp(
+    `^(?:\\d+(?:[/-]\\d+)?|\\d+\\s+\\d/\\d)\\s+(?:${INGREDIENT_UNITS.join(
+      "|",
+    )})\\b\\s*`,
+    "i",
+  );
+  candidate = candidate.replace(quantityUnitPattern, "").trim();
+  if (!candidate) {
+    return null;
+  }
+  if (/\d/.test(candidate)) {
+    return null;
+  }
+  const normalized = candidate.replace(/\s+/g, " ");
+  const words = normalized.split(" ");
+  if (words.length === 0 || words.length > 4) {
+    return null;
+  }
+  const lastWord = words[words.length - 1]?.toLowerCase();
+  if (lastWord && TOOL_WORDS.has(lastWord)) {
+    return null;
+  }
+  return normalized;
+}
+function dedupePreserveOrder(items: string[]): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const item of items) {
+    const key = item.toLowerCase();
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    result.push(item);
+  }
+  return result;
+}
+export function extract(
+  chunk: Chunk,
+  lines: Line[],
+  options: { prepExtractionMode?: PrepExtractionMode } = {},
+): IntermediateRecipe {
+  const relevantLines = sliceLines(lines, chunk.startLine, chunk.endLine);
+  const titleGuess = chunk.titleGuess?.trim();
+  let title = titleGuess ?? "Untitled Recipe";
+  let contentLines = relevantLines;
+  let titleIndex = -1;
+  if (titleGuess) {
+    titleIndex = relevantLines.findIndex((line) => line.text.trim() === titleGuess);
+    if (titleIndex >= 0) {
+      contentLines = relevantLines.filter((_, index) => index !== titleIndex);
+    }
+  } else {
+    const firstNonEmptyIndex = relevantLines.findIndex((line) => line.text.trim().length > 0);
+    if (firstNonEmptyIndex >= 0) {
+      title = relevantLines[firstNonEmptyIndex].text.trim();
+      titleIndex = firstNonEmptyIndex;
+      contentLines = relevantLines.filter((_, index) => index !== firstNonEmptyIndex);
+    }
+  }
+  const { author, filteredLines } = extractAuthorFromLines(contentLines);
+  contentLines = filteredLines;
+  const { ingredients, instructions, prep } = splitSections(contentLines);
+  const ingredientPrep: IngredientPrep[] = [];
+  const prepExtractionMode = options.prepExtractionMode ?? "conservative";
+  ingredients.forEach((ingredient, index) => {
+    const { base, prep: prepTokens } = extractIngredientPrep(ingredient, prepExtractionMode);
+    if (prepTokens.length > 0) {
+      ingredientPrep.push({
+        index,
+        raw: ingredient,
+        base,
+        prep: prepTokens,
+      });
+    }
+  });
+  const recipe: IntermediateRecipe = {
+    title,
+    ingredients,
+    instructions,
+    source: {
+      startLine: chunk.startLine,
+      endLine: chunk.endLine,
+      evidence: chunk.evidence,
+      author,
+    },
+  };
+  if (prep.length > 0) {
+    recipe.prepSection = prep;
+  }
+  if (ingredientPrep.length > 0) {
+    recipe.ingredientPrep = ingredientPrep;
+  }
+  return recipe;
+}
+</file>
+<file path="test/pipeline.spec.ts">
+import { afterEach, beforeEach, describe, it } from "node:test";
+import assert from "node:assert/strict";
+import { promises as fs } from "fs";
+import os from "os";
+import path from "path";
+import { normalize } from "../src/pipeline/normalize";
+import { segment } from "../src/pipeline/segment";
+import { extract } from "../src/pipeline/extract";
+import { toSoustack } from "../src/pipeline/toSoustack";
+import { emit } from "../src/pipeline/emit";
+import { initValidator, validate } from "../src/pipeline/validate";
+import { IntermediateRecipe, SoustackRecipe } from "../src/pipeline/types";
+describe("pipeline", () => {
+  describe("normalize", () => {
+    it("produces stable lines", () => {
+      const input = "First line\r\nSecond line\r\n\r\nThird line";
+      const result = normalize(input);
+      assert.equal(result.fullText, "First line\nSecond line\n\nThird line");
+      assert.deepEqual(result.lines, [
+        { n: 1, text: "First line" },
+        { n: 2, text: "Second line" },
+        { n: 3, text: "" },
+        { n: 4, text: "Third line" },
+      ]);
+    });
+    it("treats form feeds as newlines", () => {
+      const input = "First line\fSecond line\f\fThird line";
+      const result = normalize(input);
+      assert.equal(result.fullText, "First line\nSecond line\n\nThird line");
+      assert.deepEqual(result.lines, [
+        { n: 1, text: "First line" },
+        { n: 2, text: "Second line" },
+        { n: 3, text: "" },
+        { n: 4, text: "Third line" },
+      ]);
+    });
+  });
+  describe("segment", () => {
+    it("returns non-overlapping chunks", () => {
+      const lines = normalize("Title\nBody line\nAnother line").lines;
+      const { chunks } = segment(lines);
+      assert.ok(chunks.length > 0);
+      const sorted = [...chunks].sort((a, b) => a.startLine - b.startLine);
+      sorted.forEach((chunk) => {
+        assert.ok(chunk.startLine <= chunk.endLine);
+      });
+      for (let index = 1; index < sorted.length; index += 1) {
+        assert.ok(sorted[index].startLine > sorted[index - 1].endLine);
+      }
+    });
+    it("segments a mini cookbook with inferred titles", () => {
+      const cookbook = [
+        "SUMMER SALAD",
+        "",
+        "2 cups mixed greens",
+        "1/2 cup cherry tomatoes",
+        "Pinch of salt",
+        "",
+        "Toss together and serve.",
+        "",
+        "COZY SOUP",
+        "",
+        "- 1 tbsp olive oil",
+        "- 1 cup broth",
+        "",
+        "Directions",
+        "Simmer for 10 minutes.",
+        "",
+        "PANCAKE BITES",
+        "",
+        "1 cup flour",
+        "1/2 cup milk",
+        "1 egg",
+        "",
+        "Cook on a griddle until golden.",
+      ].join("\n");
+      const { chunks } = segment(normalize(cookbook).lines);
+      assert.equal(chunks.length, 3);
+      assert.deepEqual(
+        chunks.map((chunk) => chunk.titleGuess),
+        ["SUMMER SALAD", "COZY SOUP", "Directions"]
+      );
+      chunks.forEach((chunk) => {
+        assert.ok(chunk.confidence > 0.6);
+      });
+    });
+    it("handles ingredient lines with unit tokens but no leading numbers", () => {
+      const cookbook = [
+        "MORNING OATS",
+        "",
+        "cup rolled oats",
+        "tbsp chia seeds",
+        "pinch salt",
+        "",
+        "Stir together and soak overnight.",
+        "",
+        "HERB TEA",
+        "",
+        "tsp dried chamomile",
+        "cup hot water",
+        "",
+        "Steep for five minutes.",
+      ].join("\n");
+      const { chunks } = segment(normalize(cookbook).lines);
+      assert.equal(chunks.length, 2);
+      assert.deepEqual(chunks.map((chunk) => chunk.titleGuess), [
+        "MORNING OATS",
+        "HERB TEA",
+      ]);
+      chunks.forEach((chunk) => {
+        assert.ok(chunk.confidence > 0.6);
+      });
+    });
+    it("avoids creating chunks on ingredient-like title candidates", () => {
+      const cookbook = [
+        "COZY SOUP",
+        "",
+        "Cup Rolled Oats",
+        "",
+        "Mix well.",
+      ].join("\n");
+      const { chunks } = segment(normalize(cookbook).lines);
+      assert.equal(chunks.length, 1);
+      assert.equal(chunks[0]?.titleGuess, "COZY SOUP");
+      assert.ok(!chunks.some((chunk) => chunk.titleGuess === "Cup Rolled Oats"));
+    });
+    it("keeps all-caps titles above imperative-only instructions", async () => {
+      const fixturePath = path.join(process.cwd(), "test", "fixtures", "cinnamon-toast.txt");
+      const fixture = await fs.readFile(fixturePath, "utf-8");
+      const lines = normalize(fixture).lines;
+      const { chunks } = segment(lines);
+      assert.equal(chunks.length, 1);
+      assert.equal(chunks[0]?.titleGuess, "CINNAMON TOAST AND BUTTER");
+      assert.equal(chunks[0]?.startLine, 1);
+      const chunkLines = lines
+        .filter(
+          (line) => line.n >= (chunks[0]?.startLine ?? 0) && line.n <= (chunks[0]?.endLine ?? 0),
+        )
+        .map((line) => line.text.trim());
+      assert.ok(chunkLines.includes("Toast the white bread"));
+      assert.ok(chunkLines.includes("Add soft butter onto toast"));
+      assert.ok(chunkLines.includes("Sprinkle the cinnamon/sugar mix"));
+      assert.ok(!chunks.some((chunk) => chunk.titleGuess === "Toast the white bread"));
+    });
+    it("prefers structured cookbook titles over ingredient lines", async () => {
+      const fixturePath = path.join(process.cwd(), "test", "fixtures", "structured-cookbook.txt");
+      const fixture = await fs.readFile(fixturePath, "utf-8");
+      const lines = normalize(fixture).lines;
+      const { chunks } = segment(lines);
+      assert.equal(chunks[0]?.titleGuess, "CHICKEN PICCATTA");
+      assert.ok(!chunks.some((chunk) => chunk.titleGuess === "Chicken breasts"));
+    });
+  });
+  describe("extract", () => {
+    it("returns ingredients and instructions when headings are missing", () => {
+      const text = [
+        "SIMPLE SALAD",
+        "2 cups mixed greens",
+        "1 tbsp olive oil",
+        "Pinch of salt",
+        "Toss everything together and serve.",
+      ].join("\n");
+      const lines = normalize(text).lines;
+      const [chunk] = segment(lines).chunks;
+      const recipe = extract(chunk, lines);
+      assert.ok(recipe.ingredients.includes("2 cups mixed greens"));
+      assert.ok(recipe.ingredients.includes("1 tbsp olive oil"));
+      assert.ok(recipe.ingredients.includes("Pinch of salt"));
+      assert.ok(!recipe.ingredients.includes("SIMPLE SALAD"));
+      assert.ok(recipe.instructions.join(" ").includes("Toss"));
+    });
+    it("handles ingredients before a preparation heading", () => {
+      const text = [
+        "QUICK TOAST",
+        "2 slices bread",
+        "1 tbsp butter",
+        "Preparation:",
+        "Toast the bread until golden.",
+        "Spread with butter.",
+      ].join("\n");
+      const lines = normalize(text).lines;
+      const chunk = {
+        startLine: 1,
+        endLine: lines.length,
+        titleGuess: "QUICK TOAST",
+        confidence: 1,
+        evidence: "test",
+      };
+      const recipe = extract(chunk, lines);
+      assert.deepEqual(recipe.ingredients, ["bread", "golden", "butter"]);
+      assert.deepEqual(recipe.prepSection, [
+        "Toast the bread until golden.",
+        "Spread with butter.",
+      ]);
+      assert.ok(recipe.instructions.includes("2 slices bread"));
+      assert.ok(recipe.instructions.includes("1 tbsp butter"));
+      assert.ok(recipe.instructions.includes("Toast the bread until golden."));
+    });
+    it("keeps simple ingredient phrases without quantities", () => {
+      const text = ["SPICE BLEND", "Salt and pepper", "Mix well."].join("\n");
+      const lines = normalize(text).lines;
+      const [chunk] = segment(lines).chunks;
+      const recipe = extract(chunk, lines);
+      assert.ok(recipe.ingredients.includes("Salt and pepper"));
+      assert.ok(recipe.instructions.join(" ").includes("Mix"));
+    });
+    it("treats unicode bullets as ingredients", () => {
+      const text = ["BULLET LIST", "• 1 cup flour", "• 2 tbsp sugar"].join("\n");
+      const lines = normalize(text).lines;
+      const [chunk] = segment(lines).chunks;
+      const recipe = extract(chunk, lines);
+      assert.equal(recipe.ingredients.length, 2);
+      assert.deepEqual(recipe.ingredients, ["1 cup flour", "2 tbsp sugar"]);
+    });
+    it("treats unicode fraction ingredient lines as ingredients without headings", () => {
+      const text = [
+        "FANCY VINAIGRETTE",
+        "½ cup olive oil",
+        "¼ cup white wine",
+        "¾ tsp salt",
+        "Whisk until emulsified.",
+      ].join("\n");
+      const lines = normalize(text).lines;
+      const [chunk] = segment(lines).chunks;
+      const recipe = extract(chunk, lines);
+      assert.ok(recipe.ingredients.includes("½ cup olive oil"));
+      assert.ok(recipe.ingredients.includes("¼ cup white wine"));
+      assert.ok(recipe.ingredients.includes("¾ tsp salt"));
+      assert.ok(!recipe.instructions.some((line) => line.includes("½ cup olive oil")));
+      assert.ok(!recipe.instructions.some((line) => line.includes("¼ cup white wine")));
+      assert.ok(!recipe.instructions.some((line) => line.includes("¾ tsp salt")));
+      assert.ok(recipe.instructions.join(" ").includes("Whisk"));
+    });
+    it("strips a multi-line By block from instructions", () => {
+      const text = [
+        "BOWMAN SALSA",
+        "By:",
+        "Jessie Bowman",
+        "",
+        "Ingredients",
+        "1 cup tomatoes",
+        "Directions",
+        "Mix together and serve.",
+      ].join("\n");
+      const lines = normalize(text).lines;
+      const chunk = {
+        startLine: 1,
+        endLine: lines.length,
+        titleGuess: "BOWMAN SALSA",
+        confidence: 1,
+        evidence: "test",
+      };
+      const recipe = extract(chunk, lines);
+      assert.equal(recipe.source.author, "Jessie Bowman");
+      const instructionsText = recipe.instructions.join(" ");
+      assert.ok(!instructionsText.includes("By:"));
+      assert.ok(!instructionsText.includes("Jessie Bowman"));
+    });
+    it("strips single-line By attribution from instructions", () => {
+      const text = [
+        "BOWMAN STEW",
+        "By: Jamie Bowman",
+        "",
+        "Ingredients",
+        "1 cup broth",
+        "Instructions",
+        "Simmer gently.",
+      ].join("\n");
+      const lines = normalize(text).lines;
+      const chunk = {
+        startLine: 1,
+        endLine: lines.length,
+        titleGuess: "BOWMAN STEW",
+        confidence: 1,
+        evidence: "test",
+      };
+      const recipe = extract(chunk, lines);
+      assert.equal(recipe.source.author, "Jamie Bowman");
+      const instructionsText = recipe.instructions.join(" ");
+      assert.ok(!instructionsText.includes("By:"));
+      assert.ok(!instructionsText.includes("Jamie Bowman"));
+    });
+    it("captures prep sections and ingredient-level prep metadata", () => {
+      const text = [
+        "Title line",
+        "Prep:",
+        "- Dice the onion",
+        "- Mince garlic",
+        "Ingredients:",
+        "1 onion, diced",
+        "2 cloves garlic, minced",
+        "1 can diced tomatoes",
+        "Instructions:",
+        "1. Cook stuff.",
+      ].join("\n");
+      const lines = normalize(text).lines;
+      const chunk = {
+        startLine: 1,
+        endLine: lines.length,
+        titleGuess: "Title line",
+        confidence: 1,
+        evidence: "test",
+      };
+      const recipe = extract(chunk, lines);
+      assert.deepEqual(recipe.prepSection, ["Dice the onion", "Mince garlic"]);
+      assert.deepEqual(recipe.ingredients, [
+        "1 onion, diced",
+        "2 cloves garlic, minced",
+        "1 can diced tomatoes",
+      ]);
+      assert.deepEqual(recipe.instructions, [
+        "- Dice the onion",
+        "- Mince garlic",
+        "Cook stuff.",
+      ]);
+      assert.deepEqual(recipe.ingredientPrep, [
+        {
+          index: 0,
+          raw: "1 onion, diced",
+          base: "1 onion",
+          prep: ["diced"],
+        },
+        {
+          index: 1,
+          raw: "2 cloves garlic, minced",
+          base: "2 cloves garlic",
+          prep: ["minced"],
+        },
+      ]);
+    });
+  });
+  describe("toSoustack", () => {
+    it("includes required fields", () => {
+      const intermediate: IntermediateRecipe = {
+        title: "CINNAMON TOAST AND BUTTER",
+        ingredients: ["1 cup rice"],
+        instructions: ["Cook the rice."],
+        source: {
+          startLine: 1,
+          endLine: 4,
+          evidence: "Lines 1-4",
+        },
+      };
+      const recipe = toSoustack(intermediate, { sourcePath: "recipes.md" });
+      assert.equal(recipe.$schema, "https://spec.soustack.dev/recipe.schema.json");
+      assert.equal(recipe.profile, "lite");
+      assert.equal(recipe.name, "Cinnamon Toast and Butter");
+      assert.deepEqual(recipe.ingredients, intermediate.ingredients);
+      assert.deepEqual(recipe.instructions, intermediate.instructions);
+      assert.deepEqual(recipe.stacks, {});
+      assert.equal(recipe.metadata?.originalTitle, intermediate.title);
+      assert.deepEqual(recipe.metadata?.ingest, {
+        pipelineVersion: "0.1.1",
+        sourcePath: "recipes.md",
+        sourceLines: {
+          start: 1,
+          end: 4,
+        },
+      });
+    });
+    it("emits prep metadata in the x-prep extension lane", () => {
+      const intermediate: IntermediateRecipe = {
+        title: "Prep Test",
+        ingredients: ["1 onion, diced"],
+        instructions: ["Cook the onion."],
+        prepSection: ["Dice the onion"],
+        ingredientPrep: [
+          {
+            index: 0,
+            raw: "1 onion, diced",
+            base: "1 onion",
+            prep: ["diced"],
+          },
+        ],
+        source: {
+          startLine: 1,
+          endLine: 4,
+          evidence: "Lines 1-4",
+        },
+      };
+      const recipe = toSoustack(intermediate);
+      assert.deepEqual(recipe["x-prep"]?.section, ["Dice the onion"]);
+      assert.deepEqual(recipe["x-prep"]?.ingredients, intermediate.ingredientPrep);
+      assert.ok(recipe["x-prep"]?.generatedAt);
+    });
+    it("defaults to empty ingredient and instruction arrays when missing", () => {
+      const intermediate = {
+        title: "Empty Fields",
+        source: {
+          startLine: 1,
+          endLine: 1,
+          evidence: "Lines 1-1",
+        },
+      } as unknown as IntermediateRecipe;
+      const recipe = toSoustack(intermediate);
+      assert.deepEqual(recipe.ingredients, []);
+      assert.deepEqual(recipe.instructions, []);
+      assert.equal(recipe.stacks && typeof recipe.stacks, "object");
+    });
+    it("emits only spec-approved top-level fields", () => {
+      const intermediate: IntermediateRecipe = {
+        title: "Veggie Bowl",
+        ingredients: ["1 cup rice"],
+        instructions: ["Cook the rice."],
+        source: {
+          startLine: 1,
+          endLine: 4,
+          evidence: "Lines 1-4",
+        },
+      };
+      const recipe = toSoustack(intermediate);
+      const allowedKeys = new Set([
+        "$schema",
+        "profile",
+        "stacks",
+        "name",
+        "ingredients",
+        "instructions",
+        "x-prep",
+        "metadata",
+      ]);
+      assert.equal(recipe.$schema, "https://spec.soustack.dev/recipe.schema.json");
+      Object.keys(recipe).forEach((key) => {
+        assert.ok(allowedKeys.has(key), `Unexpected top-level key: ${key}`);
+      });
+    });
+  });
+  describe("emit", () => {
+    let tempDir: string;
+    beforeEach(async () => {
+      tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "soustack-"));
+    });
+    afterEach(async () => {
+      await fs.rm(tempDir, { recursive: true, force: true });
+    });
+    it("writes index and recipe files", async () => {
+      const recipes: SoustackRecipe[] = [
+        {
+          $schema: "https://spec.soustack.dev/recipe.schema.json",
+          profile: "lite",
+          name: "Test Recipe",
+          stacks: {},
+          ingredients: ["1 cup sugar"],
+          instructions: ["Mix."],
+          metadata: {
+            ingest: {
+              pipelineVersion: "0.1.0",
+            },
+          },
+        },
+      ];
+      await emit(recipes, tempDir);
+      const indexPath = path.join(tempDir, "index.json");
+      const recipePath = path.join(tempDir, "recipes", "test-recipe.soustack.json");
+      const indexRaw = await fs.readFile(indexPath, "utf-8");
+      const indexPayload = JSON.parse(indexRaw) as Array<{ name: string; slug: string; path: string }>;
+      assert.deepEqual(indexPayload, [
+        {
+          name: "Test Recipe",
+          slug: "test-recipe",
+          path: "recipes/test-recipe.soustack.json",
+        },
+      ]);
+      const recipeRaw = await fs.readFile(recipePath, "utf-8");
+      const recipePayload = JSON.parse(recipeRaw) as SoustackRecipe;
+      assert.equal(recipePayload.name, "Test Recipe");
+      assert.deepEqual(recipePayload.ingredients, ["1 cup sugar"]);
+    });
+    it("writes unique paths for duplicate recipe names", async () => {
+      const recipes: SoustackRecipe[] = [
+        {
+          $schema: "https://spec.soustack.dev/recipe.schema.json",
+          profile: "lite",
+          name: "Dup Recipe",
+          stacks: {},
+          ingredients: ["1 cup sugar"],
+          instructions: ["Mix."],
+          metadata: {
+            ingest: {
+              pipelineVersion: "0.1.0",
+            },
+          },
+        },
+        {
+          $schema: "https://spec.soustack.dev/recipe.schema.json",
+          profile: "lite",
+          name: "Dup Recipe",
+          stacks: {},
+          ingredients: ["2 cups flour"],
+          instructions: ["Bake."],
+          metadata: {
+            ingest: {
+              pipelineVersion: "0.1.0",
+            },
+          },
+        },
+      ];
+      await emit(recipes, tempDir);
+      const indexPath = path.join(tempDir, "index.json");
+      const indexRaw = await fs.readFile(indexPath, "utf-8");
+      const indexPayload = JSON.parse(indexRaw) as Array<{ name: string; slug: string; path: string }>;
+      const paths = indexPayload.map((entry) => entry.path);
+      assert.equal(indexPayload.length, 2);
+      assert.equal(new Set(paths).size, 2);
+      for (const entry of indexPayload) {
+        const filePath = path.join(tempDir, entry.path);
+        const recipeRaw = await fs.readFile(filePath, "utf-8");
+        const recipePayload = JSON.parse(recipeRaw) as SoustackRecipe;
+        assert.ok(recipePayload.name);
+      }
+    });
+  });
+  describe("validate", () => {
+    beforeEach(async () => {
+      await initValidator();
+    });
+    it("accepts a minimal valid recipe", () => {
+      const recipe: SoustackRecipe = {
+        $schema: "https://spec.soustack.dev/recipe.schema.json",
+        profile: "lite",
+        name: "Test Recipe",
+        stacks: {},
+        ingredients: ["1 cup sugar"],
+        instructions: ["Mix."],
+        metadata: {
+          ingest: {
+            pipelineVersion: "0.1.0",
+          },
+        },
+      };
+      const result = validate(recipe);
+      assert.equal(result.ok, true);
+      assert.equal(result.errors.length, 0);
+    });
+    it("rejects a recipe missing a name", () => {
+      const recipe = {
+        $schema: "https://spec.soustack.dev/recipe.schema.json",
+        profile: "lite",
+        stacks: {},
+        ingredients: ["1 cup sugar"],
+        instructions: ["Mix."],
+        metadata: {
+          ingest: {
+            pipelineVersion: "0.1.0",
+          },
+        },
+      } as unknown as SoustackRecipe;
+      const result = validate(recipe);
+      assert.equal(result.ok, false);
+      assert.ok(result.errors.some((error) => error.includes("name")));
+    });
+  });
+});
+</file>
+</files>
+
+================
+File: src/lib/zip.ts
+================
+import { execFileSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+export type ZipEntry = {
+  entryName: string;
+  isDirectory: boolean;
+  getData: () => Buffer;
+};
+function listPaths(root: string): string[]
+⋮----
+const walk = (dir: string) =>
+⋮----
+function createEntry(entryPath: string, root: string): ZipEntry
+export class ZipArchive
+⋮----
+constructor(zipPath?: string)
+addFile(entryName: string, data: Buffer): void
+writeZip(targetPath: string): void
+getEntries(): ZipEntry[]
+
+================
+File: src/pipeline/schema.ts
+================
+
+
+================
+File: test/fixtures/.gitkeep
+================
+
+
+================
+File: test/fixtures/cinnamon-toast.txt
+================
+CINNAMON TOAST AND BUTTER
+Toast the white bread
+Add soft butter onto toast
+Sprinkle the cinnamon/sugar mix
+
+================
+File: test/fixtures/structured-cookbook.txt
+================
+CHICKEN PICCATTA
+By:
+Unknown
+Ingredients:
+Chicken breasts
+½ cup flour
+
+SPRING SALAD
+Ingredients:
+Lettuce
+
+QUICK SOUP
+Ingredients:
+Water
+
+EASY TOAST
+Ingredients:
+Bread
+
+SWEET TREAT
+Ingredients:
+Sugar
+
+================
+File: LICENSE
+================
+MIT License
+
+Copyright (c) 2025 RichardHerold
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+================
+File: tsconfig.test.json
+================
+{
+  "extends": "./tsconfig.json",
+  "include": ["src", "test"],
+  "compilerOptions": {
+    "types": ["node"]
+  }
+}
+
+================
+File: scripts/dump-repo-for-ai.mjs
+================
+function parseArgs(argv)
+⋮----
+function toPosixPath(filePath)
+⋮----
+function globToRegex(glob)
+⋮----
+function compilePatterns(patterns)
+⋮----
+function matchPattern(relPath, isDir, entryName, entry, patterns)
+⋮----
+async function readIgnoreFile(root, filename)
+⋮----
+function isBinaryExtension(filePath)
+⋮----
+function isUtf8(buffer)
+⋮----
+function getTimestamp(repoRoot)
+⋮----
+// ignore
+⋮----
+function getGitMetadata(repoRoot)
+⋮----
+async function collectFiles(repoRoot, options)
+⋮----
+async function walk(currentDir)
+⋮----
+function formatOutput(
+⋮----
+async function main()
+
+================
+File: src/adapters/txt.ts
+================
+import { promises as fs } from "fs";
+import { AdapterOutput } from "../pipeline";
+export async function readTxt(filePath: string): Promise<AdapterOutput>
+
+================
+File: src/pipeline/index.ts
+================
+
+
+================
+File: src/pipeline/normalize.ts
+================
+import { Line, NormalizedText } from "./types";
+export function normalize(input: string): NormalizedText
+
+================
+File: .gitignore
+================
+soustack-injest-repo-pack.md
+/out
+.DS_Store
+
+================
+File: tsconfig.json
+================
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "rootDir": "src",
+    "outDir": "dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "types": ["node"]
+  },
+  "include": ["src"],
+  "ts-node": {
+    "esm": false
+  }
+}
+
+================
+File: src/adapters/index.ts
+================
+import path from "path";
+import { promises as fs } from "fs";
+import { readRtfdZip, readRtfdDirectory } from "./rtfdZip";
+import { readTxt } from "./txt";
+import { AdapterOutput } from "../pipeline";
+⋮----
+export async function loadInput(inputPath: string): Promise<AdapterOutput>
+⋮----
+// Check if it's a directory (rtfd bundle) or a zip file
+⋮----
+// Treat as zip file
+
+================
+File: src/pipeline/emit.ts
+================
+import { promises as fs } from "fs";
+import path from "path";
+import { SoustackRecipe } from "./types";
+function slugify(value: string): string
+export async function emit(recipes: SoustackRecipe[], outDir: string): Promise<void>
+
+================
+File: test/rtfdZip.spec.ts
+================
+import { existsSync, promises as fs } from "fs";
+import os from "os";
+import path from "path";
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
+import { ZipArchive } from "../src/lib/zip";
+import { loadInput } from "../src/adapters";
+import { emit } from "../src/pipeline/emit";
+import { extract } from "../src/pipeline/extract";
+import { normalize } from "../src/pipeline/normalize";
+import { segment } from "../src/pipeline/segment";
+import { toSoustack } from "../src/pipeline/toSoustack";
+import { validate } from "../src/pipeline/validate";
+import { SoustackRecipe } from "../src/pipeline/types";
+
+================
+File: src/types/external.d.ts
+================
+
+
+================
+File: test/cli.spec.ts
+================
+import { afterEach, beforeEach, describe, it } from "node:test";
+import assert from "node:assert/strict";
+import { promises as fs } from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { ingest } from "../src/cli";
+
+================
+File: src/adapters/rtfdZip.ts
+================
+import { spawn } from "child_process";
+import { promises as fs } from "fs";
+import os from "os";
+import path from "path";
+import { AdapterOutput } from "../pipeline";
+import { ZipArchive } from "../lib/zip";
+type RtfCandidate = {
+  filePath: string;
+  size: number;
+  priority: number;
+};
+async function listFiles(root: string): Promise<string[]>
+function scoreRtfCandidate(filePath: string): number
+async function findPrimaryRtf(extractedPath: string): Promise<RtfCandidate | null>
+function convertRtfFallback(rtf: string): string
+async function convertWithNode(rtf: string): Promise<string | null>
+async function runCommand(command: string, args: string[], input?: string): Promise<string>
+async function convertWithPandoc(rtfPath: string): Promise<string | null>
+async function convertWithTextutil(rtfPath: string): Promise<string | null>
+async function convertRtfToText(rtfPath: string): Promise<string>
+export async function readRtfdZip(filePath: string): Promise<AdapterOutput>
+export async function readRtfdDirectory(dirPath: string): Promise<AdapterOutput>
+
+================
+File: package.json
+================
+{
+  "name": "soustack-ingest",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "test": "TS_NODE_PROJECT=tsconfig.test.json TS_NODE_TRANSPILE_ONLY=1 node -r ts-node/register --test test/*.spec.ts",
+    "ingest": "ts-node src/cli.ts ingest",
+    "repro": "npm run ingest -- test/fixtures/sample.rtf --out /tmp/soustack-ingest-repro"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.10",
+    "ajv": "^8.12.0",
+    "commander": "^11.0.0",
+    "fs-extra": "^11.2.0",
+    "rtf2text": "^1.0.1",
+    "slugify": "^1.6.6",
+    "soustack": "^0.4.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5",
+    "vitest": "^1.5.0"
+  }
+}
+
+================
+File: README.md
+================
+# soustack-ingest
+
+## CLI usage
+
+```bash
+soustack-ingest ingest <inputPath> --out <outDir>
+```
+
+The CLI reads the input file, runs it through the ingest pipeline, and writes JSON outputs under `<outDir>` (see `src/cli.ts` and `src/pipeline/emit.ts`).
+
+### Prerequisites
+
+- Node.js 18+ (or compatible)
+- Optional: `pandoc` for improved RTF/RTFD conversion (the adapter will fall back to a built-in parser when it is unavailable).
+
+## Adapter behavior
+
+Adapters are selected by file extension (`src/cli.ts`, `src/adapters`).
+
+- `.rtfd.zip`: handled by `readRtfdZip` (`src/adapters/rtfdZip.ts`). The adapter extracts the archive, locates the primary `.rtf` payload (preferring `TXT.rtf` or the largest `.rtf` file), and converts it to text. It tries a Node-based parser first, then falls back to `pandoc` and `textutil` when available.
+- `.txt`: handled by `readTxt` (`src/adapters/txt.ts`). Reads the file as UTF-8 text and passes it to the pipeline.
+
+Unsupported extensions throw an error.
+
+## Pipeline stages & contracts
+
+The ingest pipeline runs stages in order (`src/cli.ts`, `src/pipeline`).
+
+1. **normalize** (`src/pipeline/normalize.ts`)
+   - **Input:** raw adapter text (`string`).
+   - **Output:** `NormalizedText` with `fullText` and line metadata (`Line[]`).
+   - **Contract:** normalize newlines to `\n` and assign 1-based line numbers.
+
+2. **segment** (`src/pipeline/segment.ts`)
+   - **Input:** `Line[]`.
+   - **Output:** `SegmentedText` with `Chunk[]`.
+   - **Contract:** scores potential recipe boundaries and returns one chunk per inferred recipe with a best-effort title guess and confidence score.
+
+3. **extract** (`src/pipeline/extract.ts`)
+   - **Input:** a `Chunk` plus the full `Line[]`.
+   - **Output:** `IntermediateRecipe` containing title, ingredients, instructions, and source-line evidence.
+   - **Contract:** splits lines into `ingredients` and `instructions` sections by headers; lines before any header fall into instructions.
+
+4. **toSoustack** (`src/pipeline/toSoustack.ts`)
+   - **Input:** `IntermediateRecipe`.
+   - **Output:** `SoustackRecipe` (Soustack JSON shape) with `$schema` (vNext canonical URL), `profile: "lite"`, `stacks` as an object map, normalized `ingredients`/`instructions` string arrays, and ingest metadata.
+   - **Contract:** embeds source path and line range into `metadata.ingest`.
+
+5. **validate** (`src/pipeline/validate.ts`)
+   - **Input:** `SoustackRecipe`.
+   - **Output:** `ValidationResult` (`ok`, `errors`).
+   - **Contract:** see validator notes below.
+
+6. **emit** (`src/pipeline/emit.ts`)
+   - **Input:** list of validated `SoustackRecipe` values and an output directory.
+   - **Output:**
+     - `<outDir>/index.json` with name/slug/path entries.
+     - `<outDir>/recipes/<slug>.soustack.json` files for each recipe.
+   - **Contract:** recipe filenames are slugified from `recipe.name` and truncated to 80 characters.
+
+## Validator behavior & wiring `soustack`
+
+Validation is intentionally lightweight today. The pipeline starts with a stub validator built from a fallback schema (`src/pipeline/validate.ts`). It attempts to load `soustack` at runtime:
+
+- If `soustack` exports `validator`, that object is used.
+- If it exports `validateRecipe`, it is wrapped into a `validator`.
+- If neither exists or the import fails, the stub validator stays active.
+
+To wire `soustack` validation:
+
+1. Ensure `soustack` is installed (already in `package.json`).
+2. Export either a `validator` object with a `validate(recipe)` function, or a `validateRecipe(recipe)` function, from the `soustack` package entry point.
+3. Call `initValidator()` once at startup (the CLI does this before any `validate()` calls) so the active validator is set deterministically.
+
+## Build, test, and run
+
+```bash
+npm run build
+npm test
+npm run ingest -- <inputPath> --out <outDir>
+```
+
+### Example usage
+
+```bash
+npm run ingest -- "/mnt/data/bowman cookbook.rtfd.zip" --out ./output
+```
+
+================
+File: src/pipeline/toSoustack.ts
+================
+import { VNEXT_SCHEMA_URL } from "./schema";
+import { IntermediateRecipe, PrepMetadata, SoustackRecipe } from "./types";
+⋮----
+function toTitleCase(rawTitle: string): string
+export function toSoustack(
+  intermediate: IntermediateRecipe,
+  options?: { sourcePath?: string }
+): SoustackRecipe
+
+================
+File: src/pipeline/validate.ts
+================
+import { createRequire } from "node:module";
+import fs from "node:fs";
+import path from "node:path";
+import Ajv, { ErrorObject, type AnySchema } from "ajv";
+import { VNEXT_SCHEMA_URL } from "./schema";
+import { SoustackRecipe, ValidationResult } from "./types";
+export interface Validator {
+  validate(recipe: SoustackRecipe): ValidationResult;
+}
+⋮----
+validate(recipe: SoustackRecipe): ValidationResult;
+⋮----
+type CoreValidationModule = {
+  validator?: Validator;
+  validateRecipe?: (
+    recipe: SoustackRecipe,
+    options?: unknown
+  ) =>
+    | {
+        ok?: boolean;
+        valid?: boolean;
+        success?: boolean;
+        schemaErrors?: Array<{ path?: string; message?: string }>;
+        conformanceIssues?: Array<{ path?: string; message?: string }>;
+        errors?: Array<{ path?: string; message?: string } | string>;
+        warnings?: string[];
+      }
+    | Promise<{
+        ok?: boolean;
+        valid?: boolean;
+        success?: boolean;
+        schemaErrors?: Array<{ path?: string; message?: string }>;
+        conformanceIssues?: Array<{ path?: string; message?: string }>;
+        errors?: Array<{ path?: string; message?: string } | string>;
+        warnings?: string[];
+      }>;
+  recipeSchema?: unknown;
+  schema?: unknown;
+  schemas?: {
+    recipe?: unknown;
+  };
+};
+⋮----
+function toJsonPathSegment(segment: string): string
+function toJsonPath(instancePath: string, missingProperty?: string): string
+function formatAjvError(error: ErrorObject): string
+function buildAjvValidator(schema: unknown): Validator
+function resolveSchemaFromModule(core: CoreValidationModule): unknown | null
+async function loadSchemaFromString(schemaRef: string, moduleName: string): Promise<unknown | null>
+async function loadSchemaFromPackage(moduleName: string): Promise<unknown | null>
+function normalizeIssue(issue: unknown): string
+function normalizeValidateRecipeResult(raw: unknown): ValidationResult
+function wrapValidateRecipe(
+  validateRecipeFn: NonNullable<CoreValidationModule["validateRecipe"]>
+): Validator
+async function selectValidatorFromModule(moduleName: string): Promise<Validator | null>
+⋮----
+export async function initValidator(): Promise<void>
+export function validate(recipe: SoustackRecipe): ValidationResult
+
+================
+File: src/pipeline/segment.ts
+================
+import { Line, SegmentedText, Chunk, SegmentationReason } from "./types";
+type LineFeatures = {
+  isBlank: boolean;
+  isTitleLike: boolean;
+  isAllCapsTitle: boolean;
+  hasIngredientsMarker: boolean;
+  hasInstructionMarker: boolean;
+  isIngredientLine: boolean;
+  isImperativeLine: boolean;
+};
+⋮----
+function isTitleLikeLine(
+  text: string,
+  prevBlank: boolean,
+  nextBlank: boolean,
+  index: number,
+  totalLines: number,
+): boolean
+⋮----
+// Require capitalization even when surrounded by blank lines or at edges.
+// This avoids tagging short ingredient lines like "Chicken breasts" as titles.
+⋮----
+function isIngredientCandidate(text: string): boolean
+function isAllCapsTitle(text: string): boolean
+function isImperativeLine(text: string): boolean
+function buildFeatures(lines: Line[]): LineFeatures[]
+function clamp(value: number, min = 0, max = 1): number
+function ingredientDensity(features: LineFeatures[], start: number, window: number): number
+function imperativeDensity(features: LineFeatures[], start: number, window: number): number
+type CandidateStart = {
+  index: number;
+  score: number;
+  reason?: SegmentationReason;
+};
+function findCandidateStarts(lines: Line[], features: LineFeatures[]): CandidateStart[]
+function hasNearbyStructuredMarker(lines: Line[], startIndex: number, window = 8): boolean
+function isAuthorLine(lines: Line[], index: number): boolean
+function findStructuredCookbookStarts(lines: Line[], features: LineFeatures[]): number[]
+function confidenceForChunk(
+  lines: Line[],
+  features: LineFeatures[],
+  startIndex: number,
+  endIndex: number,
+): number
+export type SegmentOptions = {
+  debug?: boolean;
+};
+export function segment(lines: Line[], options: SegmentOptions =
+
+================
+File: src/cli.ts
+================
+import { Command } from "commander";
+import {
+  emit,
+  extract,
+  normalize,
+  segment,
+  toSoustack,
+  initValidator,
+  validate,
+  SoustackRecipe,
+  PrepExtractionMode,
+} from "./pipeline";
+import { loadInput } from "./adapters";
+type IngestOptions = {
+  debugSegmentation?: boolean;
+  prepExtractionMode?: PrepExtractionMode;
+};
+export async function ingest(
+  inputPath: string,
+  outDir: string,
+  options: IngestOptions = {},
+): Promise<void>
+⋮----
+const recordSkip = (reason: string) =>
+⋮----
+function parsePrepExtractionMode(mode?: string): PrepExtractionMode
+
+================
+File: src/pipeline/types.ts
+================
+export type Line = { n: number; text: string };
+export type NormalizedText = {
+  fullText: string;
+  lines: Line[];
+};
+export type Chunk = {
+  startLine: number;
+  endLine: number;
+  titleGuess?: string;
+  confidence: number;
+  evidence: string;
+  segmentationReason?: SegmentationReason;
+};
+export type SegmentedText = {
+  chunks: Chunk[];
+};
+export type SegmentationReason =
+  | "ingredient-density"
+  | "imperative-density"
+  | "all-caps-imperative";
+export type IntermediateRecipe = {
+  title: string;
+  ingredients: string[];
+  instructions: string[];
+  prepSection?: string[];
+  ingredientPrep?: IngredientPrep[];
+  source: {
+    startLine: number;
+    endLine: number;
+    evidence: string;
+    author?: string;
+  };
+};
+export type IngredientPrep = {
+  index: number;
+  raw: string;
+  base: string;
+  prep: string[];
+};
+export type PrepExtractionMode = "conservative" | "aggressive";
+export type PrepMetadata = {
+  section?: string[];
+  ingredients?: IngredientPrep[];
+  generatedAt?: string;
+};
+export type SoustackRecipe = {
+  $schema: string;
+  profile: "lite";
+  name: string;
+  stacks: Record<string, unknown>;
+  ingredients: string[];
+  instructions: string[];
+  "x-prep"?: PrepMetadata;
+  metadata?: {
+    author?: string;
+    originalTitle?: string;
+    ingest?: {
+      pipelineVersion?: string;
+      sourcePath?: string;
+      sourceLines?: {
+        start: number;
+        end: number;
+      };
+      warnings?: string[];
+    };
+  };
+};
+export type ValidationResult = {
+  ok: boolean;
+  errors: string[];
+};
+export type AdapterOutput = {
+  kind: "text";
+  text: string;
+  assets?: string[];
+  meta: {
+    sourcePath: string;
+    extractedPath?: string;
+  };
+};
+
+================
+File: src/pipeline/extract.ts
+================
+import {
+  Chunk,
+  IntermediateRecipe,
+  IngredientPrep,
+  Line,
+  PrepExtractionMode,
+} from "./types";
+function sliceLines(lines: Line[], startLine: number, endLine: number): Line[]
+⋮----
+function isAuthorNameLine(text: string): boolean
+function extractAuthorFromLines(lines: Line[]):
+function isPrepHeader(text: string): boolean
+function splitSections(lines: Line[]):
+⋮----
+const normalizeHeader = (text: string)
+const isIngredientHeader = (text: string)
+const isInstructionHeader = (text: string)
+const isByLine = (text: string)
+⋮----
+const cleanIngredient = (text: string)
+const cleanInstruction = (text: string)
+const cleanPrep = (text: string)
+⋮----
+const isIngredientLike = (text: string)
+const isInstructionLike = (text: string)
+const isClearInstructionLike = (text: string)
+⋮----
+function normalizePrepToken(token: string, mode: PrepExtractionMode): string | null
+function extractIngredientPrep(
+  raw: string,
+  mode: PrepExtractionMode,
+):
+function extractLeadingPrepPhrase(
+  text: string,
+  mode: PrepExtractionMode,
+):
+function inferIngredientsFromInstructions(instructions: string[]): string[]
+function isImperativeLine(text: string): boolean
+function extractNounPhrasesFromImperative(text: string): string[]
+function normalizeIngredientCandidate(segment: string): string | null
+function dedupePreserveOrder(items: string[]): string[]
+export function extract(
+  chunk: Chunk,
+  lines: Line[],
+  options: { prepExtractionMode?: PrepExtractionMode } = {},
+): IntermediateRecipe
+
+================
+File: test/pipeline.spec.ts
+================
+import { afterEach, beforeEach, describe, it } from "node:test";
+import assert from "node:assert/strict";
+import { promises as fs } from "fs";
+import os from "os";
+import path from "path";
+import { normalize } from "../src/pipeline/normalize";
+import { segment } from "../src/pipeline/segment";
+import { extract } from "../src/pipeline/extract";
+import { toSoustack } from "../src/pipeline/toSoustack";
+import { emit } from "../src/pipeline/emit";
+import { initValidator, validate } from "../src/pipeline/validate";
+import { IntermediateRecipe, SoustackRecipe } from "../src/pipeline/types";
+
+
+
+
+
+================================================================
+End of Codebase
+================================================================
