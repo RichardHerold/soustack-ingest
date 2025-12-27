@@ -1,3 +1,4 @@
+/// <reference path="../types/external.d.ts" />
 import { spawn } from "child_process";
 import { promises as fs } from "fs";
 import os from "os";
