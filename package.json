@@ -13,6 +13,8 @@
     "ajv": "^8.12.0",
     "commander": "^11.0.0",
     "fs-extra": "^11.2.0",
+    "mammoth": "^1.6.0",
+    "pdf-parse": "^1.1.1",
     "rtf2text": "^1.0.1",
     "slugify": "^1.6.6",
     "soustack": "^0.4.0",
@@ -20,6 +22,8 @@
   },
   "devDependencies": {
     "@types/node": "^25.0.3",
+    "docx": "^8.5.0",
+    "pdfkit": "^0.15.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
     "vitest": "^1.5.0"
