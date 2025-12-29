@@ -390,7 +390,7 @@ describe("pipeline", () => {
 
       const recipe = toSoustack(intermediate, { sourcePath: "recipes.md" });
 
-      assert.equal(recipe.$schema, "https://spec.soustack.dev/recipe.schema.json");
+      assert.equal(recipe.$schema, "https://spec.soustack.org/soustack.schema.json");
       assert.equal(recipe.profile, "lite");
       assert.equal(recipe.name, "Cinnamon Toast and Butter");
       assert.deepEqual(recipe.ingredients, intermediate.ingredients);
@@ -476,7 +476,7 @@ describe("pipeline", () => {
         "metadata",
       ]);
 
-      assert.equal(recipe.$schema, "https://spec.soustack.dev/recipe.schema.json");
+      assert.equal(recipe.$schema, "https://spec.soustack.org/soustack.schema.json");
       Object.keys(recipe).forEach((key) => {
         assert.ok(allowedKeys.has(key), `Unexpected top-level key: ${key}`);
       });
@@ -497,7 +497,7 @@ describe("pipeline", () => {
     it("writes index and recipe files", async () => {
       const recipes: SoustackRecipe[] = [
         {
-          $schema: "https://spec.soustack.dev/recipe.schema.json",
+          $schema: "https://spec.soustack.org/soustack.schema.json",
           profile: "lite",
           name: "Test Recipe",
           stacks: {},
@@ -537,7 +537,7 @@ describe("pipeline", () => {
     it("writes unique paths for duplicate recipe names", async () => {
       const recipes: SoustackRecipe[] = [
         {
-          $schema: "https://spec.soustack.dev/recipe.schema.json",
+          $schema: "https://spec.soustack.org/soustack.schema.json",
           profile: "lite",
           name: "Dup Recipe",
           stacks: {},
@@ -550,7 +550,7 @@ describe("pipeline", () => {
           },
         },
         {
-          $schema: "https://spec.soustack.dev/recipe.schema.json",
+          $schema: "https://spec.soustack.org/soustack.schema.json",
           profile: "lite",
           name: "Dup Recipe",
           stacks: {},
@@ -590,7 +590,7 @@ describe("pipeline", () => {
 
     it("accepts a minimal valid recipe", () => {
       const recipe: SoustackRecipe = {
-        $schema: "https://spec.soustack.dev/recipe.schema.json",
+        $schema: "https://spec.soustack.org/soustack.schema.json",
         profile: "lite",
         name: "Test Recipe",
         stacks: {},
@@ -611,7 +611,7 @@ describe("pipeline", () => {
 
     it("rejects a recipe missing a name", () => {
       const recipe = {
-        $schema: "https://spec.soustack.dev/recipe.schema.json",
+        $schema: "https://spec.soustack.org/soustack.schema.json",
         profile: "lite",
         stacks: {},
         ingredients: ["1 cup sugar"],
