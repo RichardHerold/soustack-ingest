@@ -43,10 +43,12 @@ type CoreValidationModule = {
 
 const vNextSchema = {
   type: "object",
-  required: ["$schema", "profile", "name", "stacks", "ingredients", "instructions"],
+  required: ["profile", "name", "stacks", "ingredients", "instructions"],
   properties: {
     $schema: {
-      const: VNEXT_SCHEMA_URL,
+      type: "string",
+      // Accept canonical URL, legacy URLs, or missing (for backward compatibility)
+      // The canonical URL is preferred, but we don't hard-fail on legacy values
     },
     profile: {
       type: "string",
