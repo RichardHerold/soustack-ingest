@@ -77,7 +77,7 @@ function toSoustack(intermediate, options) {
         }
         : undefined;
     return {
-        $schema: schema_1.VNEXT_SCHEMA_URL,
+        $schema: schema_1.SCHEMA_URL,
         profile: "lite",
         name: toTitleCase(intermediate.title),
         stacks: {},
