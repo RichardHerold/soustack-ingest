@@ -1,4 +1,4 @@
-import { VNEXT_SCHEMA_URL } from "./schema";
+import { SCHEMA_URL } from "./schema";
 import { IntermediateRecipe, PrepMetadata, SoustackRecipe } from "./types";
 
 const MINOR_WORDS = new Set([
@@ -89,7 +89,7 @@ export function toSoustack(
       : undefined;
 
   return {
-    $schema: VNEXT_SCHEMA_URL,
+    $schema: SCHEMA_URL,
     profile: "lite",
     name: toTitleCase(intermediate.title),
     stacks: {},
