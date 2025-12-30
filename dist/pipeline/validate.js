@@ -42,13 +42,14 @@ const node_module_1 = require("node:module");
 const node_fs_1 = __importDefault(require("node:fs"));
 const node_path_1 = __importDefault(require("node:path"));
 const ajv_1 = __importDefault(require("ajv"));
-const schema_1 = require("./schema");
 const vNextSchema = {
     type: "object",
-    required: ["$schema", "profile", "name", "stacks", "ingredients", "instructions"],
+    required: ["profile", "name", "stacks", "ingredients", "instructions"],
     properties: {
         $schema: {
-            const: schema_1.VNEXT_SCHEMA_URL,
+            type: "string",
+            // Accept canonical URL, legacy URLs, or missing (for backward compatibility)
+            // The canonical URL is preferred, but we don't hard-fail on legacy values
         },
         profile: {
             type: "string",
