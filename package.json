@@ -1,7 +1,7 @@
 {
-  "name": "soustack-ingest",
+  "name": "@soustack/ingest",
   "version": "0.1.0",
-  "private": true,
+  "publishConfig": { "access": "public" },
   "scripts": {
     "build": "tsc",
     "test": "node scripts/check-legacy-schema-urls.mjs && TS_NODE_PROJECT=tsconfig.test.json TS_NODE_TRANSPILE_ONLY=1 node -r ts-node/register --test test/*.spec.ts",
