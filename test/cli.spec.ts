@@ -114,4 +114,84 @@ describe("cli ingest warnings", () => {
     assert.ok(indexStats.isFile());
     assert.ok(recipesStats.isDirectory());
   });
+
+  it("ingests .rtf files", async () => {
+    const inputPath = path.join(__dirname, "fixtures", "sample.rtf");
+    const outDir = path.join(tempDir, "out");
+    const originalExitCode = process.exitCode;
+
+    try {
+      await ingest(inputPath, outDir);
+      const indexRaw = await fs.readFile(path.join(outDir, "index.json"), "utf-8");
+      const indexPayload = JSON.parse(indexRaw) as Array<{ path: string }>;
+      const recipeRaw = await fs.readFile(path.join(outDir, indexPayload[0].path), "utf-8");
+      const recipe = JSON.parse(recipeRaw) as {
+        ingredients?: unknown[];
+        instructions?: unknown[];
+      };
+
+      assert.equal(indexPayload.length, 1);
+      assert.ok(Array.isArray(recipe.ingredients) && recipe.ingredients.length > 0);
+      assert.ok(Array.isArray(recipe.instructions) && recipe.instructions.length > 0);
+    } finally {
+      process.exitCode = originalExitCode;
+    }
+  });
+
+  it("lists supported extensions when the input is unsupported", async () => {
+    const inputPath = path.join(tempDir, "unsupported.html");
+    const outDir = path.join(tempDir, "out");
+    await fs.writeFile(inputPath, "<html></html>", "utf-8");
+    const originalExitCode = process.exitCode;
+
+    try {
+      await assert.rejects(
+        async () => ingest(inputPath, outDir),
+        (error: unknown) => {
+          const message = error instanceof Error ? error.message : String(error);
+          assert.match(message, /supported extensions/i);
+          assert.match(message, /\.rtf/);
+          assert.match(message, /\.md/);
+          assert.match(message, /\.rtfd\.zip/);
+          return true;
+        },
+      );
+    } finally {
+      process.exitCode = originalExitCode;
+    }
+  });
+
+  it("reports skipped recipes and exits non-zero when nothing is emitted", async () => {
+    const inputPath = path.join(tempDir, "no-recipe.txt");
+    const outDir = path.join(tempDir, "out");
+    await fs.writeFile(inputPath, "Just some notes without ingredients or instructions.", "utf-8");
+
+    const logs: string[] = [];
+    const errors: string[] = [];
+    const originalLog = console.log;
+    const originalError = console.error;
+    const originalExitCode = process.exitCode;
+    let exitCodeAfterIngest: number | undefined;
+
+    console.log = (...args: unknown[]) => {
+      logs.push(args.map(String).join(" "));
+    };
+    console.error = (...args: unknown[]) => {
+      errors.push(args.map(String).join(" "));
+    };
+
+    try {
+      await ingest(inputPath, outDir);
+      exitCodeAfterIngest = process.exitCode ?? undefined;
+    } finally {
+      console.log = originalLog;
+      console.error = originalError;
+      process.exitCode = originalExitCode;
+    }
+
+    assert.equal(exitCodeAfterIngest, 1);
+    assert.ok(errors.some((line) => line.includes("Skipping recipe:")));
+    assert.ok(errors.some((line) => line.includes("No recipes emitted (0)")));
+    assert.ok(logs.some((line) => line.includes("Skip summary")));
+  });
 });

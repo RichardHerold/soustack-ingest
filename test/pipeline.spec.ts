@@ -89,7 +89,7 @@ describe("pipeline", () => {
       assert.equal(chunks.length, 3);
       assert.deepEqual(
         chunks.map((chunk) => chunk.titleGuess),
-        ["SUMMER SALAD", "COZY SOUP", "Directions"]
+        ["SUMMER SALAD", "COZY SOUP", "PANCAKE BITES"]
       );
       chunks.forEach((chunk) => {
         assert.ok(chunk.confidence > 0.6);
