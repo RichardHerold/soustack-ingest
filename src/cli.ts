@@ -59,9 +59,11 @@ export async function ingest(
     const warningMessages: string[] = [];
 
     if (missingIngredients && missingInstructions) {
-      errors.push(`${intermediate.title}: Missing ingredients and instructions`);
+      const skipMessage = `${intermediate.title}: Missing ingredients and instructions`;
+      errors.push(skipMessage);
       skippedEmpty += 1;
       recordSkip("empty ingredients/instructions");
+      console.error(`Skipping recipe: ${skipMessage}`);
       continue;
     }
 
@@ -135,6 +137,9 @@ export async function ingest(
   }
 
   if (emittedCount === 0) {
+    console.error(
+      "No recipes emitted (0). Check that the source contains ingredients + instructions headings or recognizable structure.",
+    );
     const sortedReasons = [...skipReasons.entries()].sort((a, b) => b[1] - a[1]);
     console.log("Skip summary:");
     if (sortedReasons.length === 0) {
