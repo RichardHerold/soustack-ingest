@@ -79,6 +79,13 @@ export function toSoustack(
     metadata.author = intermediate.source.author;
   }
 
+  if (
+    Array.isArray(intermediate.instructionParagraphs) &&
+    intermediate.instructionParagraphs.length > 0
+  ) {
+    metadata.instructionParagraphs = intermediate.instructionParagraphs.map((value) => `${value}`);
+  }
+
   const prepMetadata: PrepMetadata | undefined =
     intermediate.prepSection || intermediate.ingredientPrep
       ? {

@@ -27,6 +27,7 @@ export type IntermediateRecipe = {
   title: string;
   ingredients: string[];
   instructions: string[];
+  instructionParagraphs?: string[];
   prepSection?: string[];
   ingredientPrep?: IngredientPrep[];
   source: {
@@ -62,6 +63,7 @@ export type SoustackRecipe = {
   "x-prep"?: PrepMetadata;
   metadata?: {
     author?: string;
+    instructionParagraphs?: string[];
     originalTitle?: string;
     ingest?: {
       pipelineVersion?: string;

@@ -381,6 +381,7 @@ describe("pipeline", () => {
         title: "CINNAMON TOAST AND BUTTER",
         ingredients: ["1 cup rice"],
         instructions: ["Cook the rice."],
+        instructionParagraphs: ["Cook the rice until tender."],
         source: {
           startLine: 1,
           endLine: 4,
@@ -397,6 +398,7 @@ describe("pipeline", () => {
       assert.deepEqual(recipe.instructions, intermediate.instructions);
       assert.deepEqual(recipe.stacks, {});
       assert.equal(recipe.metadata?.originalTitle, intermediate.title);
+      assert.deepEqual(recipe.metadata?.instructionParagraphs, intermediate.instructionParagraphs);
       assert.deepEqual(recipe.metadata?.ingest, {
         pipelineVersion: "0.1.1",
         sourcePath: "recipes.md",
