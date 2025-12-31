@@ -77,13 +77,14 @@ function isPrepHeader(text: string): boolean {
 function splitSections(lines: Line[]): {
   ingredients: string[];
   instructions: string[];
+  instructionParagraphs: string[];
   prep: string[];
 } {
-  const trimmedLines = lines
-    .map((line) => line.text.trim())
-    .filter((text) => Boolean(text));
+  const trimmedLines = lines.map((line) => line.text.trim());
+  const nonEmptyLines = trimmedLines.filter((text) => Boolean(text));
   const ingredients: string[] = [];
   const instructions: string[] = [];
+  const instructionParagraphs: string[] = [];
   const prep: string[] = [];
   let mode: "ingredients" | "instructions" | "prep" | "unknown" = "unknown";
 
@@ -119,13 +120,34 @@ function splitSections(lines: Line[]): {
       text,
     );
 
-  const hasExplicitHeadings = trimmedLines.some(
+  const paragraphBuffer: string[] = [];
+  const flushParagraph = () => {
+    if (paragraphBuffer.length > 0) {
+      instructionParagraphs.push(paragraphBuffer.join(" ").replace(/\s+/g, " ").trim());
+      paragraphBuffer.length = 0;
+    }
+  };
+  const pushInstruction = (text: string, includeParagraph = true) => {
+    const cleaned = cleanInstruction(text);
+    instructions.push(cleaned);
+    if (includeParagraph && mode === "instructions") {
+      paragraphBuffer.push(cleaned);
+    }
+  };
+
+  const hasExplicitHeadings = nonEmptyLines.some(
     (text) => isIngredientHeader(text) || isInstructionHeader(text),
   );
 
   if (hasExplicitHeadings) {
     let skipNextAuthorLine = false;
     for (const text of trimmedLines) {
+      if (!text) {
+        if (mode === "instructions") {
+          flushParagraph();
+        }
+        continue;
+      }
       if (mode === "unknown") {
         if (isByLine(text)) {
           skipNextAuthorLine = true;
@@ -143,14 +165,21 @@ function splitSections(lines: Line[]): {
         skipNextAuthorLine = false;
       }
       if (isIngredientHeader(text)) {
+        if (mode === "instructions") {
+          flushParagraph();
+        }
         mode = "ingredients";
         continue;
       }
       if (isInstructionHeader(text)) {
+        flushParagraph();
         mode = "instructions";
         continue;
       }
       if (isPrepHeader(text)) {
+        if (mode === "instructions") {
+          flushParagraph();
+        }
         mode = "prep";
         continue;
       }
@@ -161,21 +190,21 @@ function splitSections(lines: Line[]): {
       }
 
       if (mode === "instructions") {
-        instructions.push(cleanInstruction(text));
+        pushInstruction(text);
         continue;
       }
 
       if (mode === "prep") {
         const cleanedPrep = cleanPrep(text);
         prep.push(cleanedPrep);
-        instructions.push(cleanInstruction(text));
+        pushInstruction(text, false);
         continue;
       }
 
-      instructions.push(text);
+      pushInstruction(text, false);
     }
   } else {
-    const sample = trimmedLines.slice(0, 5);
+    const sample = nonEmptyLines.slice(0, 5);
     const sampleIngredientCount = sample.filter((text) => isIngredientLike(text)).length;
     const sampleInstructionCount = sample.filter((text) => isInstructionLike(text)).length;
     if (sampleIngredientCount > 0 && sampleIngredientCount >= sampleInstructionCount) {
@@ -186,6 +215,12 @@ function splitSections(lines: Line[]): {
     let instructionCount = 0;
 
     for (const text of trimmedLines) {
+      if (!text) {
+        if (mode === "instructions") {
+          flushParagraph();
+        }
+        continue;
+      }
       if (isPrepHeader(text)) {
         mode = "prep";
         continue;
@@ -207,7 +242,7 @@ function splitSections(lines: Line[]): {
         }
         if (instructionLike) {
           mode = "instructions";
-          instructions.push(cleanInstruction(text));
+          pushInstruction(text);
           instructionCount += 1;
           continue;
         }
@@ -217,7 +252,7 @@ function splitSections(lines: Line[]): {
       if (mode === "ingredients") {
         if (instructionLike && ingredientCount >= 2) {
           mode = "instructions";
-          instructions.push(cleanInstruction(text));
+          pushInstruction(text);
           instructionCount += 1;
           continue;
         }
@@ -229,23 +264,31 @@ function splitSections(lines: Line[]): {
       if (mode === "prep") {
         const cleanedPrep = cleanPrep(text);
         prep.push(cleanedPrep);
-        instructions.push(cleanInstruction(text));
+        pushInstruction(text, false);
         instructionCount += 1;
         continue;
       }
 
-      instructions.push(cleanInstruction(text));
+      pushInstruction(text);
       instructionCount += 1;
     }
 
-    if (ingredients.length === 0 && trimmedLines.length > 1 && prep.length === 0) {
+    if (ingredients.length === 0 && nonEmptyLines.length > 1 && prep.length === 0) {
       ingredients.length = 0;
       instructions.length = 0;
       ingredientCount = 0;
       instructionCount = 0;
+      paragraphBuffer.length = 0;
+      mode = "unknown";
       let inInstructions = false;
 
       for (const text of trimmedLines) {
+        if (!text) {
+          if (mode === "instructions") {
+            flushParagraph();
+          }
+          continue;
+        }
         if (isPrepHeader(text)) {
           mode = "prep";
           continue;
@@ -256,7 +299,7 @@ function splitSections(lines: Line[]): {
         if (mode === "prep") {
           const cleanedPrep = cleanPrep(text);
           prep.push(cleanedPrep);
-          instructions.push(cleanInstruction(text));
+          pushInstruction(text, false);
           instructionCount += 1;
           continue;
         }
@@ -266,7 +309,7 @@ function splitSections(lines: Line[]): {
             instructionCount += 1;
             if (instructionCount > ingredientCount) {
               inInstructions = true;
-              instructions.push(cleanInstruction(text));
+              pushInstruction(text);
               continue;
             }
           }
@@ -279,11 +322,11 @@ function splitSections(lines: Line[]): {
 
           inInstructions = true;
           instructionCount += 1;
-          instructions.push(cleanInstruction(text));
+          pushInstruction(text);
           continue;
         }
 
-        instructions.push(cleanInstruction(text));
+        pushInstruction(text);
         instructionCount += 1;
       }
     }
@@ -293,12 +336,14 @@ function splitSections(lines: Line[]): {
     const lastIngredient = ingredients[ingredients.length - 1];
     if (lastIngredient && isClearInstructionLike(lastIngredient)) {
       ingredients.pop();
-      instructions.push(cleanInstruction(lastIngredient));
+      mode = "instructions";
+      pushInstruction(lastIngredient);
     }
   }
 
   if (instructions.length === 0 && ingredients.length === 1) {
-    instructions.push(ingredients[0]);
+    mode = "instructions";
+    pushInstruction(ingredients[0]);
   }
 
   if (ingredients.length === 0) {
@@ -308,9 +353,16 @@ function splitSections(lines: Line[]): {
     }
   }
 
+  flushParagraph();
+
+  if (instructionParagraphs.length === 0 && instructions.length > 0) {
+    instructionParagraphs.push(...instructions);
+  }
+
   return {
     ingredients,
     instructions,
+    instructionParagraphs,
     prep,
   };
 }
@@ -695,7 +747,7 @@ export function extract(
   const { author, filteredLines } = extractAuthorFromLines(contentLines);
   contentLines = filteredLines;
 
-  const { ingredients, instructions, prep } = splitSections(contentLines);
+  const { ingredients, instructions, instructionParagraphs, prep } = splitSections(contentLines);
   const ingredientPrep: IngredientPrep[] = [];
   const prepExtractionMode = options.prepExtractionMode ?? "conservative";
 
@@ -715,6 +767,7 @@ export function extract(
     title,
     ingredients,
     instructions,
+    instructionParagraphs,
     source: {
       startLine: chunk.startLine,
       endLine: chunk.endLine,
