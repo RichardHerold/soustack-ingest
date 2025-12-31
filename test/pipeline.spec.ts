@@ -89,7 +89,7 @@ describe("pipeline", () => {
       assert.equal(chunks.length, 3);
       assert.deepEqual(
         chunks.map((chunk) => chunk.titleGuess),
-        ["SUMMER SALAD", "COZY SOUP", "Directions"]
+        ["SUMMER SALAD", "COZY SOUP", "PANCAKE BITES"]
       );
       chunks.forEach((chunk) => {
         assert.ok(chunk.confidence > 0.6);
@@ -268,6 +268,39 @@ describe("pipeline", () => {
       assert.ok(recipe.instructions.join(" ").includes("Whisk"));
     });
 
+    it("preserves instruction paragraphs separated by blank lines", () => {
+      const text = [
+        "PASTA BAKE",
+        "Ingredients",
+        "2 cups pasta",
+        "1 cup sauce",
+        "",
+        "Instructions",
+        "Boil the pasta until al dente.",
+        "Drain and set aside.",
+        "",
+        "Fold in the sauce and transfer to a dish.",
+        "",
+        "Bake until bubbly.",
+      ].join("\n");
+      const lines = normalize(text).lines;
+      const [chunk] = segment(lines).chunks;
+
+      const recipe = extract(chunk, lines);
+
+      assert.deepEqual(recipe.instructions, [
+        "Boil the pasta until al dente.",
+        "Drain and set aside.",
+        "Fold in the sauce and transfer to a dish.",
+        "Bake until bubbly.",
+      ]);
+      assert.deepEqual(recipe.instructionParagraphs, [
+        "Boil the pasta until al dente. Drain and set aside.",
+        "Fold in the sauce and transfer to a dish.",
+        "Bake until bubbly.",
+      ]);
+    });
+
     it("strips a multi-line By block from instructions", () => {
       const text = [
         "BOWMAN SALSA",
@@ -381,7 +414,7 @@ describe("pipeline", () => {
         title: "CINNAMON TOAST AND BUTTER",
         ingredients: ["1 cup rice"],
         instructions: ["Cook the rice."],
-        instructionParagraphs: ["Cook the rice until tender."],
+        instructionParagraphs: ["Cook the rice."],
         source: {
           startLine: 1,
           endLine: 4,
@@ -398,7 +431,10 @@ describe("pipeline", () => {
       assert.deepEqual(recipe.instructions, intermediate.instructions);
       assert.deepEqual(recipe.stacks, {});
       assert.equal(recipe.metadata?.originalTitle, intermediate.title);
-      assert.deepEqual(recipe.metadata?.instructionParagraphs, intermediate.instructionParagraphs);
+      assert.deepEqual(
+        recipe.metadata?.instructionParagraphs,
+        intermediate.instructionParagraphs
+      );
       assert.deepEqual(recipe.metadata?.ingest, {
         pipelineVersion: "0.1.1",
         sourcePath: "recipes.md",
@@ -414,6 +450,7 @@ describe("pipeline", () => {
         title: "Prep Test",
         ingredients: ["1 onion, diced"],
         instructions: ["Cook the onion."],
+        instructionParagraphs: ["Cook the onion."],
         prepSection: ["Dice the onion"],
         ingredientPrep: [
           {
@@ -459,6 +496,7 @@ describe("pipeline", () => {
         title: "Veggie Bowl",
         ingredients: ["1 cup rice"],
         instructions: ["Cook the rice."],
+        instructionParagraphs: ["Cook the rice."],
         source: {
           startLine: 1,
           endLine: 4,

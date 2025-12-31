@@ -33,6 +33,7 @@ const units = [
 const ingredientMarker = /^(ingredients?)\b/i;
 const instructionMarker = /^(instructions?|directions?|method|steps?)\b/i;
 const bylineMarker = /^(by|from)\b/i;
+const sectionHeaderMarker = /^(ingredients?|instructions?|directions?|method|steps?|preparation|prep|serves?|yield|makes?)\b/i;
 const endsWithPunctuation = /[.:;!?]$/;
 const unicodeFraction = /[¼½¾⅓⅔⅛⅜⅝⅞]/;
 const bulletStart = /^[-*•·‣◦–—]/;
@@ -174,6 +175,15 @@ function findCandidateStarts(lines, features) {
         if (!features[index].isTitleLike) {
             continue;
         }
+        // Filter out attribution/byline patterns (e.g., "From the former Boston Restaurant...")
+        const trimmed = lines[index].text.trim();
+        if (bylineMarker.test(trimmed) || isAuthorLine(lines, index)) {
+            continue;
+        }
+        // Filter out section headers (e.g., "Ingredients", "Directions") - these are not recipe titles
+        if (sectionHeaderMarker.test(trimmed) && trimmed.length < 20) {
+            continue;
+        }
         if (features[index].isImperativeLine && !features[index].isAllCapsTitle) {
             const prev = features[index - 1];
             if (prev && !prev.isBlank) {
@@ -208,7 +218,9 @@ function findCandidateStarts(lines, features) {
             return;
         }
         if (candidate.index - last.index <= 3) {
-            if (candidate.score > last.score) {
+            // Prefer the earlier candidate when they're close together (likely same recipe)
+            // Only replace if the later candidate has significantly higher score (>0.1 difference)
+            if (candidate.score > last.score + 0.1) {
                 deduped[deduped.length - 1] = candidate;
             }
             return;

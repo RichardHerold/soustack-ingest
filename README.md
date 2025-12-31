@@ -1,9 +1,17 @@
 # soustack-ingest
 
-## CLI usage
+## Recommended usage
+
+**End users:** Use the `soustack` CLI (requires `@soustack/ingest` to be installed):
 
 ```bash
-soustack-ingest ingest <inputPath> --out <outDir>
+npx soustack ingest <inputPath> --out <outDir>
+```
+
+**Contributors:** Use the local npm script:
+
+```bash
+npm run ingest -- <inputPath> --out <outDir>
 ```
 
 The CLI reads the input file, runs it through the ingest pipeline, and writes JSON outputs under `<outDir>` (see `src/cli.ts` and `src/pipeline/emit.ts`).
@@ -45,7 +53,7 @@ The ingest pipeline runs stages in order (`src/cli.ts`, `src/pipeline`).
 
 4. **toSoustack** (`src/pipeline/toSoustack.ts`)
    - **Input:** `IntermediateRecipe`.
-   - **Output:** `SoustackRecipe` (Soustack JSON shape) with `$schema` (vNext canonical URL), `profile: "lite"`, `stacks` as an object map, normalized `ingredients`/`instructions` string arrays, and ingest metadata.
+   - **Output:** `SoustackRecipe` (Soustack JSON shape) with `$schema` (canonical URL), `profile: "lite"`, `stacks` as an object map, normalized `ingredients`/`instructions` string arrays, and ingest metadata.
    - **Contract:** embeds source path and line range into `metadata.ingest`.
 
 5. **validate** (`src/pipeline/validate.ts`)
@@ -77,6 +85,7 @@ To wire `soustack` validation:
 ## Build, test, and run
 
 ```bash
+npm ci
 npm run build
 npm test
 npm run ingest -- <inputPath> --out <outDir>

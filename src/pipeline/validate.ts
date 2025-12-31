@@ -3,7 +3,6 @@ import fs from "node:fs";
 import path from "node:path";
 import Ajv, { ErrorObject, type AnySchema } from "ajv";
 
-import { VNEXT_SCHEMA_URL } from "./schema";
 import { SoustackRecipe, ValidationResult } from "./types";
 
 export interface Validator {
@@ -41,7 +40,7 @@ type CoreValidationModule = {
   };
 };
 
-const vNextSchema = {
+const fallbackSchema = {
   type: "object",
   required: ["profile", "name", "stacks", "ingredients", "instructions"],
   properties: {
@@ -309,7 +308,7 @@ const validatorModuleCandidates = [
   "soustack-core",
 ].filter(Boolean) as string[];
 
-let activeValidator: Validator = buildAjvValidator(vNextSchema);
+let activeValidator: Validator = buildAjvValidator(fallbackSchema);
 const coreValidatorPromise = (async () => {
   for (const moduleName of validatorModuleCandidates) {
     const validator = await selectValidatorFromModule(moduleName);
@@ -322,7 +321,7 @@ const coreValidatorPromise = (async () => {
 
 export async function initValidator(): Promise<void> {
   const validator = await coreValidatorPromise;
-  activeValidator = validator ?? buildAjvValidator(vNextSchema);
+  activeValidator = validator ?? buildAjvValidator(fallbackSchema);
 }
 
 export function validate(recipe: SoustackRecipe): ValidationResult {
