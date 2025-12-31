@@ -431,6 +431,10 @@ describe("pipeline", () => {
       assert.deepEqual(recipe.instructions, intermediate.instructions);
       assert.deepEqual(recipe.stacks, {});
       assert.equal(recipe.metadata?.originalTitle, intermediate.title);
+      assert.deepEqual(
+        recipe.metadata?.instructionParagraphs,
+        intermediate.instructionParagraphs
+      );
       assert.deepEqual(recipe.metadata?.ingest, {
         pipelineVersion: "0.1.1",
         sourcePath: "recipes.md",

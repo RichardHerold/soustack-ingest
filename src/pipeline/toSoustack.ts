@@ -73,14 +73,13 @@ export function toSoustack(
         end: intermediate.source.endLine,
       },
     },
+    ...(intermediate.instructionParagraphs?.length
+      ? { instructionParagraphs: intermediate.instructionParagraphs }
+      : {}),
   };
 
   if (intermediate.source.author) {
     metadata.author = intermediate.source.author;
-  }
-
-  if (intermediate.instructionParagraphs?.length) {
-    metadata.instructionParagraphs = intermediate.instructionParagraphs;
   }
 
   const prepMetadata: PrepMetadata | undefined =
