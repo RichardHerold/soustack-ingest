@@ -53,6 +53,13 @@ export type PrepMetadata = {
   generatedAt?: string;
 };
 
+export type IngestWarning = {
+  code: string;
+  message: string;
+  details?: unknown;
+  source?: string;
+};
+
 export type SoustackMetadata = Record<string, unknown> & {
   author?: string;
   instructionParagraphs?: string[];
@@ -64,7 +71,9 @@ export type SoustackMetadata = Record<string, unknown> & {
       start: number;
       end: number;
     };
-    warnings?: string[];
+    warnings?: IngestWarning[];
+    timestamp?: string;
+    toolVersion?: string;
   };
 };
 

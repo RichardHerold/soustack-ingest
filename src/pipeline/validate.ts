@@ -5,6 +5,51 @@ import Ajv, { ErrorObject, type AnySchema } from "ajv";
 
 import { SoustackRecipe, ValidationResult } from "./types";
 
+/**
+ * Allowlist of validation error paths/keywords that are considered "expected partial extraction".
+ * These errors are acceptable when warnings have been emitted for the missing fields.
+ */
+const EXPECTED_PARTIAL_EXTRACTION_ERRORS = [
+  "/ingredients",
+  "/instructions",
+  "ingredients",
+  "instructions",
+  "required",
+];
+
+/**
+ * Checks if validation errors are acceptable (only expected partial extraction errors)
+ * or fatal (structural/type errors beyond the allowlist).
+ */
+export function isValidationErrorAcceptable(
+  errors: string[],
+  hasWarnings: boolean
+): { acceptable: boolean; fatalErrors: string[] } {
+  if (errors.length === 0) {
+    return { acceptable: true, fatalErrors: [] };
+  }
+
+  if (!hasWarnings) {
+    return { acceptable: false, fatalErrors: errors };
+  }
+
+  const fatalErrors: string[] = [];
+  for (const error of errors) {
+    const errorLower = error.toLowerCase();
+    const isExpected = EXPECTED_PARTIAL_EXTRACTION_ERRORS.some((allowed) =>
+      errorLower.includes(allowed.toLowerCase())
+    );
+    if (!isExpected) {
+      fatalErrors.push(error);
+    }
+  }
+
+  return {
+    acceptable: fatalErrors.length === 0,
+    fatalErrors,
+  };
+}
+
 export interface Validator {
   validate(recipe: SoustackRecipe): ValidationResult;
 }
@@ -121,8 +166,20 @@ const fallbackSchema = {
             },
             warnings: {
               type: "array",
-              items: { type: "string" },
+              items: {
+                type: "object",
+                properties: {
+                  code: { type: "string" },
+                  message: { type: "string" },
+                  details: {},
+                  source: { type: "string" },
+                },
+                required: ["code", "message"],
+                additionalProperties: true,
+              },
             },
+            timestamp: { type: "string" },
+            toolVersion: { type: "string" },
           },
           additionalProperties: true,
         },

@@ -5,17 +5,32 @@ import {
   normalize,
   segment,
   toSoustack,
+  normalizeRecipeOutput,
   initValidator,
   validate,
+  isValidationErrorAcceptable,
   SoustackRecipe,
   PrepExtractionMode,
+  IngestWarning,
 } from "./pipeline";
 import { loadInput } from "./adapters";
+import { readFileSync } from "fs";
+import { join } from "path";
 
 type IngestOptions = {
   debugSegmentation?: boolean;
   prepExtractionMode?: PrepExtractionMode;
 };
+
+function getToolVersion(): string | undefined {
+  try {
+    const packageJsonPath = join(__dirname, "..", "package.json");
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
+    return packageJson.version;
+  } catch {
+    return undefined;
+  }
+}
 
 export async function ingest(
   inputPath: string,
@@ -31,6 +46,8 @@ export async function ingest(
   const recipes: SoustackRecipe[] = [];
   const errors: string[] = [];
   const skipReasons = new Map<string, number>();
+  const timestamp = new Date().toISOString();
+  const toolVersion = getToolVersion();
 
   const recordSkip = (reason: string) => {
     skipReasons.set(reason, (skipReasons.get(reason) ?? 0) + 1);
@@ -56,10 +73,11 @@ export async function ingest(
     intermediatesProduced += 1;
     const missingIngredients = intermediate.ingredients.length === 0;
     const missingInstructions = intermediate.instructions.length === 0;
-    const warningMessages: string[] = [];
+    const missingName = !intermediate.title || intermediate.title.trim().length === 0;
+    const warnings: IngestWarning[] = [];
 
     if (missingIngredients && missingInstructions) {
-      const skipMessage = `${intermediate.title}: Missing ingredients and instructions`;
+      const skipMessage = `${intermediate.title || "Untitled"}: Missing ingredients and instructions`;
       errors.push(skipMessage);
       skippedEmpty += 1;
       recordSkip("empty ingredients/instructions");
@@ -68,50 +86,61 @@ export async function ingest(
     }
 
     if (missingIngredients) {
-      warningMessages.push(`${intermediate.title}: Missing ingredients`);
+      warnings.push({
+        code: "MISSING_INGREDIENTS",
+        message: "Recipe is missing an ingredients list",
+        source: intermediate.title || "unknown",
+      });
     }
     if (missingInstructions) {
-      warningMessages.push(`${intermediate.title}: Missing instructions`);
+      warnings.push({
+        code: "MISSING_INSTRUCTIONS",
+        message: "Recipe is missing instruction steps",
+        source: intermediate.title || "unknown",
+      });
     }
-    if (warningMessages.length > 0) {
-      for (const warning of warningMessages) {
-        console.error(`Warning: ${warning}`);
-      }
+    if (missingName) {
+      warnings.push({
+        code: "MISSING_NAME",
+        message: "Recipe is missing a name/title",
+      });
     }
+
     const recipe = toSoustack(intermediate, { sourcePath: adapterOutput.meta.sourcePath });
-    if (warningMessages.length > 0) {
-      recipe.metadata = {
-        ...(recipe.metadata ?? {}),
+    
+    const normalizedRecipe = normalizeRecipeOutput(recipe, {
+      sourcePath: adapterOutput.meta.sourcePath,
+      timestamp,
+      toolVersion,
+    });
+
+    if (warnings.length > 0) {
+      normalizedRecipe.metadata = {
+        ...normalizedRecipe.metadata,
         ingest: {
-          ...(recipe.metadata?.ingest ?? {}),
-          warnings: [...(recipe.metadata?.ingest?.warnings ?? []), ...warningMessages],
+          ...normalizedRecipe.metadata?.ingest,
+          warnings: [...(normalizedRecipe.metadata?.ingest?.warnings || []), ...warnings],
         },
       };
     }
-    const result = validate(recipe);
+
+    const result = validate(normalizedRecipe);
     if (result.ok) {
-      recipes.push(recipe);
+      recipes.push(normalizedRecipe);
       continue;
     }
 
-    if (warningMessages.length > 0) {
-      const filteredErrors = result.errors.filter((error) => {
-        if (missingIngredients && error.includes("/ingredients")) {
-          return false;
-        }
-        if (missingInstructions && error.includes("/instructions")) {
-          return false;
-        }
-        return true;
-      });
-      if (filteredErrors.length === 0) {
-        recipes.push(recipe);
-        continue;
-      }
-      errors.push(...filteredErrors.map((error) => `${recipe.name}: ${error}`));
-    } else {
-      errors.push(...result.errors.map((error) => `${recipe.name}: ${error}`));
+    const { acceptable, fatalErrors } = isValidationErrorAcceptable(
+      result.errors,
+      warnings.length > 0
+    );
+
+    if (acceptable) {
+      recipes.push(normalizedRecipe);
+      continue;
     }
+
+    errors.push(...fatalErrors.map((error) => `${normalizedRecipe.name}: ${error}`));
     skippedValidation += 1;
     recordSkip("validation");
   }
