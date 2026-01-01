@@ -7,9 +7,9 @@ import path from "path";
 import { normalize } from "../src/pipeline/normalize";
 import { segment } from "../src/pipeline/segment";
 import { extract } from "../src/pipeline/extract";
-import { toSoustack } from "../src/pipeline/toSoustack";
+import { toSoustack, normalizeRecipeOutput } from "../src/pipeline/toSoustack";
 import { emit } from "../src/pipeline/emit";
-import { initValidator, validate } from "../src/pipeline/validate";
+import { initValidator, validate, isValidationErrorAcceptable } from "../src/pipeline/validate";
 import { IntermediateRecipe, SoustackRecipe } from "../src/pipeline/types";
 
 describe("pipeline", () => {
@@ -523,6 +523,68 @@ describe("pipeline", () => {
     });
   });
 
+  describe("normalizeRecipeOutput", () => {
+    it("ensures canonical shape with all required fields", () => {
+      const partialRecipe = {
+        name: "Test Recipe",
+        ingredients: ["1 cup flour"],
+      } as unknown as SoustackRecipe;
+
+      const normalized = normalizeRecipeOutput(partialRecipe, {
+        sourcePath: "test.txt",
+        timestamp: "2024-01-01T00:00:00.000Z",
+        toolVersion: "0.1.1",
+      });
+
+      assert.equal(normalized.$schema, "https://spec.soustack.org/soustack.schema.json");
+      assert.equal(normalized.profile, "lite");
+      assert.equal(normalized.name, "Test Recipe");
+      assert.deepEqual(normalized.stacks, {});
+      assert.ok(Array.isArray(normalized.ingredients));
+      assert.ok(Array.isArray(normalized.instructions));
+      assert.equal(normalized.metadata?.ingest?.sourcePath, "test.txt");
+      assert.equal(normalized.metadata?.ingest?.timestamp, "2024-01-01T00:00:00.000Z");
+      assert.equal(normalized.metadata?.ingest?.toolVersion, "0.1.1");
+    });
+
+    it("preserves existing metadata and warnings", () => {
+      const recipe: SoustackRecipe = {
+        $schema: "https://spec.soustack.org/soustack.schema.json",
+        profile: "lite",
+        name: "Test",
+        stacks: {},
+        ingredients: [],
+        instructions: [],
+        metadata: {
+          ingest: {
+            warnings: [
+              { code: "MISSING_INGREDIENTS", message: "Missing ingredients" },
+            ],
+          },
+        },
+      };
+
+      const normalized = normalizeRecipeOutput(recipe);
+
+      assert.equal(normalized.metadata?.ingest?.warnings?.length, 1);
+      assert.equal(normalized.metadata?.ingest?.warnings?.[0]?.code, "MISSING_INGREDIENTS");
+    });
+
+    it("ensures stacks is an object even if missing or invalid", () => {
+      const recipe1 = { name: "Test" } as unknown as SoustackRecipe;
+      const recipe2 = { name: "Test", stacks: null } as unknown as SoustackRecipe;
+      const recipe3 = { name: "Test", stacks: [] } as unknown as SoustackRecipe;
+
+      const normalized1 = normalizeRecipeOutput(recipe1);
+      const normalized2 = normalizeRecipeOutput(recipe2);
+      const normalized3 = normalizeRecipeOutput(recipe3);
+
+      assert.ok(typeof normalized1.stacks === "object" && normalized1.stacks !== null);
+      assert.ok(typeof normalized2.stacks === "object" && normalized2.stacks !== null);
+      assert.ok(typeof normalized3.stacks === "object" && normalized3.stacks !== null);
+    });
+  });
+
   describe("emit", () => {
     let tempDir: string;
 
@@ -651,10 +713,10 @@ describe("pipeline", () => {
 
     it("accepts a recipe with prep metadata in x-prep", () => {
       const recipe: SoustackRecipe = {
-        $schema: "https://soustack.spec/soustack.schema.json",
+        $schema: "https://spec.soustack.org/soustack.schema.json",
         profile: "lite",
         name: "Prep Recipe",
-        stacks: [],
+        stacks: {},
         ingredients: ["1 onion, diced"],
         instructions: ["Dice the onion."],
         "x-prep": {
@@ -700,6 +762,39 @@ describe("pipeline", () => {
 
       assert.equal(result.ok, false);
       assert.ok(result.errors.some((error) => error.includes("name")));
+    });
+  });
+
+  describe("isValidationErrorAcceptable", () => {
+    it("accepts expected partial extraction errors when warnings exist", () => {
+      const errors = ["$.ingredients is required", "$.instructions must be an array"];
+      const { acceptable, fatalErrors } = isValidationErrorAcceptable(errors, true);
+
+      assert.equal(acceptable, true);
+      assert.equal(fatalErrors.length, 0);
+    });
+
+    it("rejects non-allowlist errors even with warnings", () => {
+      const errors = ["$.name is required", "$.profile must be 'lite'"];
+      const { acceptable, fatalErrors } = isValidationErrorAcceptable(errors, true);
+
+      assert.equal(acceptable, false);
+      assert.ok(fatalErrors.length > 0);
+    });
+
+    it("rejects all errors when no warnings exist", () => {
+      const errors = ["$.ingredients is required"];
+      const { acceptable, fatalErrors } = isValidationErrorAcceptable(errors, false);
+
+      assert.equal(acceptable, false);
+      assert.equal(fatalErrors.length, 1);
+    });
+
+    it("accepts empty error list", () => {
+      const { acceptable, fatalErrors } = isValidationErrorAcceptable([], true);
+
+      assert.equal(acceptable, true);
+      assert.equal(fatalErrors.length, 0);
     });
   });
 });

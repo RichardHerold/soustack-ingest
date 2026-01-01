@@ -1,6 +1,12 @@
 import { SCHEMA_URL } from "./schema";
 import { IntermediateRecipe, PrepMetadata, SoustackRecipe } from "./types";
 
+export type NormalizationContext = {
+  sourcePath?: string;
+  timestamp?: string;
+  toolVersion?: string;
+};
+
 const MINOR_WORDS = new Set([
   "a",
   "an",
@@ -108,4 +114,39 @@ export function toSoustack(
     ...(prepMetadata ? { "x-prep": prepMetadata } : {}),
     metadata,
   };
+}
+
+/**
+ * Normalizes a recipe to ensure it conforms to the canonical Soustack recipe shape.
+ * This function ensures all required top-level keys exist with correct defaults.
+ */
+export function normalizeRecipeOutput(
+  recipe: SoustackRecipe,
+  context?: NormalizationContext
+): SoustackRecipe {
+  const normalized: SoustackRecipe = {
+    $schema: SCHEMA_URL,
+    profile: "lite",
+    name: recipe.name || "Untitled Recipe",
+    stacks: typeof recipe.stacks === "object" && recipe.stacks !== null ? recipe.stacks : {},
+    ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
+    instructions: Array.isArray(recipe.instructions) ? recipe.instructions : [],
+  };
+
+  if (recipe["x-prep"]) {
+    normalized["x-prep"] = recipe["x-prep"];
+  }
+
+  normalized.metadata = {
+    ...recipe.metadata,
+    ingest: {
+      ...recipe.metadata?.ingest,
+      ...(context?.sourcePath !== undefined ? { sourcePath: context.sourcePath } : {}),
+      ...(context?.timestamp !== undefined ? { timestamp: context.timestamp } : {}),
+      ...(context?.toolVersion !== undefined ? { toolVersion: context.toolVersion } : {}),
+      warnings: recipe.metadata?.ingest?.warnings || [],
+    },
+  };
+
+  return normalized;
 }
