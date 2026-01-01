@@ -649,6 +649,39 @@ describe("pipeline", () => {
       assert.equal(result.errors.length, 0);
     });
 
+    it("accepts a recipe with prep metadata in x-prep", () => {
+      const recipe: SoustackRecipe = {
+        $schema: "https://soustack.spec/soustack.schema.json",
+        profile: "lite",
+        name: "Prep Recipe",
+        stacks: [],
+        ingredients: ["1 onion, diced"],
+        instructions: ["Dice the onion."],
+        "x-prep": {
+          section: ["Prep the onions"],
+          ingredients: [
+            {
+              index: 0,
+              raw: "1 onion, diced",
+              base: "1 onion",
+              prep: ["diced"],
+            },
+          ],
+          generatedAt: "2024-01-01T00:00:00.000Z",
+        },
+        metadata: {
+          ingest: {
+            pipelineVersion: "0.1.1",
+          },
+        },
+      };
+
+      const result = validate(recipe);
+
+      assert.equal(result.ok, true);
+      assert.equal(result.errors.length, 0);
+    });
+
     it("rejects a recipe missing a name", () => {
       const recipe = {
         $schema: "https://spec.soustack.org/soustack.schema.json",
